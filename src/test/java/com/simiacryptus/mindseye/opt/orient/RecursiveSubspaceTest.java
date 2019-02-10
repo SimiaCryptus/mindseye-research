@@ -77,7 +77,7 @@ public abstract class RecursiveSubspaceTest extends MnistTestBase {
 
       network.add(new BiasLayer(7, 7, 5));
       network.add(new FullyConnectedLayer(new int[]{7, 7, 5}, new int[]{10}).set(init));
-      network.add(new SoftmaxActivationLayer());
+      network.add(new SoftmaxLayer());
       return network;
     });
   }
