@@ -30,6 +30,7 @@
 
     <artifactId>mindseye-research</artifactId>
     <description>Experimental Optimizers and Neural Networks</description>
+    <url>https://simiacryptus.github.io/${github.project}/${github.path}</url>
     <scm>
         <url>https://github.com/SimiaCryptus/mindseye-research/</url>
         <connection>scm:git:git@github.com:SimiaCryptus/mindseye-research.git</connection>
