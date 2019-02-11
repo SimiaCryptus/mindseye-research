@@ -29,14 +29,14 @@
     </parent>
 
     <artifactId>mindseye-research</artifactId>
-    <description>Neural Networks with Java 8 and CuDNN</description>
+    <description>Experimental Optimizers and Neural Networks</description>
     <scm>
-        <url>https://github.com/SimiaCryptus/MindsEye/</url>
-        <connection>scm:git:git@github.com:SimiaCryptus/MindsEye.git</connection>
+        <url>https://github.com/SimiaCryptus/mindseye-research/</url>
+        <connection>scm:git:git@github.com:SimiaCryptus/mindseye-research.git</connection>
     </scm>
 
     <properties>
-        <github.project>mindseye</github.project>
+        <github.project>mindseye-research</github.project>
         <github.path></github.path>
         <github.global.userName></github.global.userName>
         <github.global.oauth2Token></github.global.oauth2Token>
@@ -44,7 +44,7 @@
     <distributionManagement>
         <site>
             <id>github</id>
-            <url>https://simiacryptus.github.io/MindsEye</url>
+            <url>https://simiacryptus.github.io/mindseye-research</url>
         </site>
     </distributionManagement>
 
