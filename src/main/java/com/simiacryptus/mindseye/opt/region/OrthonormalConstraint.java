@@ -19,7 +19,7 @@
 
 package com.simiacryptus.mindseye.opt.region;
 
-import com.simiacryptus.mindseye.lang.RecycleBin;
+import com.simiacryptus.lang.ref.RecycleBin;
 import com.simiacryptus.util.ArrayUtil;
 
 import javax.annotation.Nonnull;

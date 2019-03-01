@@ -29,6 +29,7 @@ import com.simiacryptus.mindseye.network.DAGNetwork;
 import com.simiacryptus.mindseye.opt.IterativeTrainer;
 import com.simiacryptus.mindseye.opt.TrainingMonitor;
 import com.simiacryptus.mindseye.opt.line.ArmijoWolfeSearch;
+import com.simiacryptus.mindseye.opt.line.LineSearchStrategy;
 import com.simiacryptus.mindseye.opt.line.SimpleLineSearchCursor;
 
 import javax.annotation.Nonnull;
@@ -56,6 +57,8 @@ public class RecursiveSubspace extends OrientationStrategyBase<SimpleLineSearchC
   private double[] weights = null;
   private double terminateThreshold;
   private Trainable subject;
+  private LBFGS orientation = new LBFGS();
+  private LineSearchStrategy lineSearch = new ArmijoWolfeSearch();
 
   @Nonnull
   @Override
@@ -82,7 +85,11 @@ public class RecursiveSubspace extends OrientationStrategyBase<SimpleLineSearchC
   }
 
   public Layer toLayer(UUID id) {
-    return ((DAGNetwork)subject.getLayer()).getLayersById().get(id);
+    assert null != id;
+    DAGNetwork dagNetwork = (DAGNetwork) subject.getLayer();
+    Layer layer = dagNetwork.getLayersById().get(id);
+    assert null != layer;
+    return layer;
   }
 
   /**
@@ -103,10 +110,12 @@ public class RecursiveSubspace extends OrientationStrategyBase<SimpleLineSearchC
     } else if (Math.abs(magnitude) < 1e-5) {
       monitor.log(String.format("Low gradient: %s", magnitude));
     }
-    boolean hasPlaceholders = direction.getMap().entrySet().stream().map(e->toLayer(e.getKey())).filter(x -> x instanceof PlaceholderLayer).findAny().isPresent();
+    final Map<UUID, Delta<UUID>> directionMap = direction.getMap();
+    boolean hasPlaceholders = false;
+    //directionMap.entrySet().stream().map(e->e.getKey()).findAny().isPresent();
 
-    List<Layer> deltaLayers = direction.getMap().entrySet().stream().map(x -> x.getKey()).map(this::toLayer)
-        .filter(x -> !(x instanceof PlaceholderLayer))
+    List<UUID> deltaLayers = directionMap.entrySet().stream()
+        .map(x -> x.getKey())
         .collect(Collectors.toList());
     int size = deltaLayers.size() + (hasPlaceholders ? 1 : 0);
     if (null == weights || weights.length != size) weights = new double[size];
@@ -120,10 +129,12 @@ public class RecursiveSubspace extends OrientationStrategyBase<SimpleLineSearchC
         assertAlive();
         origin.restore();
         IntStream.range(0, deltaLayers.size()).forEach(i -> {
-          direction.getMap().get(deltaLayers.get(i)).accumulate(weights[hasPlaceholders ? (i + 1) : i]);
+          UUID key = deltaLayers.get(i);
+          assert null != key;
+          directionMap.get(key).accumulate(weights[hasPlaceholders ? (i + 1) : i]);
         });
         if (hasPlaceholders) {
-          direction.getMap().entrySet().stream()
+          directionMap.entrySet().stream()
               .filter(x -> toLayer(x.getKey()) instanceof PlaceholderLayer).distinct()
               .forEach(entry -> entry.getValue().accumulate(weights[0]));
         }
@@ -133,14 +144,14 @@ public class RecursiveSubspace extends OrientationStrategyBase<SimpleLineSearchC
         direction.addRef();
         return new Result(TensorArray.wrap(new Tensor(mean)), (DeltaSet<UUID> buffer, TensorList data) -> {
           DoubleStream deltaStream = deltaLayers.stream().mapToDouble(layer -> {
-            Delta<UUID> a = direction.getMap().get(layer.getId());
-            Delta<UUID> b = measure.delta.getMap().get(layer.getId());
+            Delta<UUID> a = directionMap.get(layer);
+            Delta<UUID> b = measure.delta.getMap().get(layer);
             return b.dot(a) / Math.max(Math.sqrt(a.dot(a)), 1e-8);
           });
           if (hasPlaceholders) {
             deltaStream = DoubleStream.concat(DoubleStream.of(
-                direction.getMap().keySet().stream().filter(x -> toLayer(x) instanceof PlaceholderLayer).distinct().mapToDouble(id -> {
-                  Delta<UUID> a = direction.getMap().get(id);
+                directionMap.keySet().stream().filter(x -> toLayer(x) instanceof PlaceholderLayer).distinct().mapToDouble(id -> {
+                  Delta<UUID> a = directionMap.get(id);
                   Delta<UUID> b = measure.delta.getMap().get(id);
                   return b.dot(a) / Math.max(Math.sqrt(a.dot(a)), 1e-8);
                 }).sum()), deltaStream);
@@ -194,9 +205,14 @@ public class RecursiveSubspace extends OrientationStrategyBase<SimpleLineSearchC
     @Nonnull ArrayTrainable trainable = new ArrayTrainable(inner, new Tensor[][]{{}});
     inner.freeRef();
     //tensor.freeRef();
+    LBFGS orientation = getOrientation();
+    orientation.addRef();
     new IterativeTrainer(trainable)
-        .setOrientation(new LBFGS())
-        .setLineSearchFactory(n -> new ArmijoWolfeSearch())
+        .setOrientation(orientation)
+        .setLineSearchFactory(n -> {
+          LineSearchStrategy lineSearch = getLineSearch();
+          return lineSearch;
+        })
         .setMonitor(new TrainingMonitor() {
           @Override
           public void log(String msg) {
@@ -257,6 +273,24 @@ public class RecursiveSubspace extends OrientationStrategyBase<SimpleLineSearchC
    */
   public RecursiveSubspace setTerminateThreshold(double terminateThreshold) {
     this.terminateThreshold = terminateThreshold;
+    return this;
+  }
+
+  public LBFGS getOrientation() {
+    return orientation;
+  }
+
+  public RecursiveSubspace setOrientation(LBFGS orientation) {
+    this.orientation = orientation;
+    return this;
+  }
+
+  public LineSearchStrategy getLineSearch() {
+    return lineSearch;
+  }
+
+  public RecursiveSubspace setLineSearch(LineSearchStrategy lineSearch) {
+    this.lineSearch = lineSearch;
     return this;
   }
 }
