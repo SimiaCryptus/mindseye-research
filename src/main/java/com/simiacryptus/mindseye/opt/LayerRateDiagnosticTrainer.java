@@ -72,7 +72,7 @@ public class LayerRateDiagnosticTrainer {
   }
 
   public Layer toLayer(UUID id) {
-    return ((DAGNetwork)subject.getLayer()).getLayersById().get(id);
+    return ((DAGNetwork) subject.getLayer()).getLayersById().get(id);
   }
 
   @Nonnull

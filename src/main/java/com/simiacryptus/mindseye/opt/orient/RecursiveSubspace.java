@@ -63,7 +63,7 @@ public class RecursiveSubspace extends OrientationStrategyBase<SimpleLineSearchC
   @Nonnull
   @Override
   public SimpleLineSearchCursor orient(@Nonnull Trainable subject, @Nonnull PointSample measurement, @Nonnull TrainingMonitor monitor) {
-    this.subject= subject;
+    this.subject = subject;
     @Nonnull PointSample origin = measurement.copyFull().backup();
     @Nullable Layer macroLayer = buildSubspace(subject, measurement, monitor);
     try {
