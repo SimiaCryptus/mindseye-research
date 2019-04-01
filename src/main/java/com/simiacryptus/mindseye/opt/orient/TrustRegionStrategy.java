@@ -144,7 +144,9 @@ public abstract class TrustRegionStrategy extends OrientationStrategyBase<LineSe
       }
 
       public Layer toLayer(UUID id) {
-        return ((DAGNetwork) subject.getLayer()).getLayersById().get(id);
+        DAGNetwork layer = (DAGNetwork) subject.getLayer();
+        if(null == layer) return null;
+        return layer.getLayersById().get(id);
       }
 
       @Nonnull
