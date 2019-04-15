@@ -45,7 +45,9 @@ public class OrthonormalConstraint implements TrustRegion {
    * @param indexMap the index map
    */
   public OrthonormalConstraint(int[]... indexMap) {
-    assert Arrays.stream(indexMap).mapToInt(x -> x.length).distinct().count() == 1;
+    if (Arrays.stream(indexMap).mapToInt(x -> x.length).distinct().count() != 1) {
+      throw new AssertionError();
+    }
     assert Arrays.stream(indexMap).flatMapToInt(x -> Arrays.stream(x)).distinct().count() == Arrays.stream(indexMap).flatMapToInt(x -> Arrays.stream(x)).count();
     assert Arrays.stream(indexMap).flatMapToInt(x -> Arrays.stream(x)).max().getAsInt() == Arrays.stream(indexMap).flatMapToInt(x -> Arrays.stream(x)).count() - 1;
     assert Arrays.stream(indexMap).flatMapToInt(x -> Arrays.stream(x)).min().getAsInt() == 0;
