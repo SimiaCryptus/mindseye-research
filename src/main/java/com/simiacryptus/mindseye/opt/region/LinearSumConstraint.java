@@ -21,29 +21,13 @@ package com.simiacryptus.mindseye.opt.region;
 
 import javax.annotation.Nonnull;
 
-/**
- * This constrains a weight vector based on a single hyperplane which prevents immediate increases to the L1 magnitude.
- * (Note: This region can allow effective L1 increases, if at least one weight changes sign; this allows for our entire
- * search space to be reachable.)
- */
 public class LinearSumConstraint implements TrustRegion {
   private boolean permitDecrease = true;
 
-  /**
-   * Is permit decrease boolean.
-   *
-   * @return the boolean
-   */
   public boolean isPermitDecrease() {
     return permitDecrease;
   }
 
-  /**
-   * Sets permit decrease.
-   *
-   * @param permitDecrease the permit decrease
-   * @return the permit decrease
-   */
   @Nonnull
   public LinearSumConstraint setPermitDecrease(final boolean permitDecrease) {
     this.permitDecrease = permitDecrease;
@@ -66,12 +50,6 @@ public class LinearSumConstraint implements TrustRegion {
     return returnValue;
   }
 
-  /**
-   * Sign int.
-   *
-   * @param weight the weight
-   * @return the int
-   */
   public int sign(final double weight) {
     return weight > 0 ? 1 : -1;
   }

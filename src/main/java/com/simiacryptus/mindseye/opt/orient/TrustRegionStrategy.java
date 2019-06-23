@@ -42,45 +42,21 @@ import java.util.UUID;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-/**
- * A generalization of the OWL-QN algorithm, this wrapping strategy projects an heapCopy cursor to the interior of a
- * trust region, which can be defined per-key. Any simple orientation strategy can be used as the heapCopy, most
- * commonly either GD or LBFGS. Many trust regions can be defined; see the com.simiacryptus.mindseye.opt.region
- * package.
- */
 public abstract class TrustRegionStrategy extends OrientationStrategyBase<LineSearchCursor> {
 
 
-  /**
-   * The Inner.
-   */
   public final OrientationStrategy<? extends SimpleLineSearchCursor> inner;
   private final List<PointSample> history = new LinkedList<>();
   private int maxHistory = 10;
 
-  /**
-   * Instantiates a new Trust region strategy.
-   */
   public TrustRegionStrategy() {
     this(new LBFGS());
   }
 
-  /**
-   * Instantiates a new Trust region strategy.
-   *
-   * @param inner the heapCopy
-   */
   protected TrustRegionStrategy(final OrientationStrategy<? extends SimpleLineSearchCursor> inner) {
     this.inner = inner;
   }
 
-  /**
-   * Dot double.
-   *
-   * @param a the a
-   * @param b the b
-   * @return the double
-   */
   public static double dot(@Nonnull final List<DoubleBuffer<UUID>> a, @Nonnull final List<DoubleBuffer<UUID>> b) {
     assert a.size() == b.size();
     return IntStream.range(0, a.size()).mapToDouble(i -> a.get(i).dot(b.get(i))).sum();
@@ -92,33 +68,16 @@ public abstract class TrustRegionStrategy extends OrientationStrategyBase<LineSe
     this.inner.freeRef();
   }
 
-  /**
-   * Gets max history.
-   *
-   * @return the max history
-   */
   public int getMaxHistory() {
     return maxHistory;
   }
 
-  /**
-   * Sets max history.
-   *
-   * @param maxHistory the max history
-   * @return the max history
-   */
   @Nonnull
   public TrustRegionStrategy setMaxHistory(final int maxHistory) {
     this.maxHistory = maxHistory;
     return this;
   }
 
-  /**
-   * Gets the Trust Region for a particular LayerBase
-   *
-   * @param layer the key
-   * @return the region policy
-   */
   public abstract TrustRegion getRegionPolicy(Layer layer);
 
   @Nonnull

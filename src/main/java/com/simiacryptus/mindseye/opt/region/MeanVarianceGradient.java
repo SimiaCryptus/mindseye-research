@@ -23,41 +23,20 @@ import com.simiacryptus.util.ArrayUtil;
 
 import javax.annotation.Nonnull;
 
-/**
- * This highly-constrained region allows ONLY changes to the mean/stddev of the weight vector components. Experimental;
- * no proven use case.
- */
 public class MeanVarianceGradient implements TrustRegion {
 
   private double max = Double.POSITIVE_INFINITY;
 
-  /**
-   * Gets max.
-   *
-   * @return the max
-   */
   public double getMax() {
     return max;
   }
 
-  /**
-   * Sets max.
-   *
-   * @param max the max
-   * @return the max
-   */
   @Nonnull
   public MeanVarianceGradient setMax(final double max) {
     this.max = max;
     return this;
   }
 
-  /**
-   * Length double.
-   *
-   * @param weights the weights
-   * @return the double
-   */
   public double length(@Nonnull final double[] weights) {
     return ArrayUtil.magnitude(weights);
   }

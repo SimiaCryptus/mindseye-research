@@ -23,10 +23,6 @@ import com.simiacryptus.util.ArrayUtil;
 
 import javax.annotation.Nonnull;
 
-/**
- * This strict region allows only raw scaling of weights; it is similar to but more constrained than
- * MeanVarianceGradient
- */
 public class ProportionalityConstraint implements TrustRegion {
   @Nonnull
   @Override

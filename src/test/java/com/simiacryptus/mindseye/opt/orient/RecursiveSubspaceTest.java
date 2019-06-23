@@ -43,9 +43,6 @@ import javax.annotation.Nullable;
 import java.util.concurrent.TimeUnit;
 import java.util.function.DoubleSupplier;
 
-/**
- * The type Lbfgs apply.
- */
 public abstract class RecursiveSubspaceTest extends MnistTestBase {
 
   @Nonnull
@@ -82,11 +79,6 @@ public abstract class RecursiveSubspaceTest extends MnistTestBase {
     });
   }
 
-  /**
-   * New normalization key nn key.
-   *
-   * @return the nn key
-   */
   @Nullable
   protected Layer newNormalizationLayer() {
     return null;
@@ -110,17 +102,9 @@ public abstract class RecursiveSubspaceTest extends MnistTestBase {
     });
   }
 
-  /**
-   * Gets orientation.
-   *
-   * @return the orientation
-   */
   @Nonnull
   protected abstract OrientationStrategy<?> getOrientation();
 
-  /**
-   * The type Baseline.
-   */
   public static class Baseline extends RecursiveSubspaceTest {
 
     @Nonnull
@@ -130,9 +114,6 @@ public abstract class RecursiveSubspaceTest extends MnistTestBase {
 
   }
 
-  /**
-   * The type Normalized.
-   */
   public static class Normalized extends RecursiveSubspaceTest {
 
     @Nonnull
@@ -147,9 +128,6 @@ public abstract class RecursiveSubspaceTest extends MnistTestBase {
     }
   }
 
-  /**
-   * The type Demo.
-   */
   public static class Demo extends RecursiveSubspaceTest {
 
     @Nonnull

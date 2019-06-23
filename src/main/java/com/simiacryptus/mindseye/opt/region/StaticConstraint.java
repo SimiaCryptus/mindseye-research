@@ -19,9 +19,6 @@
 
 package com.simiacryptus.mindseye.opt.region;
 
-/**
- * This type of trust region prevents any change the the given weight vector.
- */
 public class StaticConstraint implements TrustRegion {
   @Override
   public double[] project(final double[] weights, final double[] point) {

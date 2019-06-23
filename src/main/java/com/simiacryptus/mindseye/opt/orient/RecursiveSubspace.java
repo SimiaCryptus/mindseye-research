@@ -42,15 +42,8 @@ import java.util.stream.Collectors;
 import java.util.stream.DoubleStream;
 import java.util.stream.IntStream;
 
-/**
- * An recursive optimization strategy which projects the current space into a reduced-dimensional subspace for a
- * sub-optimization batch apply.
- */
 public class RecursiveSubspace extends OrientationStrategyBase<SimpleLineSearchCursor> {
 
-  /**
-   * The constant CURSOR_LABEL.
-   */
   public static final String CURSOR_LABEL = "RecursiveSubspace";
   private int iterations = 4;
   @Nullable
@@ -92,14 +85,6 @@ public class RecursiveSubspace extends OrientationStrategyBase<SimpleLineSearchC
     return layer;
   }
 
-  /**
-   * Build subspace nn key.
-   *
-   * @param subject     the subject
-   * @param measurement the measurement
-   * @param monitor     the monitor
-   * @return the nn key
-   */
   @Nullable
   public Layer buildSubspace(@Nonnull Trainable subject, @Nonnull PointSample measurement, @Nonnull TrainingMonitor monitor) {
     @Nonnull PointSample origin = measurement.copyFull().backup();
@@ -193,12 +178,6 @@ public class RecursiveSubspace extends OrientationStrategyBase<SimpleLineSearchC
     };
   }
 
-  /**
-   * Train.
-   *
-   * @param monitor    the monitor
-   * @param macroLayer the macro key
-   */
   public void train(@Nonnull TrainingMonitor monitor, Layer macroLayer) {
     @Nonnull BasicTrainable inner = new BasicTrainable(macroLayer);
     //@javax.annotation.Nonnull Tensor tensor = new Tensor();
@@ -231,21 +210,10 @@ public class RecursiveSubspace extends OrientationStrategyBase<SimpleLineSearchC
     weights = null;
   }
 
-  /**
-   * Gets iterations.
-   *
-   * @return the iterations
-   */
   public int getIterations() {
     return iterations;
   }
 
-  /**
-   * Sets iterations.
-   *
-   * @param iterations the iterations
-   * @return the iterations
-   */
   @Nonnull
   public RecursiveSubspace setIterations(int iterations) {
     this.iterations = iterations;
@@ -256,21 +224,10 @@ public class RecursiveSubspace extends OrientationStrategyBase<SimpleLineSearchC
   protected void _free() {
   }
 
-  /**
-   * Gets terminate threshold.
-   *
-   * @return the terminate threshold
-   */
   public double getTerminateThreshold() {
     return terminateThreshold;
   }
 
-  /**
-   * Sets terminate threshold.
-   *
-   * @param terminateThreshold the terminate threshold
-   * @return the terminate threshold
-   */
   public RecursiveSubspace setTerminateThreshold(double terminateThreshold) {
     this.terminateThreshold = terminateThreshold;
     return this;

@@ -19,18 +19,10 @@
 
 package com.simiacryptus.mindseye.opt.region;
 
-/**
- * This combination region yields the effective itersection of the trust region volumes.
- */
 public class CompoundRegion implements TrustRegion {
 
   private final TrustRegion[] inner;
 
-  /**
-   * Instantiates a new Compound region.
-   *
-   * @param inner the heapCopy
-   */
   public CompoundRegion(final TrustRegion... inner) {
     this.inner = inner;
   }

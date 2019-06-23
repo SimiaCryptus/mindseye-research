@@ -23,62 +23,31 @@ import com.simiacryptus.util.ArrayUtil;
 
 import javax.annotation.Nonnull;
 
-/**
- * This trust region uses recent position history to define an ellipsoid volume for the n+1 line search
- */
 public class AdaptiveTrustSphere implements TrustRegion {
 
   private int divisor = 5;
   private int lookback = 10;
 
-  /**
-   * Gets divisor.
-   *
-   * @return the divisor
-   */
   public int getDivisor() {
     return divisor;
   }
 
-  /**
-   * Sets divisor.
-   *
-   * @param divisor the divisor
-   * @return the divisor
-   */
   @Nonnull
   public AdaptiveTrustSphere setDivisor(final int divisor) {
     this.divisor = divisor;
     return this;
   }
 
-  /**
-   * Gets lookback.
-   *
-   * @return the lookback
-   */
   public int getLookback() {
     return lookback;
   }
 
-  /**
-   * Sets lookback.
-   *
-   * @param lookback the lookback
-   * @return the lookback
-   */
   @Nonnull
   public AdaptiveTrustSphere setLookback(final int lookback) {
     this.lookback = lookback;
     return this;
   }
 
-  /**
-   * Length double.
-   *
-   * @param weights the weights
-   * @return the double
-   */
   public double length(@Nonnull final double[] weights) {
     return ArrayUtil.magnitude(weights);
   }

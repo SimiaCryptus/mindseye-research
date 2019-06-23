@@ -27,31 +27,17 @@ import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * A concrete class of the TrustRegion orientation strategy base class, this uses a buildMap collection to store per-key
- * Trust Region configurations.
- */
 public class LayerTrustRegionMap extends TrustRegionStrategy {
   @Nonnull
   private final Map<Layer, TrustRegion> regionPolicies = new HashMap<>();
   @Nullable
   private TrustRegion defaultRegionPolicy = null;
 
-  /**
-   * Gets default region policy.
-   *
-   * @return the default region policy
-   */
   @Nullable
   public TrustRegion getDefaultRegionPolicy() {
     return defaultRegionPolicy;
   }
 
-  /**
-   * Gets region policies.
-   *
-   * @return the region policies
-   */
   @Nonnull
   public Map<Layer, TrustRegion> getRegionPolicies() {
     return regionPolicies;
@@ -67,12 +53,6 @@ public class LayerTrustRegionMap extends TrustRegionStrategy {
     inner.reset();
   }
 
-  /**
-   * Sets default region policy.
-   *
-   * @param defaultRegionPolicy the default region policy
-   * @return the default region policy
-   */
   @Nonnull
   public TrustRegionStrategy setDefaultRegionPolicy(final TrustRegion defaultRegionPolicy) {
     this.defaultRegionPolicy = defaultRegionPolicy;

@@ -41,10 +41,6 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-/**
- * This trains a subject apply a diagnostic goal: trainCjGD each key individually, and measureStyle the ideal rate for each
- * phase. This can indicate how balanced a network is, and how to trainCjGD it.
- */
 public class LayerRateDiagnosticTrainer {
 
 
@@ -59,11 +55,6 @@ public class LayerRateDiagnosticTrainer {
   private double terminateThreshold;
   private Duration timeout;
 
-  /**
-   * Instantiates a new LayerBase rate diagnostic trainer.
-   *
-   * @param subject the subject
-   */
   public LayerRateDiagnosticTrainer(final Trainable subject) {
     this.subject = subject;
     timeout = Duration.of(5, ChronoUnit.MINUTES);
@@ -83,199 +74,96 @@ public class LayerRateDiagnosticTrainer {
     return maskedDelta;
   }
 
-  /**
-   * Gets current iteration.
-   *
-   * @return the current iteration
-   */
   public AtomicInteger getCurrentIteration() {
     return currentIteration;
   }
 
-  /**
-   * Sets current iteration.
-   *
-   * @param currentIteration the current iteration
-   * @return the current iteration
-   */
   @Nonnull
   public LayerRateDiagnosticTrainer setCurrentIteration(final AtomicInteger currentIteration) {
     this.currentIteration = currentIteration;
     return this;
   }
 
-  /**
-   * Gets iterations per sample.
-   *
-   * @return the iterations per sample
-   */
   public int getIterationsPerSample() {
     return iterationsPerSample;
   }
 
-  /**
-   * Sets iterations per sample.
-   *
-   * @param iterationsPerSample the iterations per sample
-   * @return the iterations per sample
-   */
   @Nonnull
   public LayerRateDiagnosticTrainer setIterationsPerSample(final int iterationsPerSample) {
     this.iterationsPerSample = iterationsPerSample;
     return this;
   }
 
-  /**
-   * Gets key rates.
-   *
-   * @return the key rates
-   */
   @Nonnull
   public Map<Layer, LayerStats> getLayerRates() {
     return layerRates;
   }
 
-  /**
-   * Gets line search strategy.
-   *
-   * @return the line search strategy
-   */
   @Nonnull
   protected LineSearchStrategy getLineSearchStrategy() {
     return new QuadraticSearch();
   }
 
-  /**
-   * Gets max iterations.
-   *
-   * @return the max iterations
-   */
   public int getMaxIterations() {
     return maxIterations;
   }
 
-  /**
-   * Sets max iterations.
-   *
-   * @param maxIterations the max iterations
-   * @return the max iterations
-   */
   @Nonnull
   public LayerRateDiagnosticTrainer setMaxIterations(final int maxIterations) {
     this.maxIterations = maxIterations;
     return this;
   }
 
-  /**
-   * Gets monitor.
-   *
-   * @return the monitor
-   */
   public TrainingMonitor getMonitor() {
     return monitor;
   }
 
-  /**
-   * Sets monitor.
-   *
-   * @param monitor the monitor
-   * @return the monitor
-   */
   @Nonnull
   public LayerRateDiagnosticTrainer setMonitor(final TrainingMonitor monitor) {
     this.monitor = monitor;
     return this;
   }
 
-  /**
-   * Gets orientation.
-   *
-   * @return the orientation
-   */
   public OrientationStrategy<?> getOrientation() {
     return orientation;
   }
 
-  /**
-   * Sets orientation.
-   *
-   * @param orientation the orientation
-   * @return the orientation
-   */
   @Nonnull
   public LayerRateDiagnosticTrainer setOrientation(final OrientationStrategy<?> orientation) {
     this.orientation = orientation;
     return this;
   }
 
-  /**
-   * Gets terminate threshold.
-   *
-   * @return the terminate threshold
-   */
   public double getTerminateThreshold() {
     return terminateThreshold;
   }
 
-  /**
-   * Sets terminate threshold.
-   *
-   * @param terminateThreshold the terminate threshold
-   * @return the terminate threshold
-   */
   @Nonnull
   public LayerRateDiagnosticTrainer setTerminateThreshold(final double terminateThreshold) {
     this.terminateThreshold = terminateThreshold;
     return this;
   }
 
-  /**
-   * Gets timeout.
-   *
-   * @return the timeout
-   */
   public Duration getTimeout() {
     return timeout;
   }
 
-  /**
-   * Sets timeout.
-   *
-   * @param timeout the timeout
-   * @return the timeout
-   */
   @Nonnull
   public LayerRateDiagnosticTrainer setTimeout(final Duration timeout) {
     this.timeout = timeout;
     return this;
   }
 
-  /**
-   * Is strict boolean.
-   *
-   * @return the boolean
-   */
   public boolean isStrict() {
     return strict;
   }
 
-  /**
-   * Sets strict.
-   *
-   * @param strict the strict
-   * @return the strict
-   */
   @Nonnull
   public LayerRateDiagnosticTrainer setStrict(final boolean strict) {
     this.strict = strict;
     return this;
   }
 
-  /**
-   * Measure point sample.
-   *
-   * @return the point sample
-   */
   public PointSample measure() {
     PointSample currentPoint;
     int retries = 0;
@@ -288,11 +176,6 @@ public class LayerRateDiagnosticTrainer {
     return currentPoint;
   }
 
-  /**
-   * Run buildMap.
-   *
-   * @return the buildMap
-   */
   @Nonnull
   public Map<Layer, LayerStats> run() {
     final long timeoutMs = System.currentTimeMillis() + timeout.toMillis();
@@ -375,50 +258,21 @@ layerLoop:
     return getLayerRates();
   }
 
-  /**
-   * Sets timeout.
-   *
-   * @param number the number
-   * @param units  the units
-   * @return the timeout
-   */
   @Nonnull
   public LayerRateDiagnosticTrainer setTimeout(final int number, @Nonnull final TemporalUnit units) {
     timeout = Duration.of(number, units);
     return this;
   }
 
-  /**
-   * Sets timeout.
-   *
-   * @param number the number
-   * @param units  the units
-   * @return the timeout
-   */
   @Nonnull
   public LayerRateDiagnosticTrainer setTimeout(final int number, @Nonnull final TimeUnit units) {
     return setTimeout(number, Util.cvt(units));
   }
 
-  /**
-   * The type LayerBase stats.
-   */
   public static class LayerStats {
-    /**
-     * The Delta.
-     */
     public final double delta;
-    /**
-     * The Rate.
-     */
     public final double rate;
 
-    /**
-     * Instantiates a new LayerBase stats.
-     *
-     * @param rate  the rate
-     * @param delta the evalInputDelta
-     */
     public LayerStats(final double rate, final double delta) {
       this.rate = rate;
       this.delta = delta;

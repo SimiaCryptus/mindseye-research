@@ -24,61 +24,31 @@ import com.simiacryptus.util.ArrayUtil;
 import javax.annotation.Nonnull;
 import java.util.Arrays;
 
-/**
- * This constraint ensures that the L2 magnitude of the weight evalInputDelta cannot exceed a simple threshold. A simpler version
- * of AdaptiveTrustSphere, it places a limit on the step size for a given key.
- */
 public class RangeConstraint implements TrustRegion {
 
   private double min;
   private double max;
 
-  /**
-   * Instantiates a new Range constraint.
-   */
   public RangeConstraint() {
     min = 0;
     max = 255;
   }
 
-  /**
-   * Instantiates a new Range constraint.
-   *
-   * @param min the min
-   * @param max the max
-   */
   public RangeConstraint(final double min, final double max) {
     this.min = min;
     this.max = max;
   }
 
-  /**
-   * Gets max.
-   *
-   * @return the max
-   */
   public double getMax() {
     return max;
   }
 
-  /**
-   * Sets max.
-   *
-   * @param max the max
-   * @return the max
-   */
   @Nonnull
   public RangeConstraint setMax(final double max) {
     this.max = max;
     return this;
   }
 
-  /**
-   * Length double.
-   *
-   * @param weights the weights
-   * @return the double
-   */
   public double length(@Nonnull final double[] weights) {
     return ArrayUtil.magnitude(weights);
   }
@@ -89,21 +59,10 @@ public class RangeConstraint implements TrustRegion {
     return Arrays.stream(point).map(x -> Math.max(x, min)).map(x -> Math.min(x, max)).toArray();
   }
 
-  /**
-   * Gets min.
-   *
-   * @return the min
-   */
   public double getMin() {
     return min;
   }
 
-  /**
-   * Sets min.
-   *
-   * @param min the min
-   * @return the min
-   */
   public RangeConstraint setMin(double min) {
     this.min = min;
     return this;

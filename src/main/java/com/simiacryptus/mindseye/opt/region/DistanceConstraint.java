@@ -23,41 +23,20 @@ import com.simiacryptus.util.ArrayUtil;
 
 import javax.annotation.Nonnull;
 
-/**
- * This constraint ensures that the L2 magnitude of the weight evalInputDelta cannot exceed a simple threshold. A simpler version
- * of AdaptiveTrustSphere, it places a limit on the step size for a given key.
- */
 public class DistanceConstraint implements TrustRegion {
 
   private double max = Double.POSITIVE_INFINITY;
 
-  /**
-   * Gets max.
-   *
-   * @return the max
-   */
   public double getMax() {
     return max;
   }
 
-  /**
-   * Sets max.
-   *
-   * @param max the max
-   * @return the max
-   */
   @Nonnull
   public DistanceConstraint setMax(final double max) {
     this.max = max;
     return this;
   }
 
-  /**
-   * Length double.
-   *
-   * @param weights the weights
-   * @return the double
-   */
   public double length(@Nonnull final double[] weights) {
     return ArrayUtil.magnitude(weights);
   }

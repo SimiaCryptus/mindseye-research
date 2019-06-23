@@ -41,10 +41,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-/**
- * This basic training class provides support for a sequence of independant training configuration, e.g. Generative
- * Adversarial Networks.
- */
 public class RoundRobinTrainer {
   private static final Logger log = LoggerFactory.getLogger(RoundRobinTrainer.class);
 
@@ -60,203 +56,99 @@ public class RoundRobinTrainer {
   private double terminateThreshold;
   private Duration timeout;
 
-  /**
-   * Instantiates a new Round robin trainer.
-   *
-   * @param subject the subject
-   */
   public RoundRobinTrainer(final Trainable subject) {
     this.subject = subject;
     timeout = Duration.of(5, ChronoUnit.MINUTES);
     terminateThreshold = Double.NEGATIVE_INFINITY;
   }
 
-  /**
-   * Gets current iteration.
-   *
-   * @return the current iteration
-   */
   public AtomicInteger getCurrentIteration() {
     return currentIteration;
   }
 
-  /**
-   * Sets current iteration.
-   *
-   * @param currentIteration the current iteration
-   * @return the current iteration
-   */
   @Nonnull
   public RoundRobinTrainer setCurrentIteration(final AtomicInteger currentIteration) {
     this.currentIteration = currentIteration;
     return this;
   }
 
-  /**
-   * Gets iterations per sample.
-   *
-   * @return the iterations per sample
-   */
   public int getIterationsPerSample() {
     return iterationsPerSample;
   }
 
-  /**
-   * Sets iterations per sample.
-   *
-   * @param iterationsPerSample the iterations per sample
-   * @return the iterations per sample
-   */
   @Nonnull
   public RoundRobinTrainer setIterationsPerSample(final int iterationsPerSample) {
     this.iterationsPerSample = iterationsPerSample;
     return this;
   }
 
-  /**
-   * Gets line search factory.
-   *
-   * @return the line search factory
-   */
   public Function<CharSequence, ? extends LineSearchStrategy> getLineSearchFactory() {
     return lineSearchFactory;
   }
 
-  /**
-   * Sets line search factory.
-   *
-   * @param lineSearchFactory the line search factory
-   * @return the line search factory
-   */
   @Nonnull
   public RoundRobinTrainer setLineSearchFactory(@Nonnull final Supplier<LineSearchStrategy> lineSearchFactory) {
     this.lineSearchFactory = s -> lineSearchFactory.get();
     return this;
   }
 
-  /**
-   * Sets line search factory.
-   *
-   * @param lineSearchFactory the line search factory
-   * @return the line search factory
-   */
   @Nonnull
   public RoundRobinTrainer setLineSearchFactory(final Function<CharSequence, ? extends LineSearchStrategy> lineSearchFactory) {
     this.lineSearchFactory = lineSearchFactory;
     return this;
   }
 
-  /**
-   * Gets max iterations.
-   *
-   * @return the max iterations
-   */
   public int getMaxIterations() {
     return maxIterations;
   }
 
-  /**
-   * Sets max iterations.
-   *
-   * @param maxIterations the max iterations
-   * @return the max iterations
-   */
   @Nonnull
   public RoundRobinTrainer setMaxIterations(final int maxIterations) {
     this.maxIterations = maxIterations;
     return this;
   }
 
-  /**
-   * Gets monitor.
-   *
-   * @return the monitor
-   */
   public TrainingMonitor getMonitor() {
     return monitor;
   }
 
-  /**
-   * Sets monitor.
-   *
-   * @param monitor the monitor
-   * @return the monitor
-   */
   @Nonnull
   public RoundRobinTrainer setMonitor(final TrainingMonitor monitor) {
     this.monitor = monitor;
     return this;
   }
 
-  /**
-   * Gets orientations.
-   *
-   * @return the orientations
-   */
   @Nonnull
   public List<? extends OrientationStrategy<?>> getOrientations() {
     return orientations;
   }
 
-  /**
-   * Sets orientations.
-   *
-   * @param orientations the orientations
-   * @return the orientations
-   */
   @Nonnull
   public RoundRobinTrainer setOrientations(final OrientationStrategy<?>... orientations) {
     this.orientations = new ArrayList<>(Arrays.asList(orientations));
     return this;
   }
 
-  /**
-   * Gets terminate threshold.
-   *
-   * @return the terminate threshold
-   */
   public double getTerminateThreshold() {
     return terminateThreshold;
   }
 
-  /**
-   * Sets terminate threshold.
-   *
-   * @param terminateThreshold the terminate threshold
-   * @return the terminate threshold
-   */
   @Nonnull
   public RoundRobinTrainer setTerminateThreshold(final double terminateThreshold) {
     this.terminateThreshold = terminateThreshold;
     return this;
   }
 
-  /**
-   * Gets timeout.
-   *
-   * @return the timeout
-   */
   public Duration getTimeout() {
     return timeout;
   }
 
-  /**
-   * Sets timeout.
-   *
-   * @param timeout the timeout
-   * @return the timeout
-   */
   @Nonnull
   public RoundRobinTrainer setTimeout(final Duration timeout) {
     this.timeout = timeout;
     return this;
   }
 
-  /**
-   * Measure point sample.
-   *
-   * @return the point sample
-   */
   public PointSample measure() {
     PointSample currentPoint;
     int retries = 0;
@@ -269,11 +161,6 @@ public class RoundRobinTrainer {
     return currentPoint;
   }
 
-  /**
-   * Run double.
-   *
-   * @return the double
-   */
   public double run() {
     final long timeoutMs = System.currentTimeMillis() + timeout.toMillis();
     PointSample currentPoint = measure();
@@ -323,26 +210,12 @@ subiterationLoop:
     return null == currentPoint ? Double.NaN : currentPoint.sum;
   }
 
-  /**
-   * Sets timeout.
-   *
-   * @param number the number
-   * @param units  the units
-   * @return the timeout
-   */
   @Nonnull
   public RoundRobinTrainer setTimeout(final int number, @Nonnull final TemporalUnit units) {
     timeout = Duration.of(number, units);
     return this;
   }
 
-  /**
-   * Sets timeout.
-   *
-   * @param number the number
-   * @param units  the units
-   * @return the timeout
-   */
   @Nonnull
   public RoundRobinTrainer setTimeout(final int number, @Nonnull final TimeUnit units) {
     return setTimeout(number, Util.cvt(units));

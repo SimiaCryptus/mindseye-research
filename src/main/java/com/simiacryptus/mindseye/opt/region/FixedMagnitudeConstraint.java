@@ -28,19 +28,10 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-/**
- * This constraint ensures that the L2 magnitude of the weight evalInputDelta cannot exceed a simple threshold. A simpler version
- * of AdaptiveTrustSphere, it places a limit on the step size for a given key.
- */
 public class FixedMagnitudeConstraint implements TrustRegion {
 
   private final int[][] indexMap;
 
-  /**
-   * Instantiates a new Orthonormal constraint.
-   *
-   * @param indexMap the index map
-   */
   public FixedMagnitudeConstraint(int[]... indexMap) {
     if (Arrays.stream(indexMap).mapToInt(x -> x.length).distinct().count() != 1) {
       throw new AssertionError();
@@ -51,55 +42,22 @@ public class FixedMagnitudeConstraint implements TrustRegion {
     this.indexMap = indexMap;
   }
 
-  /**
-   * Dot double.
-   *
-   * @param a the a
-   * @param b the b
-   * @return the double
-   */
   public static double dot(double[] a, double[] b) {
     return IntStream.range(0, a.length).mapToDouble(i -> a[i] * b[i]).sum();
   }
 
-  /**
-   * Add double [ ].
-   *
-   * @param a the a
-   * @param b the b
-   * @return the double [ ]
-   */
   public static double[] add(double[] a, double[] b) {
     return IntStream.range(0, a.length).mapToDouble(i -> a[i] + b[i]).toArray();
   }
 
-  /**
-   * Scale double [ ].
-   *
-   * @param a the a
-   * @param b the b
-   * @return the double [ ]
-   */
   public static double[] scale(double[] a, double b) {
     return Arrays.stream(a).map(v -> v * b).toArray();
   }
 
-  /**
-   * Length double.
-   *
-   * @param weights the weights
-   * @return the double
-   */
   public double length(@Nonnull final double[] weights) {
     return ArrayUtil.magnitude(weights);
   }
 
-  /**
-   * Unit vectors list.
-   *
-   * @param point the vectors
-   * @return the list
-   */
   public List<double[]> setMags(final List<double[]> base, final List<double[]> point) {
     double[] magnitudes_Base = base.stream().mapToDouble(x -> Math.sqrt(Arrays.stream(x).map(a -> a * a).sum())).toArray();
     double[] magnitudes_Point = point.stream().mapToDouble(x -> Math.sqrt(Arrays.stream(x).map(a -> a * a).sum())).toArray();
@@ -120,12 +78,6 @@ public class FixedMagnitudeConstraint implements TrustRegion {
     return recompose(normalized);
   }
 
-  /**
-   * Recompose double [ ].
-   *
-   * @param unitVectors the unit vectors
-   * @return the double [ ]
-   */
   public double[] recompose(final List<double[]> unitVectors) {
     double[] doubles = RecycleBin.DOUBLES.create(Arrays.stream(indexMap).mapToInt(x -> x.length).sum());
     IntStream.range(0, indexMap.length).forEach(n -> {
@@ -137,12 +89,6 @@ public class FixedMagnitudeConstraint implements TrustRegion {
     return doubles;
   }
 
-  /**
-   * Decompose list.
-   *
-   * @param point the point
-   * @return the list
-   */
   public List<double[]> decompose(@Nonnull final double[] point) {
     return Arrays.stream(indexMap).map(x -> Arrays.stream(x).mapToDouble(i -> point[i]).toArray()).collect(Collectors.toList());
   }

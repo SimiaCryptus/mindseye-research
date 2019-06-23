@@ -31,57 +31,25 @@ import com.simiacryptus.mindseye.opt.line.SimpleLineSearchCursor;
 import javax.annotation.Nonnull;
 import java.util.UUID;
 
-/**
- * Quadratic Quasi-Newton optimization This method hybridizes pure gradient descent apply higher-order quasinewton
- * implementations such as L-BFGS. During each iteration, a quadratic curve is interpolated which aligns apply the
- * gradient's direction prediction and intersects apply the quasinewton's optimal point prediction. A simple parameteric
- * quadratic function blends both heapCopy cursors into a simple nonlinear path which should combine the stability of
- * both methods.
- */
 public class QQN extends OrientationStrategyBase<LineSearchCursor> {
 
-  /**
-   * The constant CURSOR_NAME.
-   */
   public static final String CURSOR_NAME = "QQN";
   private final LBFGS inner = new LBFGS();
 
-  /**
-   * Gets max history.
-   *
-   * @return the max history
-   */
   public int getMaxHistory() {
     return inner.getMaxHistory();
   }
 
-  /**
-   * Sets max history.
-   *
-   * @param maxHistory the max history
-   * @return the max history
-   */
   @Nonnull
   public QQN setMaxHistory(final int maxHistory) {
     inner.setMaxHistory(maxHistory);
     return this;
   }
 
-  /**
-   * Gets min history.
-   *
-   * @return the min history
-   */
   public int getMinHistory() {
     return inner.getMinHistory();
   }
 
-  /**
-   * Sets min history.
-   *
-   * @param minHistory the min history
-   * @return the min history
-   */
   @Nonnull
   public QQN setMinHistory(final int minHistory) {
     inner.setMinHistory(minHistory);

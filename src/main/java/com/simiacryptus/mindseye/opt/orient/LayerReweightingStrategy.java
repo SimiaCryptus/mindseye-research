@@ -33,33 +33,15 @@ import javax.annotation.Nonnull;
 import java.util.HashMap;
 import java.util.UUID;
 
-/**
- * This wrapping strategy alters the (Simple)LineCursor returned by the heapCopy strategy to effectively tune the
- * learning rate for each key.
- */
 public abstract class LayerReweightingStrategy extends OrientationStrategyBase<SimpleLineSearchCursor> {
 
-  /**
-   * The Inner.
-   */
   public final OrientationStrategy<SimpleLineSearchCursor> inner;
 
 
-  /**
-   * Instantiates a new LayerBase reweighting strategy.
-   *
-   * @param inner the heapCopy
-   */
   public LayerReweightingStrategy(final OrientationStrategy<SimpleLineSearchCursor> inner) {
     this.inner = inner;
   }
 
-  /**
-   * Gets region policy.
-   *
-   * @param layer the key
-   * @return the region policy
-   */
   public abstract Double getRegionPolicy(Layer layer);
 
   @Override
@@ -86,28 +68,15 @@ public abstract class LayerReweightingStrategy extends OrientationStrategyBase<S
     this.inner.freeRef();
   }
 
-  /**
-   * The type Hash buildMap key reweighting strategy.
-   */
   public static class HashMapLayerReweightingStrategy extends LayerReweightingStrategy {
 
     @Nonnull
     private final HashMap<Layer, Double> map = new HashMap<>();
 
-    /**
-     * Instantiates a new Hash buildMap key reweighting strategy.
-     *
-     * @param inner the heapCopy
-     */
     public HashMapLayerReweightingStrategy(final OrientationStrategy<SimpleLineSearchCursor> inner) {
       super(inner);
     }
 
-    /**
-     * Gets buildMap.
-     *
-     * @return the buildMap
-     */
     @Nonnull
     public HashMap<Layer, Double> getMap() {
       return map;
