@@ -36,6 +36,12 @@ import java.util.concurrent.TimeUnit;
 
 public class SimpleStochasticGradientDescentTest extends MnistTestBase {
 
+  @Nonnull
+  @Override
+  protected Class<?> getTargetClass() {
+    return SampledArrayTrainable.class;
+  }
+
   @Override
   public void train(@Nonnull final NotebookOutput log, @Nonnull final Layer network, @Nonnull final Tensor[][] trainingData, final TrainingMonitor monitor) {
     log.p("Training a model involves a few different components. First, our model is combined mapCoords a loss function. " +
@@ -49,14 +55,7 @@ public class SimpleStochasticGradientDescentTest extends MnistTestBase {
           .setMonitor(monitor)
           .setOrientation(new GradientDescent())
           .setTimeout(5, TimeUnit.MINUTES)
-          .setMaxIterations(500)
-          .runAndFree();
+          .setMaxIterations(500).run();
     });
-  }
-
-  @Nonnull
-  @Override
-  protected Class<?> getTargetClass() {
-    return SampledArrayTrainable.class;
   }
 }

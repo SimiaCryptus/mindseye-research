@@ -92,12 +92,6 @@ public class RoundRobinTrainer {
     return this;
   }
 
-  @Nonnull
-  public RoundRobinTrainer setLineSearchFactory(final Function<CharSequence, ? extends LineSearchStrategy> lineSearchFactory) {
-    this.lineSearchFactory = lineSearchFactory;
-    return this;
-  }
-
   public int getMaxIterations() {
     return maxIterations;
   }
@@ -149,6 +143,12 @@ public class RoundRobinTrainer {
     return this;
   }
 
+  @Nonnull
+  public RoundRobinTrainer setLineSearchFactory(final Function<CharSequence, ? extends LineSearchStrategy> lineSearchFactory) {
+    this.lineSearchFactory = lineSearchFactory;
+    return this;
+  }
+
   public PointSample measure() {
     PointSample currentPoint;
     int retries = 0;
@@ -170,7 +170,6 @@ mainLoop:
         break;
       }
       currentPoint = measure();
-subiterationLoop:
       for (int subiteration = 0; subiteration < iterationsPerSample; subiteration++) {
         final PointSample previousOrientations = currentPoint;
         for (@Nonnull final OrientationStrategy<?> orientation : orientations) {
@@ -199,7 +198,7 @@ subiterationLoop:
         if (previousOrientations.sum <= currentPoint.sum) {
           if (subject.reseed(System.nanoTime())) {
             monitor.log(String.format("MacroIteration %s failed, retrying. Error: %s", currentIteration.get(), currentPoint.sum));
-            break subiterationLoop;
+            break;
           } else {
             monitor.log(String.format("MacroIteration %s failed, aborting. Error: %s", currentIteration.get(), currentPoint.sum));
             break mainLoop;

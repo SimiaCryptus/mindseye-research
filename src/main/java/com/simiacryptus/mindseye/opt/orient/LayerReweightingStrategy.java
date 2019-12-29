@@ -37,7 +37,6 @@ public abstract class LayerReweightingStrategy extends OrientationStrategyBase<S
 
   public final OrientationStrategy<SimpleLineSearchCursor> inner;
 
-
   public LayerReweightingStrategy(final OrientationStrategy<SimpleLineSearchCursor> inner) {
     this.inner = inner;
   }
@@ -45,11 +44,13 @@ public abstract class LayerReweightingStrategy extends OrientationStrategyBase<S
   public abstract Double getRegionPolicy(Layer layer);
 
   @Override
-  public SimpleLineSearchCursor orient(final Trainable subject, final PointSample measurement, final TrainingMonitor monitor) {
+  public SimpleLineSearchCursor orient(final Trainable subject, final PointSample measurement,
+                                       final TrainingMonitor monitor) {
     final SimpleLineSearchCursor orient = inner.orient(subject, measurement, monitor);
     final DeltaSet<UUID> direction = orient.direction;
     direction.getMap().forEach((uuid, buffer) -> {
-      if (null == buffer.getDelta()) return;
+      if (null == buffer.getDelta())
+        return;
       Layer layer = ((DAGNetwork) subject.getLayer()).getLayersById().get(uuid);
       final Double weight = getRegionPolicy(layer);
       if (null != weight && 0 < weight) {
@@ -65,7 +66,6 @@ public abstract class LayerReweightingStrategy extends OrientationStrategyBase<S
 
   @Override
   protected void _free() {
-    this.inner.freeRef();
   }
 
   public static class HashMapLayerReweightingStrategy extends LayerReweightingStrategy {

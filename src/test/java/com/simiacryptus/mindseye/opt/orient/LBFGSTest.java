@@ -36,6 +36,12 @@ import java.util.concurrent.TimeUnit;
 
 public class LBFGSTest extends MnistTestBase {
 
+  @Nonnull
+  @Override
+  protected Class<?> getTargetClass() {
+    return LBFGS.class;
+  }
+
   @Override
   public void train(@Nonnull final NotebookOutput log, @Nonnull final Layer network, @Nonnull final Tensor[][] trainingData, final TrainingMonitor monitor) {
     log.eval(() -> {
@@ -54,11 +60,5 @@ public class LBFGSTest extends MnistTestBase {
           .setMaxIterations(500)
           .run();
     });
-  }
-
-  @Nonnull
-  @Override
-  protected Class<?> getTargetClass() {
-    return LBFGS.class;
   }
 }

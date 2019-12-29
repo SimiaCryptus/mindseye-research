@@ -48,10 +48,6 @@ public class GrowthSphere implements TrustRegion {
     return this;
   }
 
-  public double getRadius(final double stateMagnitude) {
-    return Math.max(minRadius, stateMagnitude * growthFactor);
-  }
-
   public boolean isAllowShrink() {
     return allowShrink;
   }
@@ -60,6 +56,10 @@ public class GrowthSphere implements TrustRegion {
   public GrowthSphere setAllowShrink(final boolean allowShrink) {
     this.allowShrink = allowShrink;
     return this;
+  }
+
+  public double getRadius(final double stateMagnitude) {
+    return Math.max(minRadius, stateMagnitude * growthFactor);
   }
 
   public double length(@Nonnull final double[] weights) {

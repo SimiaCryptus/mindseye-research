@@ -36,6 +36,12 @@ import java.util.concurrent.TimeUnit;
 
 public class BisectionLineSearchTest extends MnistTestBase {
 
+  @Nonnull
+  @Override
+  protected Class<?> getTargetClass() {
+    return BisectionSearch.class;
+  }
+
   @Override
   public void train(@Nonnull final NotebookOutput log, @Nonnull final Layer network, @Nonnull final Tensor[][] trainingData, final TrainingMonitor monitor) {
     log.eval(() -> {
@@ -46,14 +52,7 @@ public class BisectionLineSearchTest extends MnistTestBase {
           .setOrientation(new GradientDescent())
           .setLineSearchFactory((@Nonnull final CharSequence name) -> new BisectionSearch())
           .setTimeout(3, TimeUnit.MINUTES)
-          .setMaxIterations(500)
-          .runAndFree();
+          .setMaxIterations(500).run();
     });
-  }
-
-  @Nonnull
-  @Override
-  protected Class<?> getTargetClass() {
-    return BisectionSearch.class;
   }
 }

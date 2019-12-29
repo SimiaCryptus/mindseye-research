@@ -36,6 +36,12 @@ import java.util.concurrent.TimeUnit;
 
 public class LinearSumConstraintTest extends MnistTestBase {
 
+  @Nonnull
+  @Override
+  protected Class<?> getTargetClass() {
+    return LinearSumConstraint.class;
+  }
+
   @Override
   public void train(@Nonnull final NotebookOutput log, @Nonnull final Layer network, @Nonnull final Tensor[][] trainingData, final TrainingMonitor monitor) {
     log.eval(() -> {
@@ -47,20 +53,14 @@ public class LinearSumConstraintTest extends MnistTestBase {
           return new LinearSumConstraint();
         }
       };
+      //.setOrientation(new ValidatingOrientationWrapper(trustRegionStrategy))
       return new IterativeTrainer(trainable)
           .setIterationsPerSample(100)
           .setMonitor(monitor)
           //.setOrientation(new ValidatingOrientationWrapper(trustRegionStrategy))
           .setOrientation(trustRegionStrategy)
           .setTimeout(3, TimeUnit.MINUTES)
-          .setMaxIterations(500)
-          .runAndFree();
+          .setMaxIterations(500).run();
     });
-  }
-
-  @Nonnull
-  @Override
-  protected Class<?> getTargetClass() {
-    return LinearSumConstraint.class;
   }
 }

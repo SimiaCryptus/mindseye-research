@@ -46,6 +46,9 @@ import java.util.function.DoubleSupplier;
 public abstract class RecursiveSubspaceTest extends MnistTestBase {
 
   @Nonnull
+  protected abstract OrientationStrategy<?> getOrientation();
+
+  @Nonnull
   @Override
   protected Class<?> getTargetClass() {
     return RecursiveSubspace.class;
@@ -79,11 +82,6 @@ public abstract class RecursiveSubspaceTest extends MnistTestBase {
     });
   }
 
-  @Nullable
-  protected Layer newNormalizationLayer() {
-    return null;
-  }
-
   @Override
   public void train(@Nonnull final NotebookOutput log, @Nonnull final Layer network, @Nonnull final Tensor[][] trainingData, final TrainingMonitor monitor) {
     log.eval(() -> {
@@ -102,8 +100,10 @@ public abstract class RecursiveSubspaceTest extends MnistTestBase {
     });
   }
 
-  @Nonnull
-  protected abstract OrientationStrategy<?> getOrientation();
+  @Nullable
+  protected Layer newNormalizationLayer() {
+    return null;
+  }
 
   public static class Baseline extends RecursiveSubspaceTest {
 

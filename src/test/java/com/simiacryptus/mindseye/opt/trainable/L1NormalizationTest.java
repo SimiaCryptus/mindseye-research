@@ -30,17 +30,25 @@ import com.simiacryptus.mindseye.opt.IterativeTrainer;
 import com.simiacryptus.mindseye.opt.MnistTestBase;
 import com.simiacryptus.mindseye.opt.TrainingMonitor;
 import com.simiacryptus.notebook.NotebookOutput;
+import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
 import java.util.concurrent.TimeUnit;
 
 public class L1NormalizationTest extends MnistTestBase {
 
+  @Nonnull
+  @Override
+  protected Class<?> getTargetClass() {
+    return L12Normalizer.class;
+  }
+
   @Override
   public void train(@Nonnull final NotebookOutput log, @Nonnull final Layer network, @Nonnull final Tensor[][] trainingData, final TrainingMonitor monitor) {
     log.eval(() -> {
       @Nonnull final SimpleLossNetwork supervisedNetwork = new SimpleLossNetwork(network, new EntropyLossLayer());
       @Nonnull final Trainable trainable = new L12Normalizer(new SampledArrayTrainable(trainingData, supervisedNetwork, 1000)) {
+        @NotNull
         @Override
         public Layer getLayer() {
           return inner.getLayer();
@@ -59,14 +67,7 @@ public class L1NormalizationTest extends MnistTestBase {
       return new IterativeTrainer(trainable)
           .setMonitor(monitor)
           .setTimeout(3, TimeUnit.MINUTES)
-          .setMaxIterations(500)
-          .runAndFree();
+          .setMaxIterations(500).run();
     });
-  }
-
-  @Nonnull
-  @Override
-  protected Class<?> getTargetClass() {
-    return L12Normalizer.class;
   }
 }

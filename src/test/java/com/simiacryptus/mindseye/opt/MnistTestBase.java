@@ -54,16 +54,16 @@ public abstract class MnistTestBase extends NotebookReportBase {
 
   int modelNo = 0;
 
-  @Test
-  @Category(TestCategories.Report.class)
-  public void test() {
-    run(this::run);
-  }
-
   @Nonnull
   @Override
   public ReportType getReportType() {
     return ReportType.Optimizers;
+  }
+
+  @Test
+  @Category(TestCategories.Report.class)
+  public void test() {
+    run(this::run);
   }
 
   public void run(@Nonnull NotebookOutput log) {
@@ -90,26 +90,24 @@ public abstract class MnistTestBase extends NotebookReportBase {
 
   public DAGNetwork buildModel(@Nonnull final NotebookOutput log) {
     log.h1("Model");
-    log.p("This is a very simple model that performs basic logistic regression. " +
-        "It is expected to be trainable to about 91% accuracy on MNIST.");
+    log.p("This is a very simple model that performs basic logistic regression. "
+        + "It is expected to be trainable to about 91% accuracy on MNIST.");
     return log.eval(() -> {
       @Nonnull final PipelineNetwork network = new PipelineNetwork();
-      network.wrap(new BiasLayer(28, 28, 1)).freeRef();
-      network.wrap(new FullyConnectedLayer(new int[]{28, 28, 1}, new int[]{10})
-          .set(() -> 0.001 * (Math.random() - 0.45))).freeRef();
-      network.wrap(new SoftmaxLayer()).freeRef();
+      network.add(new BiasLayer(28, 28, 1));
+      network.add(new FullyConnectedLayer(new int[]{28, 28, 1}, new int[]{10}).set(() -> 0.001 * (Math.random() - 0.45)));
+      network.add(new SoftmaxLayer());
       return network;
     });
   }
 
   public Tensor[][] getTrainingData(final NotebookOutput log) {
-    Tensor[][] tensors = MNIST.trainingDataStream().map(labeledObject -> {
+    return MNIST.trainingDataStream().map(labeledObject -> {
       @Nonnull final Tensor categoryTensor = new Tensor(10);
       final int category = parse(labeledObject.label);
       categoryTensor.set(category, 1);
       return new Tensor[]{labeledObject.data, categoryTensor};
     }).toArray(i -> new Tensor[i][]);
-    return tensors;
   }
 
   public int parse(@Nonnull final String label) {
@@ -118,7 +116,8 @@ public abstract class MnistTestBase extends NotebookReportBase {
 
   public int[] predict(@Nonnull final Layer network, @Nonnull final LabeledObject<Tensor> labeledObject) {
     @Nullable final double[] predictionSignal = network.eval(labeledObject.data).getData().get(0).getData();
-    return IntStream.range(0, 10).mapToObj(x -> x).sorted(Comparator.comparing(i -> -predictionSignal[i])).mapToInt(x -> x).toArray();
+    return IntStream.range(0, 10).mapToObj(x -> x).sorted(Comparator.comparing(i -> -predictionSignal[i]))
+        .mapToInt(x -> x).toArray();
   }
 
   public void removeMonitoring(@Nonnull final DAGNetwork network) {
@@ -129,11 +128,14 @@ public abstract class MnistTestBase extends NotebookReportBase {
     });
   }
 
-  public void report(@Nonnull final NotebookOutput log, @Nonnull final MonitoredObject monitoringRoot, @Nonnull final List<Step> history, @Nonnull final Layer network) {
+  public void report(@Nonnull final NotebookOutput log, @Nonnull final MonitoredObject monitoringRoot,
+                     @Nonnull final List<Step> history, @Nonnull final Layer network) {
 
     if (!history.isEmpty()) {
       log.eval(() -> {
-        @Nonnull final PlotCanvas plot = ScatterPlot.plot(history.stream().map(step -> new double[]{step.iteration, Math.log10(step.point.getMean())}).toArray(i -> new double[i][]));
+        @Nonnull final PlotCanvas plot = ScatterPlot
+            .plot(history.stream().map(step -> new double[]{step.iteration, Math.log10(step.point.getMean())})
+                .toArray(i -> new double[i][]));
         plot.setTitle("Convergence Plot");
         plot.setAxisLabels("Iteration", "log10(Fitness)");
         plot.setSize(600, 400);
@@ -184,8 +186,8 @@ public abstract class MnistTestBase extends NotebookReportBase {
     log.h1("Validation");
     log.p("If we apply our model against the entire validation dataset, we get this accuracy:");
     log.eval(() -> {
-      return MNIST.validationDataStream().mapToDouble(labeledObject ->
-          predict(network, labeledObject)[0] == parse(labeledObject.label) ? 1 : 0)
+      return MNIST.validationDataStream()
+          .mapToDouble(labeledObject -> predict(network, labeledObject)[0] == parse(labeledObject.label) ? 1 : 0)
           .average().getAsDouble() * 100;
     });
 
@@ -195,13 +197,16 @@ public abstract class MnistTestBase extends NotebookReportBase {
       MNIST.validationDataStream().map(labeledObject -> {
         final int actualCategory = parse(labeledObject.label);
         @Nullable final double[] predictionSignal = network.eval(labeledObject.data).getData().get(0).getData();
-        final int[] predictionList = IntStream.range(0, 10).mapToObj(x -> x).sorted(Comparator.comparing(i -> -predictionSignal[i])).mapToInt(x -> x).toArray();
-        if (predictionList[0] == actualCategory) return null; // We will only examine mispredicted rows
+        final int[] predictionList = IntStream.range(0, 10).mapToObj(x -> x)
+            .sorted(Comparator.comparing(i -> -predictionSignal[i])).mapToInt(x -> x).toArray();
+        if (predictionList[0] == actualCategory)
+          return null; // We will only examine mispredicted rows
         @Nonnull final LinkedHashMap<CharSequence, Object> row = new LinkedHashMap<>();
         row.put("Image", log.png(labeledObject.data.toGrayImage(), labeledObject.label));
-        row.put("Prediction", Arrays.stream(predictionList).limit(3)
-            .mapToObj(i -> String.format("%d (%.1f%%)", i, 100.0 * predictionSignal[i]))
-            .reduce((a, b) -> a + ", " + b).get());
+        row.put("Prediction",
+            Arrays.stream(predictionList).limit(3)
+                .mapToObj(i -> String.format("%d (%.1f%%)", i, 100.0 * predictionSignal[i]))
+                .reduce((a, b) -> a + ", " + b).get());
         return row;
       }).filter(x -> null != x).limit(10).forEach(table::putRow);
       return table;

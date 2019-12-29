@@ -39,6 +39,12 @@ import java.util.stream.Collectors;
 
 public class SimpleGradientDescentTest extends MnistTestBase {
 
+  @Nonnull
+  @Override
+  protected Class<?> getTargetClass() {
+    return ArrayTrainable.class;
+  }
+
   @Override
   public void train(@Nonnull final NotebookOutput log, @Nonnull final Layer network, @Nonnull final Tensor[][] trainingData, final TrainingMonitor monitor) {
     log.p("Training a model involves a few different components. First, our model is combined mapCoords a loss function. " +
@@ -54,14 +60,7 @@ public class SimpleGradientDescentTest extends MnistTestBase {
       return new IterativeTrainer(trainable)
           .setMonitor(monitor)
           .setTimeout(3, TimeUnit.MINUTES)
-          .setMaxIterations(500)
-          .runAndFree();
+          .setMaxIterations(500).run();
     });
-  }
-
-  @Nonnull
-  @Override
-  protected Class<?> getTargetClass() {
-    return ArrayTrainable.class;
   }
 }

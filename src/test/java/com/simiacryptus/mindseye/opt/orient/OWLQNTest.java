@@ -35,6 +35,12 @@ import java.util.concurrent.TimeUnit;
 
 public class OWLQNTest extends MnistTestBase {
 
+  @Nonnull
+  @Override
+  protected Class<?> getTargetClass() {
+    return OwlQn.class;
+  }
+
   @Override
   public void train(@Nonnull final NotebookOutput log, @Nonnull final Layer network, @Nonnull final Tensor[][] trainingData, final TrainingMonitor monitor) {
     log.eval(() -> {
@@ -45,14 +51,7 @@ public class OWLQNTest extends MnistTestBase {
           .setMonitor(monitor)
           .setOrientation(new ValidatingOrientationWrapper(new OwlQn()))
           .setTimeout(5, TimeUnit.MINUTES)
-          .setMaxIterations(500)
-          .runAndFree();
+          .setMaxIterations(500).run();
     });
-  }
-
-  @Nonnull
-  @Override
-  protected Class<?> getTargetClass() {
-    return OwlQn.class;
   }
 }

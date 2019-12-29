@@ -49,6 +49,15 @@ public class RangeConstraint implements TrustRegion {
     return this;
   }
 
+  public double getMin() {
+    return min;
+  }
+
+  public RangeConstraint setMin(double min) {
+    this.min = min;
+    return this;
+  }
+
   public double length(@Nonnull final double[] weights) {
     return ArrayUtil.magnitude(weights);
   }
@@ -57,14 +66,5 @@ public class RangeConstraint implements TrustRegion {
   @Override
   public double[] project(@Nonnull final double[] weights, @Nonnull final double[] point) {
     return Arrays.stream(point).map(x -> Math.max(x, min)).map(x -> Math.min(x, max)).toArray();
-  }
-
-  public double getMin() {
-    return min;
-  }
-
-  public RangeConstraint setMin(double min) {
-    this.min = min;
-    return this;
   }
 }

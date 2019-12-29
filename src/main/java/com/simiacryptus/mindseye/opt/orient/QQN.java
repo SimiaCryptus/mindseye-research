@@ -57,7 +57,8 @@ public class QQN extends OrientationStrategyBase<LineSearchCursor> {
   }
 
   @Override
-  public LineSearchCursor orient(@Nonnull final Trainable subject, @Nonnull final PointSample origin, @Nonnull final TrainingMonitor monitor) {
+  public LineSearchCursor orient(@Nonnull final Trainable subject, @Nonnull final PointSample origin,
+                                 @Nonnull final TrainingMonitor monitor) {
     inner.addToHistory(origin, monitor);
     final SimpleLineSearchCursor lbfgsCursor = inner.orient(subject, origin, monitor);
     final DeltaSet<UUID> lbfgs = lbfgsCursor.direction;
@@ -67,7 +68,6 @@ public class QQN extends OrientationStrategyBase<LineSearchCursor> {
     if (Math.abs(lbfgsMag - gdMag) / (lbfgsMag + gdMag) > 1e-2) {
       @Nonnull final DeltaSet<UUID> scaledGradient = gd.scale(lbfgsMag / gdMag);
       monitor.log(String.format("Returning Quadratic Cursor %s GD, %s QN", gdMag, lbfgsMag));
-      gd.freeRef();
       return new LineSearchCursorBase() {
 
         @Nonnull
@@ -78,7 +78,8 @@ public class QQN extends OrientationStrategyBase<LineSearchCursor> {
 
         @Override
         public DeltaSet<UUID> position(final double t) {
-          if (!Double.isFinite(t)) throw new IllegalArgumentException();
+          if (!Double.isFinite(t))
+            throw new IllegalArgumentException();
           return scaledGradient.scale(t - t * t).add(lbfgs.scale(t * t));
         }
 
@@ -90,7 +91,8 @@ public class QQN extends OrientationStrategyBase<LineSearchCursor> {
         @Nonnull
         @Override
         public LineSearchPoint step(final double t, @Nonnull final TrainingMonitor monitor) {
-          if (!Double.isFinite(t)) throw new IllegalArgumentException();
+          if (!Double.isFinite(t))
+            throw new IllegalArgumentException();
           reset();
           position(t).accumulate(1);
           @Nonnull final PointSample sample = subject.measure(monitor).setRate(t);
@@ -102,12 +104,9 @@ public class QQN extends OrientationStrategyBase<LineSearchCursor> {
 
         @Override
         public void _free() {
-          scaledGradient.freeRef();
-          lbfgsCursor.freeRef();
         }
       };
     } else {
-      gd.freeRef();
       return lbfgsCursor;
     }
   }
@@ -117,10 +116,8 @@ public class QQN extends OrientationStrategyBase<LineSearchCursor> {
     inner.reset();
   }
 
-
   @Override
   protected void _free() {
-    this.inner.freeRef();
   }
 
 }

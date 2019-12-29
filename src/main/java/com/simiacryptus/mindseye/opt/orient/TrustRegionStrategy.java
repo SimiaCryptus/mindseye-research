@@ -19,7 +19,6 @@
 
 package com.simiacryptus.mindseye.opt.orient;
 
-import com.simiacryptus.ref.lang.ReferenceCountingBase;
 import com.simiacryptus.mindseye.eval.Trainable;
 import com.simiacryptus.mindseye.lang.DeltaSet;
 import com.simiacryptus.mindseye.lang.DoubleBuffer;
@@ -44,7 +43,6 @@ import java.util.stream.Stream;
 
 public abstract class TrustRegionStrategy extends OrientationStrategyBase<LineSearchCursor> {
 
-
   public final OrientationStrategy<? extends SimpleLineSearchCursor> inner;
   private final List<PointSample> history = new LinkedList<>();
   private int maxHistory = 10;
@@ -57,17 +55,6 @@ public abstract class TrustRegionStrategy extends OrientationStrategyBase<LineSe
     this.inner = inner;
   }
 
-  public static double dot(@Nonnull final List<DoubleBuffer<UUID>> a, @Nonnull final List<DoubleBuffer<UUID>> b) {
-    assert a.size() == b.size();
-    return IntStream.range(0, a.size()).mapToDouble(i -> a.get(i).dot(b.get(i))).sum();
-  }
-
-  @Override
-  protected void _free() {
-    history.forEach(ReferenceCountingBase::freeRef);
-    this.inner.freeRef();
-  }
-
   public int getMaxHistory() {
     return maxHistory;
   }
@@ -78,14 +65,20 @@ public abstract class TrustRegionStrategy extends OrientationStrategyBase<LineSe
     return this;
   }
 
+  public static double dot(@Nonnull final List<DoubleBuffer<UUID>> a, @Nonnull final List<DoubleBuffer<UUID>> b) {
+    assert a.size() == b.size();
+    return IntStream.range(0, a.size()).mapToDouble(i -> a.get(i).dot(b.get(i))).sum();
+  }
+
   public abstract TrustRegion getRegionPolicy(Layer layer);
 
   @Nonnull
   @Override
-  public LineSearchCursor orient(@Nonnull final Trainable subject, final PointSample origin, final TrainingMonitor monitor) {
-    history.add(0, origin.addRef());
+  public LineSearchCursor orient(@Nonnull final Trainable subject, final PointSample origin,
+                                 final TrainingMonitor monitor) {
+    history.add(0, origin);
     while (history.size() > maxHistory) {
-      history.remove(history.size() - 1).freeRef();
+      history.remove(history.size() - 1);
     }
     final SimpleLineSearchCursor cursor = inner.orient(subject, origin, monitor);
     return new TrustRegionCursor(cursor, subject);
@@ -94,6 +87,10 @@ public abstract class TrustRegionStrategy extends OrientationStrategyBase<LineSe
   @Override
   public void reset() {
     inner.reset();
+  }
+
+  @Override
+  protected void _free() {
   }
 
   private class TrustRegionCursor extends LineSearchCursorBase {
@@ -105,16 +102,16 @@ public abstract class TrustRegionStrategy extends OrientationStrategyBase<LineSe
       this.subject = subject;
     }
 
-    @Override
-    public PointSample afterStep(@Nonnull PointSample step) {
-      super.afterStep(step);
-      return cursor.afterStep(step);
-    }
-
     @Nonnull
     @Override
     public CharSequence getDirectionType() {
       return cursor.getDirectionType() + "+Trust";
+    }
+
+    @Override
+    public PointSample afterStep(@Nonnull PointSample step) {
+      super.afterStep(step);
+      return cursor.afterStep(step);
     }
 
     @Nonnull
@@ -128,7 +125,8 @@ public abstract class TrustRegionStrategy extends OrientationStrategyBase<LineSe
 
     public Layer toLayer(UUID id) {
       DAGNetwork layer = (DAGNetwork) subject.getLayer();
-      if (null == layer) return null;
+      if (null == layer)
+        return null;
       return layer.getLayersById().get(id);
     }
 
@@ -138,31 +136,32 @@ public abstract class TrustRegionStrategy extends OrientationStrategyBase<LineSe
       @Nonnull final DeltaSet<UUID> newAlphaDerivative = originalAlphaDerivative.copy();
       deltaIn.getMap().forEach((id, buffer) -> {
         @Nullable final double[] delta = buffer.getDelta();
-        if (null == delta) return;
+        if (null == delta)
+          return;
         final double[] currentPosition = buffer.target;
-        @Nullable final double[] originalAlphaD = originalAlphaDerivative.get(id, currentPosition).getDeltaAndFree();
-        @Nullable final double[] newAlphaD = newAlphaDerivative.get(id, currentPosition).getDeltaAndFree();
+        @Nullable final double[] originalAlphaD = originalAlphaDerivative.get(id, currentPosition).getDelta();
+        @Nullable final double[] newAlphaD = newAlphaDerivative.get(id, currentPosition).getDelta();
         @Nonnull final double[] proposedPosition = ArrayUtil.add(currentPosition, delta);
         final TrustRegion region = getRegionPolicy(toLayer(id));
         if (null != region) {
           final Stream<double[]> zz = history.stream().map((@Nonnull final PointSample pointSample) -> {
             final DoubleBuffer<UUID> d = pointSample.weights.getMap().get(id);
-            @Nullable final double[] z = null == d ? null : d.getDelta();
-            return z;
+            return null == d ? null : d.getDelta();
           });
-          final double[] projectedPosition = region.project(zz.filter(x -> null != x).toArray(i -> new double[i][]), proposedPosition);
+          final double[] projectedPosition = region.project(zz.filter(x -> null != x).toArray(i -> new double[i][]),
+              proposedPosition);
           if (projectedPosition != proposedPosition) {
             for (int i = 0; i < projectedPosition.length; i++) {
               delta[i] = projectedPosition[i] - currentPosition[i];
             }
             @Nonnull final double[] normal = ArrayUtil.subtract(projectedPosition, proposedPosition);
             final double normalMagSq = ArrayUtil.dot(normal, normal);
-//              monitor.log(String.format("%s: evalInputDelta = %s, projectedPosition = %s, proposedPosition = %s, currentPosition = %s, normalMagSq = %s", key,
-//                ArrayUtil.dot(evalInputDelta,evalInputDelta),
-//                ArrayUtil.dot(projectedPosition,projectedPosition),
-//                ArrayUtil.dot(proposedPosition,proposedPosition),
-//                ArrayUtil.dot(currentPosition,currentPosition),
-//                normalMagSq));
+            //              monitor.log(String.format("%s: evalInputDelta = %s, projectedPosition = %s, proposedPosition = %s, currentPosition = %s, normalMagSq = %s", key,
+            //                ArrayUtil.dot(evalInputDelta,evalInputDelta),
+            //                ArrayUtil.dot(projectedPosition,projectedPosition),
+            //                ArrayUtil.dot(proposedPosition,proposedPosition),
+            //                ArrayUtil.dot(currentPosition,currentPosition),
+            //                normalMagSq));
             if (0 < normalMagSq) {
               final double a = ArrayUtil.dot(originalAlphaD, normal);
               if (a != -1) {
@@ -170,14 +169,13 @@ public abstract class TrustRegionStrategy extends OrientationStrategyBase<LineSe
                 for (int i = 0; i < tangent.length; i++) {
                   newAlphaD[i] = tangent[i];
                 }
-//                  double newAlphaDerivSq = ArrayUtil.dot(tangent, tangent);
-//                  double originalAlphaDerivSq = ArrayUtil.dot(originalAlphaD, originalAlphaD);
-//                  assert(newAlphaDerivSq <= originalAlphaDerivSq);
-//                  assert(Math.abs(ArrayUtil.dot(tangent, normal)) <= 1e-4);
-//                  monitor.log(String.format("%s: normalMagSq = %s, newAlphaDerivSq = %s, originalAlphaDerivSq = %s", key, normalMagSq, newAlphaDerivSq, originalAlphaDerivSq));
+                //                  double newAlphaDerivSq = ArrayUtil.dot(tangent, tangent);
+                //                  double originalAlphaDerivSq = ArrayUtil.dot(originalAlphaD, originalAlphaD);
+                //                  assert(newAlphaDerivSq <= originalAlphaDerivSq);
+                //                  assert(Math.abs(ArrayUtil.dot(tangent, normal)) <= 1e-4);
+                //                  monitor.log(String.format("%s: normalMagSq = %s, newAlphaDerivSq = %s, originalAlphaDerivSq = %s", key, normalMagSq, newAlphaDerivSq, originalAlphaDerivSq));
               }
             }
-
 
           }
         }
@@ -197,18 +195,13 @@ public abstract class TrustRegionStrategy extends OrientationStrategyBase<LineSe
       @Nonnull final DeltaSet<UUID> adjustedPosVector = cursor.position(alpha);
       @Nonnull final DeltaSet<UUID> adjustedGradient = project(adjustedPosVector, monitor);
       adjustedPosVector.accumulate(1);
-      adjustedPosVector.freeRef();
       @Nonnull final PointSample sample = afterStep(subject.measure(monitor).setRate(alpha));
       double dot = adjustedGradient.dot(sample.delta);
-      adjustedGradient.freeRef();
-      LineSearchPoint lineSearchPoint = new LineSearchPoint(sample, dot);
-      sample.freeRef();
-      return lineSearchPoint;
+      return new LineSearchPoint(sample, dot);
     }
 
     @Override
     public void _free() {
-      cursor.freeRef();
     }
   }
 }

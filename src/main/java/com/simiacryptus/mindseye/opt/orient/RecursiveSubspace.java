@@ -53,27 +53,64 @@ public class RecursiveSubspace extends OrientationStrategyBase<SimpleLineSearchC
   private LBFGS orientation = new LBFGS();
   private LineSearchStrategy lineSearch = new ArmijoWolfeSearch();
 
+  public int getIterations() {
+    return iterations;
+  }
+
+  @Nonnull
+  public RecursiveSubspace setIterations(int iterations) {
+    this.iterations = iterations;
+    return this;
+  }
+
+  public LineSearchStrategy getLineSearch() {
+    return lineSearch;
+  }
+
+  public RecursiveSubspace setLineSearch(LineSearchStrategy lineSearch) {
+    this.lineSearch = lineSearch;
+    return this;
+  }
+
+  public LBFGS getOrientation() {
+    return orientation;
+  }
+
+  public RecursiveSubspace setOrientation(LBFGS orientation) {
+    this.orientation = orientation;
+    return this;
+  }
+
+  public double getTerminateThreshold() {
+    return terminateThreshold;
+  }
+
+  public RecursiveSubspace setTerminateThreshold(double terminateThreshold) {
+    this.terminateThreshold = terminateThreshold;
+    return this;
+  }
+
   @Nonnull
   @Override
-  public SimpleLineSearchCursor orient(@Nonnull Trainable subject, @Nonnull PointSample measurement, @Nonnull TrainingMonitor monitor) {
+  public SimpleLineSearchCursor orient(@Nonnull Trainable subject, @Nonnull PointSample measurement,
+                                       @Nonnull TrainingMonitor monitor) {
     this.subject = subject;
-    @Nonnull PointSample origin = measurement.copyFull().backup();
-    @Nullable Layer macroLayer = buildSubspace(subject, measurement, monitor);
-    try {
+    @Nonnull
+    PointSample origin = measurement.copyFull().backup();
+    @Nullable
+    Layer macroLayer = buildSubspace(subject, measurement, monitor);
+    {
       train(monitor, macroLayer);
       Result eval = macroLayer.eval((Result) null);
-      eval.getData().freeRef();
-      eval.freeRef();
-      @Nonnull StateSet<UUID> backupCopy = origin.weights.backupCopy();
-      @Nonnull DeltaSet<UUID> delta = backupCopy.subtract(origin.weights);
-      backupCopy.freeRef();
+      eval.getData();
+      @Nonnull
+      StateSet<UUID> backupCopy = origin.weights.copy();
+      @Nonnull
+      DeltaSet<UUID> delta = backupCopy.subtract(origin.weights);
       origin.restore();
-      @Nonnull SimpleLineSearchCursor simpleLineSearchCursor = new SimpleLineSearchCursor(subject, origin, delta);
-      delta.freeRef();
+      @Nonnull
+      SimpleLineSearchCursor simpleLineSearchCursor = new SimpleLineSearchCursor(subject, origin, delta);
       return simpleLineSearchCursor.setDirectionType(CURSOR_LABEL);
-    } finally {
-      origin.freeRef();
-      macroLayer.freeRef();
     }
   }
 
@@ -86,8 +123,10 @@ public class RecursiveSubspace extends OrientationStrategyBase<SimpleLineSearchC
   }
 
   @Nullable
-  public Layer buildSubspace(@Nonnull Trainable subject, @Nonnull PointSample measurement, @Nonnull TrainingMonitor monitor) {
-    @Nonnull PointSample origin = measurement.copyFull().backup();
+  public Layer buildSubspace(@Nonnull Trainable subject, @Nonnull PointSample measurement,
+                             @Nonnull TrainingMonitor monitor) {
+    @Nonnull
+    PointSample origin = measurement.copyFull().backup();
     @Nonnull final DeltaSet<UUID> direction = measurement.delta.scale(-1);
     final double magnitude = direction.getMagnitude();
     if (Math.abs(magnitude) < 1e-10) {
@@ -99,13 +138,13 @@ public class RecursiveSubspace extends OrientationStrategyBase<SimpleLineSearchC
     boolean hasPlaceholders = false;
     //directionMap.entrySet().stream().map(e->e.getKey()).findAny().isPresent();
 
-    List<UUID> deltaLayers = directionMap.entrySet().stream()
-        .map(x -> x.getKey())
-        .collect(Collectors.toList());
+    List<UUID> deltaLayers = directionMap.entrySet().stream().map(x -> x.getKey()).collect(Collectors.toList());
     int size = deltaLayers.size() + (hasPlaceholders ? 1 : 0);
-    if (null == weights || weights.length != size) weights = new double[size];
+    if (null == weights || weights.length != size)
+      weights = new double[size];
     return new LayerBase() {
       @Nonnull
+      final
       Layer self = this;
 
       @Nonnull
@@ -119,49 +158,37 @@ public class RecursiveSubspace extends OrientationStrategyBase<SimpleLineSearchC
           directionMap.get(key).accumulate(weights[hasPlaceholders ? (i + 1) : i]);
         });
         if (hasPlaceholders) {
-          directionMap.entrySet().stream()
-              .filter(x -> toLayer(x.getKey()) instanceof PlaceholderLayer).distinct()
+          directionMap.entrySet().stream().filter(x -> toLayer(x.getKey()) instanceof PlaceholderLayer).distinct()
               .forEach(entry -> entry.getValue().accumulate(weights[0]));
         }
         PointSample measure = subject.measure(monitor);
         double mean = measure.getMean();
         monitor.log(String.format("RecursiveSubspace: %s <- %s", mean, Arrays.toString(weights)));
-        direction.addRef();
-        return new Result(TensorArray.wrap(new Tensor(mean)), (DeltaSet<UUID> buffer, TensorList data) -> {
+        return new Result(new TensorArray(new Tensor(mean)), (DeltaSet<UUID> buffer, TensorList data) -> {
           DoubleStream deltaStream = deltaLayers.stream().mapToDouble(layer -> {
             Delta<UUID> a = directionMap.get(layer);
             Delta<UUID> b = measure.delta.getMap().get(layer);
             return b.dot(a) / Math.max(Math.sqrt(a.dot(a)), 1e-8);
           });
           if (hasPlaceholders) {
-            deltaStream = DoubleStream.concat(DoubleStream.of(
-                directionMap.keySet().stream().filter(x -> toLayer(x) instanceof PlaceholderLayer).distinct().mapToDouble(id -> {
+            deltaStream = DoubleStream.concat(DoubleStream.of(directionMap.keySet().stream()
+                .filter(x -> toLayer(x) instanceof PlaceholderLayer).distinct().mapToDouble(id -> {
                   Delta<UUID> a = directionMap.get(id);
                   Delta<UUID> b = measure.delta.getMap().get(id);
                   return b.dot(a) / Math.max(Math.sqrt(a.dot(a)), 1e-8);
                 }).sum()), deltaStream);
           }
-          buffer.get(self.getId(), weights).addInPlace(deltaStream.toArray()).freeRef();
+          buffer.get(self.getId(), weights).addInPlace(deltaStream.toArray());
         }) {
-          @Override
-          protected void _free() {
-            measure.freeRef();
-            direction.freeRef();
-          }
-
           @Override
           public boolean isAlive() {
             return true;
           }
-        };
-      }
 
-      @Override
-      protected void _free() {
-        //deltaLayers.stream().forEach(ReferenceCounting::freeRef);
-        direction.freeRef();
-        origin.freeRef();
-        super._free();
+          @Override
+          protected void _free() {
+          }
+        };
       }
 
       @Nonnull
@@ -175,34 +202,29 @@ public class RecursiveSubspace extends OrientationStrategyBase<SimpleLineSearchC
       public List<double[]> state() {
         return null;
       }
+
+      @Override
+      protected void _free() {
+        super._free();
+      }
     };
   }
 
   public void train(@Nonnull TrainingMonitor monitor, Layer macroLayer) {
-    @Nonnull BasicTrainable inner = new BasicTrainable(macroLayer);
-    //@javax.annotation.Nonnull Tensor tensor = new Tensor();
-    @Nonnull ArrayTrainable trainable = new ArrayTrainable(inner, new Tensor[][]{{}});
-    inner.freeRef();
-    //tensor.freeRef();
+    @Nonnull
+    BasicTrainable inner = new BasicTrainable(macroLayer);
+    @Nonnull
+    ArrayTrainable trainable = new ArrayTrainable(inner, new Tensor[][]{{}});
     LBFGS orientation = getOrientation();
-    orientation.addRef();
-    new IterativeTrainer(trainable)
-        .setOrientation(orientation)
-        .setLineSearchFactory(n -> {
-          LineSearchStrategy lineSearch = getLineSearch();
-          return lineSearch;
-        })
-        .setMonitor(new TrainingMonitor() {
-          @Override
-          public void log(String msg) {
-            monitor.log("\t" + msg);
-          }
-        })
-        .setMaxIterations(getIterations())
-        .setIterationsPerSample(getIterations())
-        .setTerminateThreshold(terminateThreshold)
-        .runAndFree();
-    trainable.freeRef();
+    new IterativeTrainer(trainable).setOrientation(orientation).setLineSearchFactory(n -> {
+      return getLineSearch();
+    }).setMonitor(new TrainingMonitor() {
+      @Override
+      public void log(String msg) {
+        monitor.log("\t" + msg);
+      }
+    }).setMaxIterations(getIterations()).setIterationsPerSample(getIterations())
+        .setTerminateThreshold(terminateThreshold).run();
   }
 
   @Override
@@ -210,44 +232,7 @@ public class RecursiveSubspace extends OrientationStrategyBase<SimpleLineSearchC
     weights = null;
   }
 
-  public int getIterations() {
-    return iterations;
-  }
-
-  @Nonnull
-  public RecursiveSubspace setIterations(int iterations) {
-    this.iterations = iterations;
-    return this;
-  }
-
   @Override
   protected void _free() {
-  }
-
-  public double getTerminateThreshold() {
-    return terminateThreshold;
-  }
-
-  public RecursiveSubspace setTerminateThreshold(double terminateThreshold) {
-    this.terminateThreshold = terminateThreshold;
-    return this;
-  }
-
-  public LBFGS getOrientation() {
-    return orientation;
-  }
-
-  public RecursiveSubspace setOrientation(LBFGS orientation) {
-    this.orientation = orientation;
-    return this;
-  }
-
-  public LineSearchStrategy getLineSearch() {
-    return lineSearch;
-  }
-
-  public RecursiveSubspace setLineSearch(LineSearchStrategy lineSearch) {
-    this.lineSearch = lineSearch;
-    return this;
   }
 }

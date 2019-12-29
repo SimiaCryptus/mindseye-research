@@ -62,18 +62,6 @@ public class LayerRateDiagnosticTrainer {
     setOrientation(new GradientDescent());
   }
 
-  public Layer toLayer(UUID id) {
-    return ((DAGNetwork) subject.getLayer()).getLayersById().get(id);
-  }
-
-  @Nonnull
-  private DeltaSet<UUID> filterDirection(@Nonnull final DeltaSet<UUID> direction, @Nonnull final Layer layer) {
-    @Nonnull final DeltaSet<UUID> maskedDelta = new DeltaSet<UUID>();
-    direction.getMap().forEach((layer2, delta) -> maskedDelta.get(layer2, delta.target));
-    maskedDelta.get(layer.getId(), layer.state().get(0)).addInPlace(direction.get(layer.getId(), (double[]) null).getDelta());
-    return maskedDelta;
-  }
-
   public AtomicInteger getCurrentIteration() {
     return currentIteration;
   }
@@ -129,9 +117,8 @@ public class LayerRateDiagnosticTrainer {
   }
 
   @Nonnull
-  public LayerRateDiagnosticTrainer setOrientation(final OrientationStrategy<?> orientation) {
+  public void setOrientation(final OrientationStrategy<?> orientation) {
     this.orientation = orientation;
-    return this;
   }
 
   public double getTerminateThreshold() {
@@ -162,6 +149,10 @@ public class LayerRateDiagnosticTrainer {
   public LayerRateDiagnosticTrainer setStrict(final boolean strict) {
     this.strict = strict;
     return this;
+  }
+
+  public Layer toLayer(UUID id) {
+    return ((DAGNetwork) subject.getLayer()).getLayersById().get(id);
   }
 
   public PointSample measure() {
@@ -218,14 +209,13 @@ public class LayerRateDiagnosticTrainer {
 
         @Nullable SimpleLineSearchCursor bestOrient = null;
         @Nullable PointSample bestPoint = null;
-layerLoop:
         for (@Nonnull final UUID id : layers) {
           Layer layer = toLayer(id);
           @Nonnull SimpleLineSearchCursor orient = (SimpleLineSearchCursor) getOrientation().orient(subject, measure, monitor);
           @Nonnull final DeltaSet<UUID> direction = filterDirection(orient.direction, layer);
           if (direction.getMagnitude() == 0) {
             monitor.log(String.format("Zero derivative for key %s; skipping", layer));
-            continue layerLoop;
+            continue;
           }
           orient = new SimpleLineSearchCursor(orient.subject, orient.origin, direction);
           final PointSample previous = measure;
@@ -267,6 +257,14 @@ layerLoop:
   @Nonnull
   public LayerRateDiagnosticTrainer setTimeout(final int number, @Nonnull final TimeUnit units) {
     return setTimeout(number, Util.cvt(units));
+  }
+
+  @Nonnull
+  private DeltaSet<UUID> filterDirection(@Nonnull final DeltaSet<UUID> direction, @Nonnull final Layer layer) {
+    @Nonnull final DeltaSet<UUID> maskedDelta = new DeltaSet<UUID>();
+    direction.getMap().forEach((layer2, delta) -> maskedDelta.get(layer2, delta.target));
+    maskedDelta.get(layer.getId(), layer.state().get(0)).addInPlace(direction.get(layer.getId(), (double[]) null).getDelta());
+    return maskedDelta;
   }
 
   public static class LayerStats {

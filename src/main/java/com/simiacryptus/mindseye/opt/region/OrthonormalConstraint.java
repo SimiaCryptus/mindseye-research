@@ -45,6 +45,24 @@ public class OrthonormalConstraint implements TrustRegion {
     this.indexMap = indexMap;
   }
 
+  public boolean isOrtho() {
+    return ortho;
+  }
+
+  public OrthonormalConstraint setOrtho(boolean ortho) {
+    this.ortho = ortho;
+    return this;
+  }
+
+  public boolean isUnit() {
+    return unit;
+  }
+
+  public OrthonormalConstraint setUnit(boolean unit) {
+    this.unit = unit;
+    return this;
+  }
+
   public static double dot(double[] a, double[] b) {
     return IntStream.range(0, a.length).mapToDouble(i -> a[i] * b[i]).sum();
   }
@@ -103,23 +121,5 @@ public class OrthonormalConstraint implements TrustRegion {
 
   public List<double[]> decompose(@Nonnull final double[] point) {
     return Arrays.stream(indexMap).map(x -> Arrays.stream(x).mapToDouble(i -> point[i]).toArray()).collect(Collectors.toList());
-  }
-
-  public boolean isOrtho() {
-    return ortho;
-  }
-
-  public OrthonormalConstraint setOrtho(boolean ortho) {
-    this.ortho = ortho;
-    return this;
-  }
-
-  public boolean isUnit() {
-    return unit;
-  }
-
-  public OrthonormalConstraint setUnit(boolean unit) {
-    this.unit = unit;
-    return this;
   }
 }
