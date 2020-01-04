@@ -27,6 +27,7 @@ import com.simiacryptus.mindseye.opt.line.QuadraticSearch;
 import com.simiacryptus.mindseye.opt.line.SimpleLineSearchCursor;
 import com.simiacryptus.mindseye.opt.orient.GradientDescent;
 import com.simiacryptus.mindseye.opt.orient.OrientationStrategy;
+import com.simiacryptus.ref.lang.ReferenceCountingBase;
 import com.simiacryptus.util.Util;
 
 import javax.annotation.Nonnull;
@@ -41,7 +42,7 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class LayerRateDiagnosticTrainer {
+public class LayerRateDiagnosticTrainer extends ReferenceCountingBase {
 
 
   private final Map<Layer, LayerStats> layerRates = new HashMap<>();

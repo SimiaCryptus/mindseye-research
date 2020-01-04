@@ -81,7 +81,7 @@ public abstract class TrustRegionStrategy extends OrientationStrategyBase<LineSe
       history.remove(history.size() - 1);
     }
     final SimpleLineSearchCursor cursor = inner.orient(subject, origin, monitor);
-    return new TrustRegionCursor(cursor, subject);
+    return new TrustRegionCursor(cursor, subject, TrustRegionStrategy.this);
   }
 
   @Override
@@ -93,11 +93,13 @@ public abstract class TrustRegionStrategy extends OrientationStrategyBase<LineSe
   public void _free() {
   }
 
-  private class TrustRegionCursor extends LineSearchCursorBase {
+  private static class TrustRegionCursor extends LineSearchCursorBase {
     private final SimpleLineSearchCursor cursor;
     private final Trainable subject;
+    private final TrustRegionStrategy parent;
 
-    public TrustRegionCursor(SimpleLineSearchCursor cursor, Trainable subject) {
+    public TrustRegionCursor(SimpleLineSearchCursor cursor, Trainable subject, TrustRegionStrategy parent) {
+      this.parent = parent;
       this.cursor = cursor;
       this.subject = subject;
     }
@@ -142,9 +144,9 @@ public abstract class TrustRegionStrategy extends OrientationStrategyBase<LineSe
         @Nullable final double[] originalAlphaD = originalAlphaDerivative.get(id, currentPosition).getDelta();
         @Nullable final double[] newAlphaD = newAlphaDerivative.get(id, currentPosition).getDelta();
         @Nonnull final double[] proposedPosition = ArrayUtil.add(currentPosition, delta);
-        final TrustRegion region = getRegionPolicy(toLayer(id));
+        final TrustRegion region = parent.getRegionPolicy(toLayer(id));
         if (null != region) {
-          final Stream<double[]> zz = history.stream().map((@Nonnull final PointSample pointSample) -> {
+          final Stream<double[]> zz = parent.history.stream().map((@Nonnull final PointSample pointSample) -> {
             final DoubleBuffer<UUID> d = pointSample.weights.getMap().get(id);
             return null == d ? null : d.getDelta();
           });

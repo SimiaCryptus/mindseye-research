@@ -27,6 +27,7 @@ import com.simiacryptus.mindseye.opt.line.LineSearchCursor;
 import com.simiacryptus.mindseye.opt.line.LineSearchStrategy;
 import com.simiacryptus.mindseye.opt.orient.LBFGS;
 import com.simiacryptus.mindseye.opt.orient.OrientationStrategy;
+import com.simiacryptus.ref.lang.ReferenceCountingBase;
 import com.simiacryptus.util.Util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,7 +42,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-public class RoundRobinTrainer {
+public class RoundRobinTrainer extends ReferenceCountingBase {
   private static final Logger log = LoggerFactory.getLogger(RoundRobinTrainer.class);
 
   private final Map<CharSequence, LineSearchStrategy> lineSearchStrategyMap = new HashMap<>();
@@ -89,6 +90,12 @@ public class RoundRobinTrainer {
   @Nonnull
   public RoundRobinTrainer setLineSearchFactory(@Nonnull final Supplier<LineSearchStrategy> lineSearchFactory) {
     this.lineSearchFactory = s -> lineSearchFactory.get();
+    return this;
+  }
+
+  @Nonnull
+  public RoundRobinTrainer setLineSearchFactory(final Function<CharSequence, ? extends LineSearchStrategy> lineSearchFactory) {
+    this.lineSearchFactory = lineSearchFactory;
     return this;
   }
 
@@ -140,12 +147,6 @@ public class RoundRobinTrainer {
   @Nonnull
   public RoundRobinTrainer setTimeout(final Duration timeout) {
     this.timeout = timeout;
-    return this;
-  }
-
-  @Nonnull
-  public RoundRobinTrainer setLineSearchFactory(final Function<CharSequence, ? extends LineSearchStrategy> lineSearchFactory) {
-    this.lineSearchFactory = lineSearchFactory;
     return this;
   }
 
