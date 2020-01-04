@@ -90,7 +90,7 @@ public abstract class TrustRegionStrategy extends OrientationStrategyBase<LineSe
   }
 
   @Override
-  protected void _free() {
+  public void _free() {
   }
 
   private class TrustRegionCursor extends LineSearchCursorBase {

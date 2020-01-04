@@ -65,7 +65,7 @@ public abstract class LayerReweightingStrategy extends OrientationStrategyBase<S
   }
 
   @Override
-  protected void _free() {
+  public void _free() {
   }
 
   public static class HashMapLayerReweightingStrategy extends LayerReweightingStrategy {

@@ -117,7 +117,7 @@ public class QQN extends OrientationStrategyBase<LineSearchCursor> {
   }
 
   @Override
-  protected void _free() {
+  public void _free() {
   }
 
 }

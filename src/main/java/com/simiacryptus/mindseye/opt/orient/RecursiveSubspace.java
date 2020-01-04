@@ -31,6 +31,8 @@ import com.simiacryptus.mindseye.opt.TrainingMonitor;
 import com.simiacryptus.mindseye.opt.line.ArmijoWolfeSearch;
 import com.simiacryptus.mindseye.opt.line.LineSearchStrategy;
 import com.simiacryptus.mindseye.opt.line.SimpleLineSearchCursor;
+import com.simiacryptus.ref.wrappers.RefList;
+import com.simiacryptus.ref.wrappers.RefMap;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -142,72 +144,7 @@ public class RecursiveSubspace extends OrientationStrategyBase<SimpleLineSearchC
     int size = deltaLayers.size() + (hasPlaceholders ? 1 : 0);
     if (null == weights || weights.length != size)
       weights = new double[size];
-    return new LayerBase() {
-      @Nonnull
-      final
-      Layer self = this;
-
-      @Nonnull
-      @Override
-      public Result eval(Result... array) {
-        assertAlive();
-        origin.restore();
-        IntStream.range(0, deltaLayers.size()).forEach(i -> {
-          UUID key = deltaLayers.get(i);
-          assert null != key;
-          directionMap.get(key).accumulate(weights[hasPlaceholders ? (i + 1) : i]);
-        });
-        if (hasPlaceholders) {
-          directionMap.entrySet().stream().filter(x -> toLayer(x.getKey()) instanceof PlaceholderLayer).distinct()
-              .forEach(entry -> entry.getValue().accumulate(weights[0]));
-        }
-        PointSample measure = subject.measure(monitor);
-        double mean = measure.getMean();
-        monitor.log(String.format("RecursiveSubspace: %s <- %s", mean, Arrays.toString(weights)));
-        return new Result(new TensorArray(new Tensor(mean)), (DeltaSet<UUID> buffer, TensorList data) -> {
-          DoubleStream deltaStream = deltaLayers.stream().mapToDouble(layer -> {
-            Delta<UUID> a = directionMap.get(layer);
-            Delta<UUID> b = measure.delta.getMap().get(layer);
-            return b.dot(a) / Math.max(Math.sqrt(a.dot(a)), 1e-8);
-          });
-          if (hasPlaceholders) {
-            deltaStream = DoubleStream.concat(DoubleStream.of(directionMap.keySet().stream()
-                .filter(x -> toLayer(x) instanceof PlaceholderLayer).distinct().mapToDouble(id -> {
-                  Delta<UUID> a = directionMap.get(id);
-                  Delta<UUID> b = measure.delta.getMap().get(id);
-                  return b.dot(a) / Math.max(Math.sqrt(a.dot(a)), 1e-8);
-                }).sum()), deltaStream);
-          }
-          buffer.get(self.getId(), weights).addInPlace(deltaStream.toArray());
-        }) {
-          @Override
-          public boolean isAlive() {
-            return true;
-          }
-
-          @Override
-          protected void _free() {
-          }
-        };
-      }
-
-      @Nonnull
-      @Override
-      public JsonObject getJson(Map<CharSequence, byte[]> resources, DataSerializer dataSerializer) {
-        throw new IllegalStateException();
-      }
-
-      @Nullable
-      @Override
-      public List<double[]> state() {
-        return null;
-      }
-
-      @Override
-      protected void _free() {
-        super._free();
-      }
-    };
+    return new MyLayerBase(origin, deltaLayers, directionMap, hasPlaceholders, subject, monitor, RecursiveSubspace.this);
   }
 
   public void train(@Nonnull TrainingMonitor monitor, Layer macroLayer) {
@@ -233,6 +170,87 @@ public class RecursiveSubspace extends OrientationStrategyBase<SimpleLineSearchC
   }
 
   @Override
-  protected void _free() {
+  public void _free() {
+  }
+
+  private static class MyLayerBase extends LayerBase {
+    private final RecursiveSubspace parent;
+    private final PointSample origin;
+    private final List<UUID> deltaLayers;
+    private final Map<UUID, Delta<UUID>> directionMap;
+    private final boolean hasPlaceholders;
+    private final Trainable subject;
+    private final TrainingMonitor monitor;
+
+    public MyLayerBase(PointSample origin, List<UUID> deltaLayers, Map<UUID, Delta<UUID>> directionMap, boolean hasPlaceholders, Trainable subject, TrainingMonitor monitor, RecursiveSubspace parent) {
+      this.parent = parent;
+      this.origin = origin;
+      this.deltaLayers = deltaLayers;
+      this.directionMap = directionMap;
+      this.hasPlaceholders = hasPlaceholders;
+      this.subject = subject;
+      this.monitor = monitor;
+    }
+
+    @Nonnull
+    @Override
+    public Result eval(Result... array) {
+      assertAlive();
+      origin.restore();
+      IntStream.range(0, deltaLayers.size()).forEach(i -> {
+        UUID key = deltaLayers.get(i);
+        assert null != key;
+        directionMap.get(key).accumulate(parent.weights[hasPlaceholders ? (i + 1) : i]);
+      });
+      if (hasPlaceholders) {
+        directionMap.entrySet().stream().filter(x -> parent.toLayer(x.getKey()) instanceof PlaceholderLayer).distinct()
+            .forEach(entry -> entry.getValue().accumulate(parent.weights[0]));
+      }
+      PointSample measure = subject.measure(monitor);
+      double mean = measure.getMean();
+      monitor.log(String.format("RecursiveSubspace: %s <- %s", mean, Arrays.toString(parent.weights)));
+      return new Result(new TensorArray(new Tensor(mean)), (DeltaSet<UUID> buffer, TensorList data) -> {
+        DoubleStream deltaStream = deltaLayers.stream().mapToDouble(layer -> {
+          Delta<UUID> a = directionMap.get(layer);
+          Delta<UUID> b = measure.delta.getMap().get(layer);
+          return b.dot(a) / Math.max(Math.sqrt(a.dot(a)), 1e-8);
+        });
+        if (hasPlaceholders) {
+          deltaStream = DoubleStream.concat(DoubleStream.of(directionMap.keySet().stream()
+              .filter(x -> parent.toLayer(x) instanceof PlaceholderLayer).distinct().mapToDouble(id -> {
+                Delta<UUID> a = directionMap.get(id);
+                Delta<UUID> b = measure.delta.getMap().get(id);
+                return b.dot(a) / Math.max(Math.sqrt(a.dot(a)), 1e-8);
+              }).sum()), deltaStream);
+        }
+        buffer.get(this.getId(), parent.weights).addInPlace(deltaStream.toArray());
+      }) {
+        @Override
+        public boolean isAlive() {
+          return true;
+        }
+
+        @Override
+        public void _free() {
+        }
+      };
+    }
+
+    @Nonnull
+    @Override
+    public JsonObject getJson(RefMap<CharSequence, byte[]> resources, DataSerializer dataSerializer) {
+      throw new IllegalStateException();
+    }
+
+    @Nullable
+    @Override
+    public RefList<double[]> state() {
+      return null;
+    }
+
+    @Override
+    public void _free() {
+      super._free();
+    }
   }
 }

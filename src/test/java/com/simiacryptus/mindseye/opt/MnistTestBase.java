@@ -31,6 +31,7 @@ import com.simiacryptus.mindseye.test.NotebookReportBase;
 import com.simiacryptus.mindseye.test.data.MNIST;
 import com.simiacryptus.notebook.NotebookOutput;
 import com.simiacryptus.notebook.TableOutput;
+import com.simiacryptus.ref.wrappers.RefLinkedHashMap;
 import com.simiacryptus.util.JsonUtil;
 import com.simiacryptus.util.MonitoredObject;
 import com.simiacryptus.util.test.LabeledObject;
@@ -201,7 +202,7 @@ public abstract class MnistTestBase extends NotebookReportBase {
             .sorted(Comparator.comparing(i -> -predictionSignal[i])).mapToInt(x -> x).toArray();
         if (predictionList[0] == actualCategory)
           return null; // We will only examine mispredicted rows
-        @Nonnull final LinkedHashMap<CharSequence, Object> row = new LinkedHashMap<>();
+        @Nonnull final RefLinkedHashMap<CharSequence, Object> row = new RefLinkedHashMap<>();
         row.put("Image", log.png(labeledObject.data.toGrayImage(), labeledObject.label));
         row.put("Prediction",
             Arrays.stream(predictionList).limit(3)
