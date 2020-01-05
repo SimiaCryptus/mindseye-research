@@ -27,6 +27,7 @@ import com.simiacryptus.mindseye.opt.line.LineSearchCursor;
 import com.simiacryptus.mindseye.opt.line.LineSearchStrategy;
 import com.simiacryptus.mindseye.opt.orient.LBFGS;
 import com.simiacryptus.mindseye.opt.orient.OrientationStrategy;
+import com.simiacryptus.ref.lang.ReferenceCounting;
 import com.simiacryptus.ref.lang.ReferenceCountingBase;
 import com.simiacryptus.util.Util;
 import org.slf4j.Logger;
@@ -58,7 +59,14 @@ public class RoundRobinTrainer extends ReferenceCountingBase {
   private Duration timeout;
 
   public RoundRobinTrainer(final Trainable subject) {
-    this.subject = subject;
+    {
+      Trainable temp_34_0001 = subject == null ? null : subject.addRef();
+      this.subject = temp_34_0001 == null ? null : temp_34_0001.addRef();
+      if (null != temp_34_0001)
+        temp_34_0001.freeRef();
+    }
+    if (null != subject)
+      subject.freeRef();
     timeout = Duration.of(5, ChronoUnit.MINUTES);
     terminateThreshold = Double.NEGATIVE_INFINITY;
   }
@@ -70,7 +78,7 @@ public class RoundRobinTrainer extends ReferenceCountingBase {
   @Nonnull
   public RoundRobinTrainer setCurrentIteration(final AtomicInteger currentIteration) {
     this.currentIteration = currentIteration;
-    return this;
+    return this.addRef();
   }
 
   public int getIterationsPerSample() {
@@ -80,7 +88,7 @@ public class RoundRobinTrainer extends ReferenceCountingBase {
   @Nonnull
   public RoundRobinTrainer setIterationsPerSample(final int iterationsPerSample) {
     this.iterationsPerSample = iterationsPerSample;
-    return this;
+    return this.addRef();
   }
 
   public Function<CharSequence, ? extends LineSearchStrategy> getLineSearchFactory() {
@@ -90,13 +98,14 @@ public class RoundRobinTrainer extends ReferenceCountingBase {
   @Nonnull
   public RoundRobinTrainer setLineSearchFactory(@Nonnull final Supplier<LineSearchStrategy> lineSearchFactory) {
     this.lineSearchFactory = s -> lineSearchFactory.get();
-    return this;
+    return this.addRef();
   }
 
   @Nonnull
-  public RoundRobinTrainer setLineSearchFactory(final Function<CharSequence, ? extends LineSearchStrategy> lineSearchFactory) {
+  public RoundRobinTrainer setLineSearchFactory(
+      final Function<CharSequence, ? extends LineSearchStrategy> lineSearchFactory) {
     this.lineSearchFactory = lineSearchFactory;
-    return this;
+    return this.addRef();
   }
 
   public int getMaxIterations() {
@@ -106,7 +115,7 @@ public class RoundRobinTrainer extends ReferenceCountingBase {
   @Nonnull
   public RoundRobinTrainer setMaxIterations(final int maxIterations) {
     this.maxIterations = maxIterations;
-    return this;
+    return this.addRef();
   }
 
   public TrainingMonitor getMonitor() {
@@ -116,7 +125,7 @@ public class RoundRobinTrainer extends ReferenceCountingBase {
   @Nonnull
   public RoundRobinTrainer setMonitor(final TrainingMonitor monitor) {
     this.monitor = monitor;
-    return this;
+    return this.addRef();
   }
 
   @Nonnull
@@ -127,7 +136,9 @@ public class RoundRobinTrainer extends ReferenceCountingBase {
   @Nonnull
   public RoundRobinTrainer setOrientations(final OrientationStrategy<?>... orientations) {
     this.orientations = new ArrayList<>(Arrays.asList(orientations));
-    return this;
+    if (null != orientations)
+      ReferenceCounting.freeRefs(orientations);
+    return this.addRef();
   }
 
   public double getTerminateThreshold() {
@@ -137,7 +148,7 @@ public class RoundRobinTrainer extends ReferenceCountingBase {
   @Nonnull
   public RoundRobinTrainer setTerminateThreshold(final double terminateThreshold) {
     this.terminateThreshold = terminateThreshold;
-    return this;
+    return this.addRef();
   }
 
   public Duration getTimeout() {
@@ -147,15 +158,39 @@ public class RoundRobinTrainer extends ReferenceCountingBase {
   @Nonnull
   public RoundRobinTrainer setTimeout(final Duration timeout) {
     this.timeout = timeout;
-    return this;
+    return this.addRef();
+  }
+
+  public static @SuppressWarnings("unused")
+  RoundRobinTrainer[] addRefs(RoundRobinTrainer[] array) {
+    if (array == null)
+      return null;
+    return Arrays.stream(array).filter((x) -> x != null).map(RoundRobinTrainer::addRef)
+        .toArray((x) -> new RoundRobinTrainer[x]);
+  }
+
+  public static @SuppressWarnings("unused")
+  RoundRobinTrainer[][] addRefs(RoundRobinTrainer[][] array) {
+    if (array == null)
+      return null;
+    return Arrays.stream(array).filter((x) -> x != null).map(RoundRobinTrainer::addRefs)
+        .toArray((x) -> new RoundRobinTrainer[x][]);
   }
 
   public PointSample measure() {
-    PointSample currentPoint;
+    PointSample currentPoint = null;
     int retries = 0;
     do {
-      if (!subject.reseed(System.nanoTime()) && retries > 0) throw new IterativeStopException();
-      if (10 < retries++) throw new IterativeStopException();
+      if (!subject.reseed(System.nanoTime()) && retries > 0) {
+        if (null != currentPoint)
+          currentPoint.freeRef();
+        throw new IterativeStopException();
+      }
+      if (10 < retries++) {
+        if (null != currentPoint)
+          currentPoint.freeRef();
+        throw new IterativeStopException();
+      }
       currentPoint = subject.measure(monitor);
     } while (!Double.isFinite(currentPoint.sum));
     assert Double.isFinite(currentPoint.sum);
@@ -172,13 +207,15 @@ mainLoop:
       }
       currentPoint = measure();
       for (int subiteration = 0; subiteration < iterationsPerSample; subiteration++) {
-        final PointSample previousOrientations = currentPoint;
+        final PointSample previousOrientations = currentPoint == null ? null : currentPoint.addRef();
         for (@Nonnull final OrientationStrategy<?> orientation : orientations) {
           if (currentIteration.incrementAndGet() > maxIterations) {
             break;
           }
-          final LineSearchCursor direction = orientation.orient(subject, currentPoint, monitor);
-          @Nonnull final CharSequence directionType = direction.getDirectionType() + "+" + Long.toHexString(System.identityHashCode(orientation));
+          final LineSearchCursor direction = orientation.orient(subject == null ? null : subject.addRef(),
+              currentPoint == null ? null : currentPoint.addRef(), monitor);
+          @Nonnull final CharSequence directionType = direction.getDirectionType() + "+"
+              + Long.toHexString(System.identityHashCode(orientation));
           LineSearchStrategy lineSearchStrategy;
           if (lineSearchStrategyMap.containsKey(directionType)) {
             lineSearchStrategy = lineSearchStrategyMap.get(directionType);
@@ -187,38 +224,62 @@ mainLoop:
             lineSearchStrategy = lineSearchFactory.apply(directionType);
             lineSearchStrategyMap.put(directionType, lineSearchStrategy);
           }
-          final PointSample previous = currentPoint;
-          currentPoint = lineSearchStrategy.step(direction, monitor);
-          monitor.onStepComplete(new Step(currentPoint, currentIteration.get()));
+          final PointSample previous = currentPoint == null ? null : currentPoint.addRef();
+          currentPoint = lineSearchStrategy.step(direction == null ? null : direction.addRef(), monitor);
+          if (null != direction)
+            direction.freeRef();
+          monitor.onStepComplete(new Step(currentPoint == null ? null : currentPoint.addRef(), currentIteration.get()));
           if (previous.sum == currentPoint.sum) {
-            monitor.log(String.format("Iteration %s failed, ignoring. Error: %s", currentIteration.get(), currentPoint.sum));
+            monitor.log(
+                String.format("Iteration %s failed, ignoring. Error: %s", currentIteration.get(), currentPoint.sum));
           } else {
             monitor.log(String.format("Iteration %s complete. Error: %s", currentIteration.get(), currentPoint.sum));
           }
+          if (null != previous)
+            previous.freeRef();
         }
         if (previousOrientations.sum <= currentPoint.sum) {
           if (subject.reseed(System.nanoTime())) {
-            monitor.log(String.format("MacroIteration %s failed, retrying. Error: %s", currentIteration.get(), currentPoint.sum));
+            monitor.log(String.format("MacroIteration %s failed, retrying. Error: %s", currentIteration.get(),
+                currentPoint.sum));
             break;
           } else {
-            monitor.log(String.format("MacroIteration %s failed, aborting. Error: %s", currentIteration.get(), currentPoint.sum));
+            monitor.log(String.format("MacroIteration %s failed, aborting. Error: %s", currentIteration.get(),
+                currentPoint.sum));
             break mainLoop;
           }
         }
+        if (null != previousOrientations)
+          previousOrientations.freeRef();
       }
     }
-    return null == currentPoint ? Double.NaN : currentPoint.sum;
+    double temp_34_0002 = null == currentPoint ? Double.NaN : currentPoint.sum;
+    if (null != currentPoint)
+      currentPoint.freeRef();
+    return temp_34_0002;
   }
 
   @Nonnull
   public RoundRobinTrainer setTimeout(final int number, @Nonnull final TemporalUnit units) {
     timeout = Duration.of(number, units);
-    return this;
+    return this.addRef();
   }
 
   @Nonnull
   public RoundRobinTrainer setTimeout(final int number, @Nonnull final TimeUnit units) {
     return setTimeout(number, Util.cvt(units));
+  }
+
+  public @SuppressWarnings("unused")
+  void _free() {
+    if (null != subject)
+      subject.freeRef();
+  }
+
+  public @Override
+  @SuppressWarnings("unused")
+  RoundRobinTrainer addRef() {
+    return (RoundRobinTrainer) super.addRef();
   }
 
 }

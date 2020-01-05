@@ -22,12 +22,16 @@ package com.simiacryptus.mindseye.opt;
 import com.simiacryptus.mindseye.eval.Trainable;
 import com.simiacryptus.mindseye.lang.*;
 import com.simiacryptus.mindseye.network.DAGNetwork;
+import com.simiacryptus.mindseye.opt.line.LineSearchPoint;
 import com.simiacryptus.mindseye.opt.line.LineSearchStrategy;
 import com.simiacryptus.mindseye.opt.line.QuadraticSearch;
 import com.simiacryptus.mindseye.opt.line.SimpleLineSearchCursor;
 import com.simiacryptus.mindseye.opt.orient.GradientDescent;
 import com.simiacryptus.mindseye.opt.orient.OrientationStrategy;
+import com.simiacryptus.ref.lang.RefUtil;
 import com.simiacryptus.ref.lang.ReferenceCountingBase;
+import com.simiacryptus.ref.wrappers.RefList;
+import com.simiacryptus.ref.wrappers.RefMap;
 import com.simiacryptus.util.Util;
 
 import javax.annotation.Nonnull;
@@ -35,15 +39,12 @@ import javax.annotation.Nullable;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalUnit;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.BiConsumer;
 
 public class LayerRateDiagnosticTrainer extends ReferenceCountingBase {
-
 
   private final Map<Layer, LayerStats> layerRates = new HashMap<>();
   private final Trainable subject;
@@ -57,10 +58,20 @@ public class LayerRateDiagnosticTrainer extends ReferenceCountingBase {
   private Duration timeout;
 
   public LayerRateDiagnosticTrainer(final Trainable subject) {
-    this.subject = subject;
+    {
+      Trainable temp_31_0001 = subject == null ? null : subject.addRef();
+      this.subject = temp_31_0001 == null ? null : temp_31_0001.addRef();
+      if (null != temp_31_0001)
+        temp_31_0001.freeRef();
+    }
+    if (null != subject)
+      subject.freeRef();
     timeout = Duration.of(5, ChronoUnit.MINUTES);
     terminateThreshold = Double.NEGATIVE_INFINITY;
-    setOrientation(new GradientDescent());
+    GradientDescent temp_31_0003 = new GradientDescent();
+    setOrientation(temp_31_0003);
+    if (null != temp_31_0003)
+      temp_31_0003.freeRef();
   }
 
   public AtomicInteger getCurrentIteration() {
@@ -70,7 +81,7 @@ public class LayerRateDiagnosticTrainer extends ReferenceCountingBase {
   @Nonnull
   public LayerRateDiagnosticTrainer setCurrentIteration(final AtomicInteger currentIteration) {
     this.currentIteration = currentIteration;
-    return this;
+    return this.addRef();
   }
 
   public int getIterationsPerSample() {
@@ -80,7 +91,7 @@ public class LayerRateDiagnosticTrainer extends ReferenceCountingBase {
   @Nonnull
   public LayerRateDiagnosticTrainer setIterationsPerSample(final int iterationsPerSample) {
     this.iterationsPerSample = iterationsPerSample;
-    return this;
+    return this.addRef();
   }
 
   @Nonnull
@@ -100,7 +111,7 @@ public class LayerRateDiagnosticTrainer extends ReferenceCountingBase {
   @Nonnull
   public LayerRateDiagnosticTrainer setMaxIterations(final int maxIterations) {
     this.maxIterations = maxIterations;
-    return this;
+    return this.addRef();
   }
 
   public TrainingMonitor getMonitor() {
@@ -110,16 +121,26 @@ public class LayerRateDiagnosticTrainer extends ReferenceCountingBase {
   @Nonnull
   public LayerRateDiagnosticTrainer setMonitor(final TrainingMonitor monitor) {
     this.monitor = monitor;
-    return this;
+    return this.addRef();
   }
 
   public OrientationStrategy<?> getOrientation() {
-    return orientation;
+    return orientation == null ? null : orientation.addRef();
   }
 
   @Nonnull
   public void setOrientation(final OrientationStrategy<?> orientation) {
-    this.orientation = orientation;
+    {
+      OrientationStrategy<?> temp_31_0002 = orientation == null ? null
+          : orientation.addRef();
+      if (null != this.orientation)
+        this.orientation.freeRef();
+      this.orientation = temp_31_0002 == null ? null : temp_31_0002.addRef();
+      if (null != temp_31_0002)
+        temp_31_0002.freeRef();
+    }
+    if (null != orientation)
+      orientation.freeRef();
   }
 
   public double getTerminateThreshold() {
@@ -129,7 +150,7 @@ public class LayerRateDiagnosticTrainer extends ReferenceCountingBase {
   @Nonnull
   public LayerRateDiagnosticTrainer setTerminateThreshold(final double terminateThreshold) {
     this.terminateThreshold = terminateThreshold;
-    return this;
+    return this.addRef();
   }
 
   public Duration getTimeout() {
@@ -139,7 +160,7 @@ public class LayerRateDiagnosticTrainer extends ReferenceCountingBase {
   @Nonnull
   public LayerRateDiagnosticTrainer setTimeout(final Duration timeout) {
     this.timeout = timeout;
-    return this;
+    return this.addRef();
   }
 
   public boolean isStrict() {
@@ -149,19 +170,49 @@ public class LayerRateDiagnosticTrainer extends ReferenceCountingBase {
   @Nonnull
   public LayerRateDiagnosticTrainer setStrict(final boolean strict) {
     this.strict = strict;
-    return this;
+    return this.addRef();
+  }
+
+  public static @SuppressWarnings("unused")
+  LayerRateDiagnosticTrainer[] addRefs(LayerRateDiagnosticTrainer[] array) {
+    if (array == null)
+      return null;
+    return Arrays.stream(array).filter((x) -> x != null).map(LayerRateDiagnosticTrainer::addRef)
+        .toArray((x) -> new LayerRateDiagnosticTrainer[x]);
+  }
+
+  public static @SuppressWarnings("unused")
+  LayerRateDiagnosticTrainer[][] addRefs(
+      LayerRateDiagnosticTrainer[][] array) {
+    if (array == null)
+      return null;
+    return Arrays.stream(array).filter((x) -> x != null).map(LayerRateDiagnosticTrainer::addRefs)
+        .toArray((x) -> new LayerRateDiagnosticTrainer[x][]);
   }
 
   public Layer toLayer(UUID id) {
-    return ((DAGNetwork) subject.getLayer()).getLayersById().get(id);
+    RefMap<UUID, Layer> temp_31_0005 = ((DAGNetwork) subject
+        .getLayer()).getLayersById();
+    Layer temp_31_0004 = temp_31_0005.get(id);
+    if (null != temp_31_0005)
+      temp_31_0005.freeRef();
+    return temp_31_0004;
   }
 
   public PointSample measure() {
-    PointSample currentPoint;
+    PointSample currentPoint = null;
     int retries = 0;
     do {
-      if (!subject.reseed(System.nanoTime()) && retries > 0) throw new IterativeStopException();
-      if (10 < retries++) throw new IterativeStopException();
+      if (!subject.reseed(System.nanoTime()) && retries > 0) {
+        if (null != currentPoint)
+          currentPoint.freeRef();
+        throw new IterativeStopException();
+      }
+      if (10 < retries++) {
+        if (null != currentPoint)
+          currentPoint.freeRef();
+        throw new IterativeStopException();
+      }
       currentPoint = subject.measure(monitor);
     } while (!Double.isFinite(currentPoint.sum));
     assert Double.isFinite(currentPoint.sum);
@@ -172,26 +223,45 @@ public class LayerRateDiagnosticTrainer extends ReferenceCountingBase {
   public Map<Layer, LayerStats> run() {
     final long timeoutMs = System.currentTimeMillis() + timeout.toMillis();
     PointSample measure = measure();
-    @Nonnull final ArrayList<UUID> layers = new ArrayList<>(measure.weights.getMap().keySet());
+    RefMap<UUID, State<UUID>> temp_31_0006 = measure.weights
+        .getMap();
+    @Nonnull final ArrayList<UUID> layers = new ArrayList<>(temp_31_0006.keySet());
+    if (null != temp_31_0006)
+      temp_31_0006.freeRef();
     while (timeoutMs > System.currentTimeMillis() && measure.sum > terminateThreshold) {
       if (currentIteration.get() > maxIterations) {
         break;
       }
       final PointSample initialPhasePoint = measure();
 
-      measure = initialPhasePoint;
+      measure = initialPhasePoint == null ? null : initialPhasePoint.addRef();
       for (int subiteration = 0; subiteration < iterationsPerSample; subiteration++) {
         if (currentIteration.incrementAndGet() > maxIterations) {
           break;
         }
 
         {
-          @Nonnull final SimpleLineSearchCursor orient = (SimpleLineSearchCursor) getOrientation().orient(subject, measure, monitor);
+          OrientationStrategy<?> temp_31_0007 = getOrientation();
+          @Nonnull final SimpleLineSearchCursor orient = (SimpleLineSearchCursor) temp_31_0007
+              .orient(subject == null ? null : subject.addRef(), measure == null ? null : measure.addRef(), monitor);
+          if (null != temp_31_0007)
+            temp_31_0007.freeRef();
           final double stepSize = 1e-12 * orient.origin.sum;
-          @Nonnull final DeltaSet<UUID> pointB = orient.step(stepSize, monitor).point.delta.copy();
-          @Nonnull final DeltaSet<UUID> pointA = orient.step(0.0, monitor).point.delta.copy();
-          @Nonnull final DeltaSet<UUID> d1 = pointA;
-          @Nonnull final DeltaSet<UUID> d2 = d1.add(pointB.scale(-1)).scale(1.0 / stepSize);
+          LineSearchPoint temp_31_0008 = orient.step(stepSize, monitor);
+          @Nonnull final DeltaSet<UUID> pointB = temp_31_0008.point.delta.copy();
+          if (null != temp_31_0008)
+            temp_31_0008.freeRef();
+          LineSearchPoint temp_31_0009 = orient.step(0.0, monitor);
+          @Nonnull final DeltaSet<UUID> pointA = temp_31_0009.point.delta.copy();
+          if (null != temp_31_0009)
+            temp_31_0009.freeRef();
+          orient.freeRef();
+          @Nonnull final DeltaSet<UUID> d1 = pointA == null ? null : pointA;
+          DeltaSet<UUID> temp_31_0010 = d1.add(pointB.scale(-1));
+          @Nonnull final DeltaSet<UUID> d2 = temp_31_0010.scale(1.0 / stepSize);
+          if (null != temp_31_0010)
+            temp_31_0010.freeRef();
+          pointB.freeRef();
           @Nonnull final Map<UUID, Double> steps = new HashMap<>();
           final double overallStepEstimate = d1.getMagnitude() / d2.getMagnitude();
           for (final UUID layer : layers) {
@@ -199,38 +269,52 @@ public class LayerRateDiagnosticTrainer extends ReferenceCountingBase {
             final DoubleBuffer<UUID> b = d1.get(layer, (double[]) null);
             final double bmag = Math.sqrt(b.deltaStatistics().sumSq());
             final double amag = Math.sqrt(a.deltaStatistics().sumSq());
-            final double dot = a.dot(b) / (amag * bmag);
+            final double dot = a.dot(b == null ? null : b.addRef()) / (amag * bmag);
+            if (null != b)
+              b.freeRef();
+            if (null != a)
+              a.freeRef();
             final double idealSize = bmag / (amag * dot);
             steps.put(layer, idealSize);
             monitor.log(String.format("Layers stats: %s (%s, %s, %s) => %s", layer, amag, bmag, dot, idealSize));
           }
-          monitor.log(String.format("Estimated ideal rates for layers: %s (%s overall; probed at %s)", steps, overallStepEstimate, stepSize));
+          d2.freeRef();
+          d1.freeRef();
+          monitor.log(String.format("Estimated ideal rates for layers: %s (%s overall; probed at %s)", steps,
+              overallStepEstimate, stepSize));
         }
 
-
-        @Nullable SimpleLineSearchCursor bestOrient = null;
-        @Nullable PointSample bestPoint = null;
+        @Nullable
+        SimpleLineSearchCursor bestOrient = null;
+        @Nullable
+        PointSample bestPoint = null;
         for (@Nonnull final UUID id : layers) {
           Layer layer = toLayer(id);
-          @Nonnull SimpleLineSearchCursor orient = (SimpleLineSearchCursor) getOrientation().orient(subject, measure, monitor);
+          OrientationStrategy<?> temp_31_0011 = getOrientation();
+          @Nonnull
+          SimpleLineSearchCursor orient = (SimpleLineSearchCursor) temp_31_0011
+              .orient(subject == null ? null : subject.addRef(), measure == null ? null : measure.addRef(), monitor);
+          if (null != temp_31_0011)
+            temp_31_0011.freeRef();
           @Nonnull final DeltaSet<UUID> direction = filterDirection(orient.direction, layer);
           if (direction.getMagnitude() == 0) {
             monitor.log(String.format("Zero derivative for key %s; skipping", layer));
             continue;
           }
-          orient = new SimpleLineSearchCursor(orient.subject, orient.origin, direction);
-          final PointSample previous = measure;
-          measure = getLineSearchStrategy().step(orient, monitor);
+          orient = new SimpleLineSearchCursor(orient.subject.addRef(), orient.origin.addRef(),
+              direction == null ? null : direction);
+          final PointSample previous = measure == null ? null : measure.addRef();
+          measure = getLineSearchStrategy().step(orient == null ? null : orient.addRef(), monitor);
           if (isStrict()) {
             monitor.log(String.format("Iteration %s reverting. Error: %s", currentIteration.get(), measure.sum));
             monitor.log(String.format("Optimal rate for key %s: %s", layer.getName(), measure.getRate()));
             if (null == bestPoint || bestPoint.sum < measure.sum) {
-              bestOrient = orient;
-              bestPoint = measure;
+              bestOrient = orient == null ? null : orient.addRef();
+              bestPoint = measure == null ? null : measure.addRef();
             }
             getLayerRates().put(layer, new LayerStats(measure.getRate(), initialPhasePoint.sum - measure.sum));
-            orient.step(0, monitor);
-            measure = previous;
+            RefUtil.freeRef(orient.step(0, monitor));
+            measure = previous == null ? null : previous.addRef();
           } else if (previous.sum == measure.sum) {
             monitor.log(String.format("Iteration %s failed. Error: %s", currentIteration.get(), measure.sum));
           } else {
@@ -238,21 +322,34 @@ public class LayerRateDiagnosticTrainer extends ReferenceCountingBase {
             monitor.log(String.format("Optimal rate for key %s: %s", layer.getName(), measure.getRate()));
             getLayerRates().put(layer, new LayerStats(measure.getRate(), initialPhasePoint.sum - measure.sum));
           }
+          if (null != previous)
+            previous.freeRef();
+          orient.freeRef();
+          if (null != layer)
+            layer.freeRef();
         }
         monitor.log(String.format("Ideal rates: %s", getLayerRates()));
         if (null != bestPoint) {
-          bestOrient.step(bestPoint.rate, monitor);
+          RefUtil.freeRef(bestOrient.step(bestPoint.rate, monitor));
         }
-        monitor.onStepComplete(new Step(measure, currentIteration.get()));
+        if (null != bestPoint)
+          bestPoint.freeRef();
+        if (null != bestOrient)
+          bestOrient.freeRef();
+        monitor.onStepComplete(new Step(measure == null ? null : measure.addRef(), currentIteration.get()));
       }
+      if (null != initialPhasePoint)
+        initialPhasePoint.freeRef();
     }
+    if (null != measure)
+      measure.freeRef();
     return getLayerRates();
   }
 
   @Nonnull
   public LayerRateDiagnosticTrainer setTimeout(final int number, @Nonnull final TemporalUnit units) {
     timeout = Duration.of(number, units);
-    return this;
+    return this.addRef();
   }
 
   @Nonnull
@@ -260,11 +357,48 @@ public class LayerRateDiagnosticTrainer extends ReferenceCountingBase {
     return setTimeout(number, Util.cvt(units));
   }
 
+  public @SuppressWarnings("unused")
+  void _free() {
+    if (null != orientation)
+      orientation.freeRef();
+    orientation = null;
+    if (null != subject)
+      subject.freeRef();
+  }
+
+  public @Override
+  @SuppressWarnings("unused")
+  LayerRateDiagnosticTrainer addRef() {
+    return (LayerRateDiagnosticTrainer) super.addRef();
+  }
+
   @Nonnull
   private DeltaSet<UUID> filterDirection(@Nonnull final DeltaSet<UUID> direction, @Nonnull final Layer layer) {
     @Nonnull final DeltaSet<UUID> maskedDelta = new DeltaSet<UUID>();
-    direction.getMap().forEach((layer2, delta) -> maskedDelta.get(layer2, delta.target));
-    maskedDelta.get(layer.getId(), layer.state().get(0)).addInPlace(direction.get(layer.getId(), (double[]) null).getDelta());
+    RefMap<UUID, Delta<UUID>> temp_31_0012 = direction
+        .getMap();
+    temp_31_0012.forEach(RefUtil.wrapInterface(
+        (BiConsumer<? super UUID, ? super Delta<UUID>>) (
+            layer2, delta) -> {
+          RefUtil.freeRef(maskedDelta.get(layer2, delta.target));
+          if (null != delta)
+            delta.freeRef();
+        }, maskedDelta == null ? null : maskedDelta.addRef()));
+    if (null != temp_31_0012)
+      temp_31_0012.freeRef();
+    RefList<double[]> temp_31_0013 = layer.state();
+    Delta<UUID> temp_31_0014 = maskedDelta.get(layer.getId(),
+        temp_31_0013.get(0));
+    Delta<UUID> temp_31_0015 = direction.get(layer.getId(), (double[]) null);
+    RefUtil.freeRef(temp_31_0014.addInPlace(temp_31_0015.getDelta()));
+    if (null != temp_31_0015)
+      temp_31_0015.freeRef();
+    if (null != temp_31_0014)
+      temp_31_0014.freeRef();
+    if (null != temp_31_0013)
+      temp_31_0013.freeRef();
+    layer.freeRef();
+    direction.freeRef();
     return maskedDelta;
   }
 

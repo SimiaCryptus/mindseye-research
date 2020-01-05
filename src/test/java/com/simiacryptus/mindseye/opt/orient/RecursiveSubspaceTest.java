@@ -19,6 +19,7 @@
 
 package com.simiacryptus.mindseye.opt.orient;
 
+import com.simiacryptus.lang.UncheckedSupplier;
 import com.simiacryptus.mindseye.eval.ArrayTrainable;
 import com.simiacryptus.mindseye.eval.SampledArrayTrainable;
 import com.simiacryptus.mindseye.lang.Layer;
@@ -37,9 +38,13 @@ import com.simiacryptus.mindseye.opt.ValidatingTrainer;
 import com.simiacryptus.mindseye.opt.line.QuadraticSearch;
 import com.simiacryptus.mindseye.opt.line.StaticLearningRate;
 import com.simiacryptus.notebook.NotebookOutput;
+import com.simiacryptus.ref.lang.RefUtil;
+import com.simiacryptus.ref.lang.ReferenceCounting;
+import com.simiacryptus.ref.wrappers.RefList;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 import java.util.function.DoubleSupplier;
 
@@ -54,6 +59,22 @@ public abstract class RecursiveSubspaceTest extends MnistTestBase {
     return RecursiveSubspace.class;
   }
 
+  public static @SuppressWarnings("unused")
+  RecursiveSubspaceTest[] addRefs(RecursiveSubspaceTest[] array) {
+    if (array == null)
+      return null;
+    return Arrays.stream(array).filter((x) -> x != null).map(RecursiveSubspaceTest::addRef)
+        .toArray((x) -> new RecursiveSubspaceTest[x]);
+  }
+
+  public static @SuppressWarnings("unused")
+  RecursiveSubspaceTest[][] addRefs(RecursiveSubspaceTest[][] array) {
+    if (array == null)
+      return null;
+    return Arrays.stream(array).filter((x) -> x != null).map(RecursiveSubspaceTest::addRefs)
+        .toArray((x) -> new RecursiveSubspaceTest[x][]);
+  }
+
   @Override
   public DAGNetwork buildModel(@Nonnull NotebookOutput log) {
     log.h3("Model");
@@ -62,42 +83,97 @@ public abstract class RecursiveSubspaceTest extends MnistTestBase {
       @Nonnull final PipelineNetwork network = new PipelineNetwork();
       double weight = 1e-3;
 
-      @Nonnull DoubleSupplier init = () -> weight * (Math.random() - 0.5);
-      network.add(new ConvolutionLayer(3, 3, 1, 5).set(init));
-      network.add(new ImgBandBiasLayer(5));
-      network.add(new PoolingLayer().setMode(PoolingLayer.PoolingMode.Max));
-      network.add(new ActivationLayer(ActivationLayer.Mode.RELU));
-      network.add(newNormalizationLayer());
+      @Nonnull
+      DoubleSupplier init = () -> weight * (Math.random() - 0.5);
+      ConvolutionLayer temp_46_0002 = new ConvolutionLayer(3, 3, 1, 5);
+      RefUtil.freeRef(network.add(temp_46_0002.set(init)));
+      if (null != temp_46_0002)
+        temp_46_0002.freeRef();
+      RefUtil.freeRef(network.add(new ImgBandBiasLayer(5)));
+      PoolingLayer temp_46_0003 = new PoolingLayer();
+      RefUtil.freeRef(network.add(temp_46_0003.setMode(PoolingLayer.PoolingMode.Max)));
+      if (null != temp_46_0003)
+        temp_46_0003.freeRef();
+      RefUtil.freeRef(network.add(new ActivationLayer(ActivationLayer.Mode.RELU)));
+      RefUtil.freeRef(network.add(newNormalizationLayer()));
 
-      network.add(new ConvolutionLayer(3, 3, 5, 5).set(init));
-      network.add(new ImgBandBiasLayer(5));
-      network.add(new PoolingLayer().setMode(PoolingLayer.PoolingMode.Max));
-      network.add(new ActivationLayer(ActivationLayer.Mode.RELU));
-      network.add(newNormalizationLayer());
+      ConvolutionLayer temp_46_0004 = new ConvolutionLayer(3, 3, 5, 5);
+      RefUtil.freeRef(network.add(temp_46_0004.set(init)));
+      if (null != temp_46_0004)
+        temp_46_0004.freeRef();
+      RefUtil.freeRef(network.add(new ImgBandBiasLayer(5)));
+      PoolingLayer temp_46_0005 = new PoolingLayer();
+      RefUtil.freeRef(network.add(temp_46_0005.setMode(PoolingLayer.PoolingMode.Max)));
+      if (null != temp_46_0005)
+        temp_46_0005.freeRef();
+      RefUtil.freeRef(network.add(new ActivationLayer(ActivationLayer.Mode.RELU)));
+      RefUtil.freeRef(network.add(newNormalizationLayer()));
 
-      network.add(new BiasLayer(7, 7, 5));
-      network.add(new FullyConnectedLayer(new int[]{7, 7, 5}, new int[]{10}).set(init));
-      network.add(new SoftmaxLayer());
+      RefUtil.freeRef(network.add(new BiasLayer(7, 7, 5)));
+      FullyConnectedLayer temp_46_0006 = new FullyConnectedLayer(
+          new int[]{7, 7, 5}, new int[]{10});
+      RefUtil.freeRef(network.add(temp_46_0006.set(init)));
+      if (null != temp_46_0006)
+        temp_46_0006.freeRef();
+      RefUtil.freeRef(network.add(new SoftmaxLayer()));
       return network;
     });
   }
 
   @Override
-  public void train(@Nonnull final NotebookOutput log, @Nonnull final Layer network, @Nonnull final Tensor[][] trainingData, final TrainingMonitor monitor) {
-    log.eval(() -> {
-      @Nonnull final SimpleLossNetwork supervisedNetwork = new SimpleLossNetwork(network, new EntropyLossLayer());
-      @Nonnull ValidatingTrainer trainer = new ValidatingTrainer(
-          new SampledArrayTrainable(trainingData, supervisedNetwork, 1000, 1000),
-          new ArrayTrainable(trainingData, supervisedNetwork, 1000).cached()
-      ).setMonitor(monitor);
-      trainer.getRegimen().get(0)
-          .setOrientation(getOrientation())
-          .setLineSearchFactory(name -> name.toString().contains("LBFGS") ? new StaticLearningRate(1.0) : new QuadraticSearch());
-      return trainer
-          .setTimeout(15, TimeUnit.MINUTES)
-          .setMaxIterations(500)
-          .run();
-    });
+  public void train(@Nonnull final NotebookOutput log, @Nonnull final Layer network,
+                    @Nonnull final Tensor[][] trainingData, final TrainingMonitor monitor) {
+    log.eval(RefUtil
+        .wrapInterface((UncheckedSupplier<Double>) () -> {
+          @Nonnull final SimpleLossNetwork supervisedNetwork = new SimpleLossNetwork(network == null ? null : network.addRef(),
+              new EntropyLossLayer());
+          ArrayTrainable temp_46_0007 = new ArrayTrainable(
+              Tensor.addRefs(trainingData),
+              supervisedNetwork == null ? null : supervisedNetwork.addRef(), 1000);
+          ValidatingTrainer temp_46_0008 = new ValidatingTrainer(
+              new SampledArrayTrainable(Tensor.addRefs(trainingData),
+                  supervisedNetwork == null ? null : supervisedNetwork, 1000, 1000),
+              temp_46_0007.cached());
+          @Nonnull
+          ValidatingTrainer trainer = temp_46_0008.setMonitor(monitor);
+          if (null != temp_46_0008)
+            temp_46_0008.freeRef();
+          if (null != temp_46_0007)
+            temp_46_0007.freeRef();
+          RefList<ValidatingTrainer.TrainingPhase> temp_46_0009 = trainer
+              .getRegimen();
+          ValidatingTrainer.TrainingPhase temp_46_0010 = temp_46_0009.get(0);
+          ValidatingTrainer.TrainingPhase temp_46_0011 = temp_46_0010
+              .setOrientation(getOrientation());
+          RefUtil.freeRef(temp_46_0011.setLineSearchFactory(
+              name -> name.toString().contains("LBFGS") ? new StaticLearningRate(1.0) : new QuadraticSearch()));
+          if (null != temp_46_0011)
+            temp_46_0011.freeRef();
+          if (null != temp_46_0010)
+            temp_46_0010.freeRef();
+          if (null != temp_46_0009)
+            temp_46_0009.freeRef();
+          ValidatingTrainer temp_46_0012 = trainer.setTimeout(15, TimeUnit.MINUTES);
+          ValidatingTrainer temp_46_0013 = temp_46_0012.setMaxIterations(500);
+          double temp_46_0001 = temp_46_0013.run();
+          if (null != temp_46_0013)
+            temp_46_0013.freeRef();
+          if (null != temp_46_0012)
+            temp_46_0012.freeRef();
+          trainer.freeRef();
+          return temp_46_0001;
+        }, network == null ? null : network, Tensor.addRefs(trainingData)));
+    ReferenceCounting.freeRefs(trainingData);
+  }
+
+  public @SuppressWarnings("unused")
+  void _free() {
+  }
+
+  public @Override
+  @SuppressWarnings("unused")
+  RecursiveSubspaceTest addRef() {
+    return (RecursiveSubspaceTest) super.addRef();
   }
 
   @Nullable
@@ -112,6 +188,24 @@ public abstract class RecursiveSubspaceTest extends MnistTestBase {
       return new LBFGS();
     }
 
+    public static @SuppressWarnings("unused")
+    Baseline[] addRefs(Baseline[] array) {
+      if (array == null)
+        return null;
+      return Arrays.stream(array).filter((x) -> x != null).map(Baseline::addRef)
+          .toArray((x) -> new Baseline[x]);
+    }
+
+    public @SuppressWarnings("unused")
+    void _free() {
+    }
+
+    public @Override
+    @SuppressWarnings("unused")
+    Baseline addRef() {
+      return (Baseline) super.addRef();
+    }
+
   }
 
   public static class Normalized extends RecursiveSubspaceTest {
@@ -119,6 +213,24 @@ public abstract class RecursiveSubspaceTest extends MnistTestBase {
     @Nonnull
     public OrientationStrategy<?> getOrientation() {
       return new LBFGS();
+    }
+
+    public static @SuppressWarnings("unused")
+    Normalized[] addRefs(Normalized[] array) {
+      if (array == null)
+        return null;
+      return Arrays.stream(array).filter((x) -> x != null).map(Normalized::addRef)
+          .toArray((x) -> new Normalized[x]);
+    }
+
+    public @SuppressWarnings("unused")
+    void _free() {
+    }
+
+    public @Override
+    @SuppressWarnings("unused")
+    Normalized addRef() {
+      return (Normalized) super.addRef();
     }
 
     @Nonnull
@@ -133,6 +245,23 @@ public abstract class RecursiveSubspaceTest extends MnistTestBase {
     @Nonnull
     public OrientationStrategy<?> getOrientation() {
       return new RecursiveSubspace();
+    }
+
+    public static @SuppressWarnings("unused")
+    Demo[] addRefs(Demo[] array) {
+      if (array == null)
+        return null;
+      return Arrays.stream(array).filter((x) -> x != null).map(Demo::addRef).toArray((x) -> new Demo[x]);
+    }
+
+    public @SuppressWarnings("unused")
+    void _free() {
+    }
+
+    public @Override
+    @SuppressWarnings("unused")
+    Demo addRef() {
+      return (Demo) super.addRef();
     }
 
   }

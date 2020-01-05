@@ -24,6 +24,7 @@ import com.simiacryptus.mindseye.opt.orient.TrustRegionStrategy;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -43,9 +44,29 @@ public class LayerTrustRegionMap extends TrustRegionStrategy {
     return regionPolicies;
   }
 
+  public static @SuppressWarnings("unused")
+  LayerTrustRegionMap[] addRefs(LayerTrustRegionMap[] array) {
+    if (array == null)
+      return null;
+    return Arrays.stream(array).filter((x) -> x != null).map(LayerTrustRegionMap::addRef)
+        .toArray((x) -> new LayerTrustRegionMap[x]);
+  }
+
+  public static @SuppressWarnings("unused")
+  LayerTrustRegionMap[][] addRefs(LayerTrustRegionMap[][] array) {
+    if (array == null)
+      return null;
+    return Arrays.stream(array).filter((x) -> x != null).map(LayerTrustRegionMap::addRefs)
+        .toArray((x) -> new LayerTrustRegionMap[x][]);
+  }
+
   @Override
   public TrustRegion getRegionPolicy(final Layer layer) {
-    return regionPolicies.getOrDefault(layer, defaultRegionPolicy);
+    TrustRegion temp_53_0001 = regionPolicies.getOrDefault(layer,
+        defaultRegionPolicy);
+    if (null != layer)
+      layer.freeRef();
+    return temp_53_0001;
   }
 
   @Override
@@ -56,6 +77,16 @@ public class LayerTrustRegionMap extends TrustRegionStrategy {
   @Nonnull
   public TrustRegionStrategy setDefaultRegionPolicy(final TrustRegion defaultRegionPolicy) {
     this.defaultRegionPolicy = defaultRegionPolicy;
-    return this;
+    return this.addRef();
+  }
+
+  public @SuppressWarnings("unused")
+  void _free() {
+  }
+
+  public @Override
+  @SuppressWarnings("unused")
+  LayerTrustRegionMap addRef() {
+    return (LayerTrustRegionMap) super.addRef();
   }
 }

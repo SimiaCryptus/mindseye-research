@@ -19,6 +19,7 @@
 
 package com.simiacryptus.mindseye.opt.region;
 
+import com.simiacryptus.lang.UncheckedSupplier;
 import com.simiacryptus.mindseye.eval.SampledArrayTrainable;
 import com.simiacryptus.mindseye.eval.Trainable;
 import com.simiacryptus.mindseye.lang.Layer;
@@ -30,8 +31,11 @@ import com.simiacryptus.mindseye.opt.MnistTestBase;
 import com.simiacryptus.mindseye.opt.TrainingMonitor;
 import com.simiacryptus.mindseye.opt.orient.TrustRegionStrategy;
 import com.simiacryptus.notebook.NotebookOutput;
+import com.simiacryptus.ref.lang.RefUtil;
+import com.simiacryptus.ref.lang.ReferenceCounting;
 
 import javax.annotation.Nonnull;
+import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
 public class TrustSphereTest extends MnistTestBase {
@@ -42,25 +46,79 @@ public class TrustSphereTest extends MnistTestBase {
     return AdaptiveTrustSphere.class;
   }
 
+  public static @SuppressWarnings("unused")
+  TrustSphereTest[] addRefs(TrustSphereTest[] array) {
+    if (array == null)
+      return null;
+    return Arrays.stream(array).filter((x) -> x != null).map(TrustSphereTest::addRef)
+        .toArray((x) -> new TrustSphereTest[x]);
+  }
+
+  public static @SuppressWarnings("unused")
+  TrustSphereTest[][] addRefs(TrustSphereTest[][] array) {
+    if (array == null)
+      return null;
+    return Arrays.stream(array).filter((x) -> x != null).map(TrustSphereTest::addRefs)
+        .toArray((x) -> new TrustSphereTest[x][]);
+  }
+
   @Override
-  public void train(@Nonnull final NotebookOutput log, @Nonnull final Layer network, @Nonnull final Tensor[][] trainingData, final TrainingMonitor monitor) {
-    log.eval(() -> {
-      @Nonnull final SimpleLossNetwork supervisedNetwork = new SimpleLossNetwork(network, new EntropyLossLayer());
-      @Nonnull final Trainable trainable = new SampledArrayTrainable(trainingData, supervisedNetwork, 10000);
-      @Nonnull final TrustRegionStrategy trustRegionStrategy = new TrustRegionStrategy() {
-        @Override
-        public TrustRegion getRegionPolicy(final Layer layer) {
-          return new AdaptiveTrustSphere();
-        }
-      };
-      //.setOrientation(new ValidatingOrientationWrapper(trustRegionStrategy))
-      return new IterativeTrainer(trainable)
-          .setIterationsPerSample(100)
-          .setMonitor(monitor)
+  public void train(@Nonnull final NotebookOutput log, @Nonnull final Layer network,
+                    @Nonnull final Tensor[][] trainingData, final TrainingMonitor monitor) {
+    log.eval(RefUtil
+        .wrapInterface((UncheckedSupplier<Double>) () -> {
+          @Nonnull final SimpleLossNetwork supervisedNetwork = new SimpleLossNetwork(network == null ? null : network.addRef(),
+              new EntropyLossLayer());
+          @Nonnull final Trainable trainable = new SampledArrayTrainable(
+              Tensor.addRefs(trainingData),
+              supervisedNetwork == null ? null : supervisedNetwork, 10000);
+          @Nonnull final TrustRegionStrategy trustRegionStrategy = new TrustRegionStrategy() {
+            @Override
+            public TrustRegion getRegionPolicy(final Layer layer) {
+              if (null != layer)
+                layer.freeRef();
+              return new AdaptiveTrustSphere();
+            }
+
+            public @SuppressWarnings("unused")
+            void _free() {
+            }
+          };
+          IterativeTrainer temp_39_0002 = new IterativeTrainer(
+              trainable == null ? null : trainable);
+          IterativeTrainer temp_39_0003 = temp_39_0002.setIterationsPerSample(100);
+          IterativeTrainer temp_39_0004 = temp_39_0003.setMonitor(monitor);
+          IterativeTrainer temp_39_0005 = temp_39_0004
+              //.setOrientation(new ValidatingOrientationWrapper(trustRegionStrategy))
+              .setOrientation(trustRegionStrategy == null ? null : trustRegionStrategy);
+          IterativeTrainer temp_39_0006 = temp_39_0005.setTimeout(3, TimeUnit.MINUTES);
+          IterativeTrainer temp_39_0007 = temp_39_0006.setMaxIterations(500);
+          double temp_39_0001 = temp_39_0007.run();
+          if (null != temp_39_0007)
+            temp_39_0007.freeRef();
+          if (null != temp_39_0006)
+            temp_39_0006.freeRef();
+          if (null != temp_39_0005)
+            temp_39_0005.freeRef();
+          if (null != temp_39_0004)
+            temp_39_0004.freeRef();
+          if (null != temp_39_0003)
+            temp_39_0003.freeRef();
+          if (null != temp_39_0002)
+            temp_39_0002.freeRef();
           //.setOrientation(new ValidatingOrientationWrapper(trustRegionStrategy))
-          .setOrientation(trustRegionStrategy)
-          .setTimeout(3, TimeUnit.MINUTES)
-          .setMaxIterations(500).run();
-    });
+          return temp_39_0001;
+        }, Tensor.addRefs(trainingData), network == null ? null : network));
+    ReferenceCounting.freeRefs(trainingData);
+  }
+
+  public @SuppressWarnings("unused")
+  void _free() {
+  }
+
+  public @Override
+  @SuppressWarnings("unused")
+  TrustSphereTest addRef() {
+    return (TrustSphereTest) super.addRef();
   }
 }

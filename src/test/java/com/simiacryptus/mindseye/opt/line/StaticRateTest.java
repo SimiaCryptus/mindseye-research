@@ -19,6 +19,7 @@
 
 package com.simiacryptus.mindseye.opt.line;
 
+import com.simiacryptus.lang.UncheckedSupplier;
 import com.simiacryptus.mindseye.eval.SampledArrayTrainable;
 import com.simiacryptus.mindseye.eval.Trainable;
 import com.simiacryptus.mindseye.lang.Layer;
@@ -30,8 +31,11 @@ import com.simiacryptus.mindseye.opt.MnistTestBase;
 import com.simiacryptus.mindseye.opt.TrainingMonitor;
 import com.simiacryptus.mindseye.opt.orient.GradientDescent;
 import com.simiacryptus.notebook.NotebookOutput;
+import com.simiacryptus.ref.lang.RefUtil;
+import com.simiacryptus.ref.lang.ReferenceCounting;
 
 import javax.annotation.Nonnull;
+import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
 public class StaticRateTest extends MnistTestBase {
@@ -42,17 +46,66 @@ public class StaticRateTest extends MnistTestBase {
     return StaticLearningRate.class;
   }
 
+  public static @SuppressWarnings("unused")
+  StaticRateTest[] addRefs(StaticRateTest[] array) {
+    if (array == null)
+      return null;
+    return Arrays.stream(array).filter((x) -> x != null).map(StaticRateTest::addRef)
+        .toArray((x) -> new StaticRateTest[x]);
+  }
+
+  public static @SuppressWarnings("unused")
+  StaticRateTest[][] addRefs(StaticRateTest[][] array) {
+    if (array == null)
+      return null;
+    return Arrays.stream(array).filter((x) -> x != null).map(StaticRateTest::addRefs)
+        .toArray((x) -> new StaticRateTest[x][]);
+  }
+
   @Override
-  public void train(@Nonnull final NotebookOutput log, @Nonnull final Layer network, @Nonnull final Tensor[][] trainingData, final TrainingMonitor monitor) {
-    log.eval(() -> {
-      @Nonnull final SimpleLossNetwork supervisedNetwork = new SimpleLossNetwork(network, new EntropyLossLayer());
-      @Nonnull final Trainable trainable = new SampledArrayTrainable(trainingData, supervisedNetwork, 1000);
-      return new IterativeTrainer(trainable)
-          .setMonitor(monitor)
-          .setOrientation(new GradientDescent())
-          .setLineSearchFactory((@Nonnull final CharSequence name) -> new StaticLearningRate(0.001))
-          .setTimeout(3, TimeUnit.MINUTES)
-          .setMaxIterations(500).run();
-    });
+  public void train(@Nonnull final NotebookOutput log, @Nonnull final Layer network,
+                    @Nonnull final Tensor[][] trainingData, final TrainingMonitor monitor) {
+    log.eval(RefUtil
+        .wrapInterface((UncheckedSupplier<Double>) () -> {
+          @Nonnull final SimpleLossNetwork supervisedNetwork = new SimpleLossNetwork(network == null ? null : network.addRef(),
+              new EntropyLossLayer());
+          @Nonnull final Trainable trainable = new SampledArrayTrainable(
+              Tensor.addRefs(trainingData),
+              supervisedNetwork == null ? null : supervisedNetwork, 1000);
+          IterativeTrainer temp_50_0002 = new IterativeTrainer(
+              trainable == null ? null : trainable);
+          IterativeTrainer temp_50_0003 = temp_50_0002.setMonitor(monitor);
+          IterativeTrainer temp_50_0004 = temp_50_0003
+              .setOrientation(new GradientDescent());
+          IterativeTrainer temp_50_0005 = temp_50_0004
+              .setLineSearchFactory((@Nonnull final CharSequence name) -> new StaticLearningRate(0.001));
+          IterativeTrainer temp_50_0006 = temp_50_0005.setTimeout(3, TimeUnit.MINUTES);
+          IterativeTrainer temp_50_0007 = temp_50_0006.setMaxIterations(500);
+          double temp_50_0001 = temp_50_0007.run();
+          if (null != temp_50_0007)
+            temp_50_0007.freeRef();
+          if (null != temp_50_0006)
+            temp_50_0006.freeRef();
+          if (null != temp_50_0005)
+            temp_50_0005.freeRef();
+          if (null != temp_50_0004)
+            temp_50_0004.freeRef();
+          if (null != temp_50_0003)
+            temp_50_0003.freeRef();
+          if (null != temp_50_0002)
+            temp_50_0002.freeRef();
+          return temp_50_0001;
+        }, network == null ? null : network, Tensor.addRefs(trainingData)));
+    ReferenceCounting.freeRefs(trainingData);
+  }
+
+  public @SuppressWarnings("unused")
+  void _free() {
+  }
+
+  public @Override
+  @SuppressWarnings("unused")
+  StaticRateTest addRef() {
+    return (StaticRateTest) super.addRef();
   }
 }
