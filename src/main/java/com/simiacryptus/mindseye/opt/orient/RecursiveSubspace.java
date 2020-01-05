@@ -208,21 +208,25 @@ public class RecursiveSubspace extends OrientationStrategyBase<SimpleLineSearchC
       PointSample measure = subject.measure(monitor);
       double mean = measure.getMean();
       monitor.log(String.format("RecursiveSubspace: %s <- %s", mean, Arrays.toString(parent.weights)));
-      return new Result(new TensorArray(new Tensor(mean)), (DeltaSet<UUID> buffer, TensorList data) -> {
-        DoubleStream deltaStream = deltaLayers.stream().mapToDouble(layer -> {
-          Delta<UUID> a = directionMap.get(layer);
-          Delta<UUID> b = measure.delta.getMap().get(layer);
-          return b.dot(a) / Math.max(Math.sqrt(a.dot(a)), 1e-8);
-        });
-        if (hasPlaceholders) {
-          deltaStream = DoubleStream.concat(DoubleStream.of(directionMap.keySet().stream()
-              .filter(x -> parent.toLayer(x) instanceof PlaceholderLayer).distinct().mapToDouble(id -> {
-                Delta<UUID> a = directionMap.get(id);
-                Delta<UUID> b = measure.delta.getMap().get(id);
-                return b.dot(a) / Math.max(Math.sqrt(a.dot(a)), 1e-8);
-              }).sum()), deltaStream);
+      final MyLayerBase myLayerBase = this;
+      return new Result(new TensorArray(new Tensor(mean)), new Result.Accumulator() {
+        @Override
+        public void accept(DeltaSet<UUID> buffer, TensorList data) {
+          DoubleStream deltaStream = deltaLayers.stream().mapToDouble(layer -> {
+            Delta<UUID> a = directionMap.get(layer);
+            Delta<UUID> b = measure.delta.getMap().get(layer);
+            return b.dot(a) / Math.max(Math.sqrt(a.dot(a)), 1e-8);
+          });
+          if (hasPlaceholders) {
+            deltaStream = DoubleStream.concat(DoubleStream.of(directionMap.keySet().stream()
+                .filter(x -> parent.toLayer(x) instanceof PlaceholderLayer).distinct().mapToDouble(id -> {
+                  Delta<UUID> a = directionMap.get(id);
+                  Delta<UUID> b = measure.delta.getMap().get(id);
+                  return b.dot(a) / Math.max(Math.sqrt(a.dot(a)), 1e-8);
+                }).sum()), deltaStream);
+          }
+          buffer.get(myLayerBase.getId(), parent.weights).addInPlace(deltaStream.toArray());
         }
-        buffer.get(this.getId(), parent.weights).addInPlace(deltaStream.toArray());
       }) {
         @Override
         public boolean isAlive() {
