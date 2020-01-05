@@ -32,7 +32,6 @@ import com.simiacryptus.mindseye.opt.line.ArmijoWolfeSearch;
 import com.simiacryptus.mindseye.opt.line.LineSearchStrategy;
 import com.simiacryptus.mindseye.opt.line.SimpleLineSearchCursor;
 import com.simiacryptus.ref.wrappers.RefList;
-import com.simiacryptus.ref.wrappers.RefMap;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -238,7 +237,7 @@ public class RecursiveSubspace extends OrientationStrategyBase<SimpleLineSearchC
 
     @Nonnull
     @Override
-    public JsonObject getJson(RefMap<CharSequence, byte[]> resources, DataSerializer dataSerializer) {
+    public JsonObject getJson(Map<CharSequence, byte[]> resources, DataSerializer dataSerializer) {
       throw new IllegalStateException();
     }
 
