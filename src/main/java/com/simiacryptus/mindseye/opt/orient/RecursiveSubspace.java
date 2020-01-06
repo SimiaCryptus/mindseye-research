@@ -35,6 +35,7 @@ import com.simiacryptus.ref.lang.RefUtil;
 import com.simiacryptus.ref.lang.ReferenceCounting;
 import com.simiacryptus.ref.wrappers.RefList;
 import com.simiacryptus.ref.wrappers.RefMap;
+import com.simiacryptus.ref.wrappers.RefString;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -190,9 +191,9 @@ public class RecursiveSubspace extends OrientationStrategyBase<SimpleLineSearchC
     measurement.freeRef();
     final double magnitude = direction.getMagnitude();
     if (Math.abs(magnitude) < 1e-10) {
-      monitor.log(String.format("Zero gradient: %s", magnitude));
+      monitor.log(RefString.format("Zero gradient: %s", magnitude));
     } else if (Math.abs(magnitude) < 1e-5) {
-      monitor.log(String.format("Low gradient: %s", magnitude));
+      monitor.log(RefString.format("Low gradient: %s", magnitude));
     }
     final Map<UUID, Delta<UUID>> directionMap = direction.getMap();
     direction.freeRef();
@@ -361,7 +362,7 @@ public class RecursiveSubspace extends OrientationStrategyBase<SimpleLineSearchC
       }
       PointSample measure = subject.measure(monitor);
       double mean = measure.getMean();
-      monitor.log(String.format("RecursiveSubspace: %s <- %s", mean, Arrays.toString(parent.weights)));
+      monitor.log(RefString.format("RecursiveSubspace: %s <- %s", mean, Arrays.toString(parent.weights)));
       final MyLayerBase myLayerBase = this.addRef();
       try {
         try {

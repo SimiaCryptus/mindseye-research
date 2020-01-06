@@ -25,6 +25,7 @@ import com.simiacryptus.mindseye.network.DAGNetwork;
 import com.simiacryptus.mindseye.opt.TrainingMonitor;
 import com.simiacryptus.mindseye.opt.line.SimpleLineSearchCursor;
 import com.simiacryptus.ref.lang.RefUtil;
+import com.simiacryptus.ref.wrappers.RefHashMap;
 import com.simiacryptus.ref.wrappers.RefMap;
 import com.simiacryptus.util.ArrayUtil;
 
@@ -131,7 +132,7 @@ public abstract class LayerReweightingStrategy extends OrientationStrategyBase<S
   public static class HashMapLayerReweightingStrategy extends LayerReweightingStrategy {
 
     @Nonnull
-    private final HashMap<Layer, Double> map = new HashMap<>();
+    private final RefHashMap<Layer, Double> map = new RefHashMap<>();
 
     public HashMapLayerReweightingStrategy(final OrientationStrategy<SimpleLineSearchCursor> inner) {
       super(inner);
@@ -140,7 +141,7 @@ public abstract class LayerReweightingStrategy extends OrientationStrategyBase<S
     }
 
     @Nonnull
-    public HashMap<Layer, Double> getMap() {
+    public RefHashMap<Layer, Double> getMap() {
       return map;
     }
 

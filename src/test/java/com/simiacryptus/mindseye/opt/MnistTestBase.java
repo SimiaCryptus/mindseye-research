@@ -38,6 +38,7 @@ import com.simiacryptus.ref.lang.RefUtil;
 import com.simiacryptus.ref.lang.ReferenceCounting;
 import com.simiacryptus.ref.wrappers.RefLinkedHashMap;
 import com.simiacryptus.ref.wrappers.RefMap;
+import com.simiacryptus.ref.wrappers.RefString;
 import com.simiacryptus.util.JsonUtil;
 import com.simiacryptus.util.MonitoredObject;
 import com.simiacryptus.util.test.LabeledObject;
@@ -53,10 +54,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import java.util.function.Function;
 import java.util.function.ToDoubleFunction;
 import java.util.stream.IntStream;
@@ -215,11 +213,7 @@ public abstract class MnistTestBase extends NotebookReportBase {
         .wrapInterface((UncheckedSupplier<String>) () -> {
           try {
             @Nonnull final ByteArrayOutputStream out = new ByteArrayOutputStream();
-            RefMap<CharSequence, Object> temp_41_0009 = monitoringRoot
-                .getMetrics();
-            JsonUtil.getMapper().writeValue(out, temp_41_0009);
-            if (null != temp_41_0009)
-              temp_41_0009.freeRef();
+            JsonUtil.getMapper().writeValue(out, monitoringRoot.getMetrics());
             return out.toString();
           } catch (@Nonnull final IOException e) {
             throw new RuntimeException(e);
@@ -289,7 +283,7 @@ public abstract class MnistTestBase extends NotebookReportBase {
                 row.put("Image", log.png(labeledObject.data.toGrayImage(), labeledObject.label));
                 row.put("Prediction",
                     Arrays.stream(predictionList).limit(3)
-                        .mapToObj(i -> String.format("%d (%.1f%%)", i, 100.0 * predictionSignal[i]))
+                        .mapToObj(i -> RefString.format("%d (%.1f%%)", i, 100.0 * predictionSignal[i]))
                         .reduce((a, b) -> a + ", " + b).get());
                 return row;
               }, network == null ? null : network.addRef())).filter(x -> {

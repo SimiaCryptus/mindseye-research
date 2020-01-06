@@ -32,6 +32,7 @@ import com.simiacryptus.ref.lang.RefUtil;
 import com.simiacryptus.ref.lang.ReferenceCountingBase;
 import com.simiacryptus.ref.wrappers.RefList;
 import com.simiacryptus.ref.wrappers.RefMap;
+import com.simiacryptus.ref.wrappers.RefString;
 import com.simiacryptus.util.Util;
 
 import javax.annotation.Nonnull;
@@ -203,7 +204,7 @@ public class LayerRateDiagnosticTrainer extends ReferenceCountingBase {
     PointSample currentPoint = null;
     int retries = 0;
     do {
-      if (!subject.reseed(System.nanoTime()) && retries > 0) {
+      if (!subject.reseed(com.simiacryptus.ref.wrappers.RefSystem.nanoTime()) && retries > 0) {
         if (null != currentPoint)
           currentPoint.freeRef();
         throw new IterativeStopException();
@@ -221,14 +222,14 @@ public class LayerRateDiagnosticTrainer extends ReferenceCountingBase {
 
   @Nonnull
   public Map<Layer, LayerStats> run() {
-    final long timeoutMs = System.currentTimeMillis() + timeout.toMillis();
+    final long timeoutMs = com.simiacryptus.ref.wrappers.RefSystem.currentTimeMillis() + timeout.toMillis();
     PointSample measure = measure();
     RefMap<UUID, State<UUID>> temp_31_0006 = measure.weights
         .getMap();
     @Nonnull final ArrayList<UUID> layers = new ArrayList<>(temp_31_0006.keySet());
     if (null != temp_31_0006)
       temp_31_0006.freeRef();
-    while (timeoutMs > System.currentTimeMillis() && measure.sum > terminateThreshold) {
+    while (timeoutMs > com.simiacryptus.ref.wrappers.RefSystem.currentTimeMillis() && measure.sum > terminateThreshold) {
       if (currentIteration.get() > maxIterations) {
         break;
       }
@@ -276,11 +277,11 @@ public class LayerRateDiagnosticTrainer extends ReferenceCountingBase {
               a.freeRef();
             final double idealSize = bmag / (amag * dot);
             steps.put(layer, idealSize);
-            monitor.log(String.format("Layers stats: %s (%s, %s, %s) => %s", layer, amag, bmag, dot, idealSize));
+            monitor.log(RefString.format("Layers stats: %s (%s, %s, %s) => %s", layer, amag, bmag, dot, idealSize));
           }
           d2.freeRef();
           d1.freeRef();
-          monitor.log(String.format("Estimated ideal rates for layers: %s (%s overall; probed at %s)", steps,
+          monitor.log(RefString.format("Estimated ideal rates for layers: %s (%s overall; probed at %s)", steps,
               overallStepEstimate, stepSize));
         }
 
@@ -298,7 +299,7 @@ public class LayerRateDiagnosticTrainer extends ReferenceCountingBase {
             temp_31_0011.freeRef();
           @Nonnull final DeltaSet<UUID> direction = filterDirection(orient.direction, layer);
           if (direction.getMagnitude() == 0) {
-            monitor.log(String.format("Zero derivative for key %s; skipping", layer));
+            monitor.log(RefString.format("Zero derivative for key %s; skipping", layer));
             continue;
           }
           orient = new SimpleLineSearchCursor(orient.subject.addRef(), orient.origin.addRef(),
@@ -306,8 +307,8 @@ public class LayerRateDiagnosticTrainer extends ReferenceCountingBase {
           final PointSample previous = measure == null ? null : measure.addRef();
           measure = getLineSearchStrategy().step(orient == null ? null : orient.addRef(), monitor);
           if (isStrict()) {
-            monitor.log(String.format("Iteration %s reverting. Error: %s", currentIteration.get(), measure.sum));
-            monitor.log(String.format("Optimal rate for key %s: %s", layer.getName(), measure.getRate()));
+            monitor.log(RefString.format("Iteration %s reverting. Error: %s", currentIteration.get(), measure.sum));
+            monitor.log(RefString.format("Optimal rate for key %s: %s", layer.getName(), measure.getRate()));
             if (null == bestPoint || bestPoint.sum < measure.sum) {
               bestOrient = orient == null ? null : orient.addRef();
               bestPoint = measure == null ? null : measure.addRef();
@@ -316,10 +317,10 @@ public class LayerRateDiagnosticTrainer extends ReferenceCountingBase {
             RefUtil.freeRef(orient.step(0, monitor));
             measure = previous == null ? null : previous.addRef();
           } else if (previous.sum == measure.sum) {
-            monitor.log(String.format("Iteration %s failed. Error: %s", currentIteration.get(), measure.sum));
+            monitor.log(RefString.format("Iteration %s failed. Error: %s", currentIteration.get(), measure.sum));
           } else {
-            monitor.log(String.format("Iteration %s complete. Error: %s", currentIteration.get(), measure.sum));
-            monitor.log(String.format("Optimal rate for key %s: %s", layer.getName(), measure.getRate()));
+            monitor.log(RefString.format("Iteration %s complete. Error: %s", currentIteration.get(), measure.sum));
+            monitor.log(RefString.format("Optimal rate for key %s: %s", layer.getName(), measure.getRate()));
             getLayerRates().put(layer, new LayerStats(measure.getRate(), initialPhasePoint.sum - measure.sum));
           }
           if (null != previous)
@@ -328,7 +329,7 @@ public class LayerRateDiagnosticTrainer extends ReferenceCountingBase {
           if (null != layer)
             layer.freeRef();
         }
-        monitor.log(String.format("Ideal rates: %s", getLayerRates()));
+        monitor.log(RefString.format("Ideal rates: %s", getLayerRates()));
         if (null != bestPoint) {
           RefUtil.freeRef(bestOrient.step(bestPoint.rate, monitor));
         }
@@ -414,7 +415,7 @@ public class LayerRateDiagnosticTrainer extends ReferenceCountingBase {
     @Nonnull
     @Override
     public String toString() {
-      @Nonnull final StringBuffer sb = new StringBuffer("{");
+      @Nonnull final com.simiacryptus.ref.wrappers.RefStringBuilder sb = new com.simiacryptus.ref.wrappers.RefStringBuilder("{");
       sb.append("rate=").append(rate);
       sb.append(", evalInputDelta=").append(delta);
       sb.append('}');

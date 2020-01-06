@@ -21,6 +21,8 @@ package com.simiacryptus.mindseye.opt.region;
 
 import com.simiacryptus.mindseye.lang.Layer;
 import com.simiacryptus.mindseye.opt.orient.TrustRegionStrategy;
+import com.simiacryptus.ref.wrappers.RefHashMap;
+import com.simiacryptus.ref.wrappers.RefMap;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -30,7 +32,7 @@ import java.util.Map;
 
 public class LayerTrustRegionMap extends TrustRegionStrategy {
   @Nonnull
-  private final Map<Layer, TrustRegion> regionPolicies = new HashMap<>();
+  private final RefMap<Layer, TrustRegion> regionPolicies = new RefHashMap<>();
   @Nullable
   private TrustRegion defaultRegionPolicy = null;
 
@@ -40,7 +42,7 @@ public class LayerTrustRegionMap extends TrustRegionStrategy {
   }
 
   @Nonnull
-  public Map<Layer, TrustRegion> getRegionPolicies() {
+  public RefMap<Layer, TrustRegion> getRegionPolicies() {
     return regionPolicies;
   }
 

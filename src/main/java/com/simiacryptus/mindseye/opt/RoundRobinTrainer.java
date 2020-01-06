@@ -29,6 +29,7 @@ import com.simiacryptus.mindseye.opt.orient.LBFGS;
 import com.simiacryptus.mindseye.opt.orient.OrientationStrategy;
 import com.simiacryptus.ref.lang.ReferenceCounting;
 import com.simiacryptus.ref.lang.ReferenceCountingBase;
+import com.simiacryptus.ref.wrappers.RefString;
 import com.simiacryptus.util.Util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -181,7 +182,7 @@ public class RoundRobinTrainer extends ReferenceCountingBase {
     PointSample currentPoint = null;
     int retries = 0;
     do {
-      if (!subject.reseed(System.nanoTime()) && retries > 0) {
+      if (!subject.reseed(com.simiacryptus.ref.wrappers.RefSystem.nanoTime()) && retries > 0) {
         if (null != currentPoint)
           currentPoint.freeRef();
         throw new IterativeStopException();
@@ -198,10 +199,10 @@ public class RoundRobinTrainer extends ReferenceCountingBase {
   }
 
   public double run() {
-    final long timeoutMs = System.currentTimeMillis() + timeout.toMillis();
+    final long timeoutMs = com.simiacryptus.ref.wrappers.RefSystem.currentTimeMillis() + timeout.toMillis();
     PointSample currentPoint = measure();
 mainLoop:
-    while (timeoutMs > System.currentTimeMillis() && currentPoint.sum > terminateThreshold) {
+    while (timeoutMs > com.simiacryptus.ref.wrappers.RefSystem.currentTimeMillis() && currentPoint.sum > terminateThreshold) {
       if (currentIteration.get() > maxIterations) {
         break;
       }
@@ -215,12 +216,12 @@ mainLoop:
           final LineSearchCursor direction = orientation.orient(subject == null ? null : subject.addRef(),
               currentPoint == null ? null : currentPoint.addRef(), monitor);
           @Nonnull final CharSequence directionType = direction.getDirectionType() + "+"
-              + Long.toHexString(System.identityHashCode(orientation));
+              + Long.toHexString(com.simiacryptus.ref.wrappers.RefSystem.identityHashCode(orientation));
           LineSearchStrategy lineSearchStrategy;
           if (lineSearchStrategyMap.containsKey(directionType)) {
             lineSearchStrategy = lineSearchStrategyMap.get(directionType);
           } else {
-            log.info(String.format("Constructing line search parameters: %s", directionType));
+            log.info(RefString.format("Constructing line search parameters: %s", directionType));
             lineSearchStrategy = lineSearchFactory.apply(directionType);
             lineSearchStrategyMap.put(directionType, lineSearchStrategy);
           }
@@ -231,20 +232,20 @@ mainLoop:
           monitor.onStepComplete(new Step(currentPoint == null ? null : currentPoint.addRef(), currentIteration.get()));
           if (previous.sum == currentPoint.sum) {
             monitor.log(
-                String.format("Iteration %s failed, ignoring. Error: %s", currentIteration.get(), currentPoint.sum));
+                RefString.format("Iteration %s failed, ignoring. Error: %s", currentIteration.get(), currentPoint.sum));
           } else {
-            monitor.log(String.format("Iteration %s complete. Error: %s", currentIteration.get(), currentPoint.sum));
+            monitor.log(RefString.format("Iteration %s complete. Error: %s", currentIteration.get(), currentPoint.sum));
           }
           if (null != previous)
             previous.freeRef();
         }
         if (previousOrientations.sum <= currentPoint.sum) {
-          if (subject.reseed(System.nanoTime())) {
-            monitor.log(String.format("MacroIteration %s failed, retrying. Error: %s", currentIteration.get(),
+          if (subject.reseed(com.simiacryptus.ref.wrappers.RefSystem.nanoTime())) {
+            monitor.log(RefString.format("MacroIteration %s failed, retrying. Error: %s", currentIteration.get(),
                 currentPoint.sum));
             break;
           } else {
-            monitor.log(String.format("MacroIteration %s failed, aborting. Error: %s", currentIteration.get(),
+            monitor.log(RefString.format("MacroIteration %s failed, aborting. Error: %s", currentIteration.get(),
                 currentPoint.sum));
             break mainLoop;
           }

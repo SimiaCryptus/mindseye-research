@@ -28,6 +28,7 @@ import com.simiacryptus.mindseye.opt.line.LineSearchCursorBase;
 import com.simiacryptus.mindseye.opt.line.LineSearchPoint;
 import com.simiacryptus.mindseye.opt.line.SimpleLineSearchCursor;
 import com.simiacryptus.ref.lang.RefUtil;
+import com.simiacryptus.ref.wrappers.RefString;
 
 import javax.annotation.Nonnull;
 import java.util.Arrays;
@@ -85,7 +86,7 @@ public class QQN extends OrientationStrategyBase<LineSearchCursor> {
     final double gdMag = gd.getMagnitude();
     if (Math.abs(lbfgsMag - gdMag) / (lbfgsMag + gdMag) > 1e-2) {
       @Nonnull final DeltaSet<UUID> scaledGradient = gd.scale(lbfgsMag / gdMag);
-      monitor.log(String.format("Returning Quadratic Cursor %s GD, %s QN", gdMag, lbfgsMag));
+      monitor.log(RefString.format("Returning Quadratic Cursor %s GD, %s QN", gdMag, lbfgsMag));
       try {
         try {
           gd.freeRef();
