@@ -53,14 +53,12 @@ public abstract class TrustRegionStrategy extends OrientationStrategyBase<LineSe
   }
 
   protected TrustRegionStrategy(final OrientationStrategy<? extends SimpleLineSearchCursor> inner) {
-    {
-      OrientationStrategy<? extends SimpleLineSearchCursor> temp_33_0001 = inner == null
-          ? null
-          : inner.addRef();
-      this.inner = temp_33_0001 == null ? null : temp_33_0001.addRef();
-      if (null != temp_33_0001)
-        temp_33_0001.freeRef();
-    }
+    OrientationStrategy<? extends SimpleLineSearchCursor> temp_33_0001 = inner == null
+        ? null
+        : inner.addRef();
+    this.inner = temp_33_0001 == null ? null : temp_33_0001.addRef();
+    if (null != temp_33_0001)
+      temp_33_0001.freeRef();
     if (null != inner)
       inner.freeRef();
   }
@@ -104,17 +102,13 @@ public abstract class TrustRegionStrategy extends OrientationStrategyBase<LineSe
   @Override
   public LineSearchCursor orient(@Nonnull final Trainable subject, final PointSample origin,
                                  final TrainingMonitor monitor) {
-    history.add(0, origin);
+    history.add(0, origin.addRef());
     while (history.size() > maxHistory) {
       RefUtil.freeRef(history.remove(history.size() - 1));
     }
-    final SimpleLineSearchCursor cursor = inner.orient(subject == null ? null : subject.addRef(),
-        origin == null ? null : origin.addRef(), monitor);
-    if (null != origin)
-      origin.freeRef();
+    final SimpleLineSearchCursor cursor = inner.orient(subject.addRef(), origin, monitor);
     TrustRegionStrategy.TrustRegionCursor temp_33_0005 = new TrustRegionCursor(
         cursor, subject, TrustRegionStrategy.this);
-    subject.freeRef();
     if (null != cursor)
       cursor.freeRef();
     return temp_33_0005;
@@ -143,29 +137,23 @@ public abstract class TrustRegionStrategy extends OrientationStrategyBase<LineSe
     private final TrustRegionStrategy parent;
 
     public TrustRegionCursor(SimpleLineSearchCursor cursor, Trainable subject, TrustRegionStrategy parent) {
-      {
-        TrustRegionStrategy temp_33_0002 = parent == null ? null : parent.addRef();
-        this.parent = temp_33_0002 == null ? null : temp_33_0002.addRef();
-        if (null != temp_33_0002)
-          temp_33_0002.freeRef();
-      }
+      TrustRegionStrategy temp_33_0002 = parent == null ? null : parent.addRef();
+      this.parent = temp_33_0002 == null ? null : temp_33_0002.addRef();
+      if (null != temp_33_0002)
+        temp_33_0002.freeRef();
       if (null != parent)
         parent.freeRef();
-      {
-        SimpleLineSearchCursor temp_33_0003 = cursor == null ? null
-            : cursor.addRef();
-        this.cursor = temp_33_0003 == null ? null : temp_33_0003.addRef();
-        if (null != temp_33_0003)
-          temp_33_0003.freeRef();
-      }
+      SimpleLineSearchCursor temp_33_0003 = cursor == null ? null
+          : cursor.addRef();
+      this.cursor = temp_33_0003 == null ? null : temp_33_0003.addRef();
+      if (null != temp_33_0003)
+        temp_33_0003.freeRef();
       if (null != cursor)
         cursor.freeRef();
-      {
-        Trainable temp_33_0004 = subject == null ? null : subject.addRef();
-        this.subject = temp_33_0004 == null ? null : temp_33_0004.addRef();
-        if (null != temp_33_0004)
-          temp_33_0004.freeRef();
-      }
+      Trainable temp_33_0004 = subject == null ? null : subject.addRef();
+      this.subject = temp_33_0004 == null ? null : temp_33_0004.addRef();
+      if (null != temp_33_0004)
+        temp_33_0004.freeRef();
       if (null != subject)
         subject.freeRef();
     }
@@ -186,9 +174,8 @@ public abstract class TrustRegionStrategy extends OrientationStrategyBase<LineSe
 
     @Override
     public PointSample afterStep(@Nonnull PointSample step) {
-      super.afterStep(step);
-      PointSample temp_33_0009 = cursor.afterStep(step == null ? null : step);
-      return temp_33_0009;
+      super.afterStep(step.addRef());
+      return cursor.afterStep(step);
     }
 
     @Nonnull

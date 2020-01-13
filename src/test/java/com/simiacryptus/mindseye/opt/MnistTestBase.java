@@ -37,7 +37,6 @@ import com.simiacryptus.notebook.TableOutput;
 import com.simiacryptus.ref.lang.RefUtil;
 import com.simiacryptus.ref.lang.ReferenceCounting;
 import com.simiacryptus.ref.wrappers.RefLinkedHashMap;
-import com.simiacryptus.ref.wrappers.RefMap;
 import com.simiacryptus.ref.wrappers.RefString;
 import com.simiacryptus.util.JsonUtil;
 import com.simiacryptus.util.MonitoredObject;
@@ -54,7 +53,10 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.List;
 import java.util.function.Function;
 import java.util.function.ToDoubleFunction;
 import java.util.stream.IntStream;
@@ -237,10 +239,8 @@ public abstract class MnistTestBase extends NotebookReportBase {
 
       @Override
       public void onStepComplete(final Step currentPoint) {
-        history.add(currentPoint);
+        history.add(currentPoint.addRef());
         super.onStepComplete(currentPoint);
-        if (null != currentPoint)
-          currentPoint.freeRef();
       }
     };
   }
@@ -282,9 +282,9 @@ public abstract class MnistTestBase extends NotebookReportBase {
                 @Nonnull final RefLinkedHashMap<CharSequence, Object> row = new RefLinkedHashMap<>();
                 row.put("Image", log.png(labeledObject.data.toGrayImage(), labeledObject.label));
                 row.put("Prediction",
-                    Arrays.stream(predictionList).limit(3)
+                    RefUtil.get(Arrays.stream(predictionList).limit(3)
                         .mapToObj(i -> RefString.format("%d (%.1f%%)", i, 100.0 * predictionSignal[i]))
-                        .reduce((a, b) -> a + ", " + b).get());
+                        .reduce((a, b) -> a + ", " + b)));
                 return row;
               }, network == null ? null : network.addRef())).filter(x -> {
             boolean temp_41_0003 = null != x;

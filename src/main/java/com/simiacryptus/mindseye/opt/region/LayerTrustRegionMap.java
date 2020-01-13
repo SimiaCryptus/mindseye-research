@@ -27,8 +27,6 @@ import com.simiacryptus.ref.wrappers.RefMap;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
 
 public class LayerTrustRegionMap extends TrustRegionStrategy {
   @Nonnull
@@ -64,11 +62,7 @@ public class LayerTrustRegionMap extends TrustRegionStrategy {
 
   @Override
   public TrustRegion getRegionPolicy(final Layer layer) {
-    TrustRegion temp_53_0001 = regionPolicies.getOrDefault(layer,
-        defaultRegionPolicy);
-    if (null != layer)
-      layer.freeRef();
-    return temp_53_0001;
+    return regionPolicies.getOrDefault(layer, defaultRegionPolicy);
   }
 
   @Override

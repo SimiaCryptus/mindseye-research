@@ -31,7 +31,6 @@ import com.simiacryptus.util.ArrayUtil;
 
 import javax.annotation.Nonnull;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.UUID;
 import java.util.function.BiConsumer;
 
@@ -40,14 +39,12 @@ public abstract class LayerReweightingStrategy extends OrientationStrategyBase<S
   public final OrientationStrategy<SimpleLineSearchCursor> inner;
 
   public LayerReweightingStrategy(final OrientationStrategy<SimpleLineSearchCursor> inner) {
-    {
-      OrientationStrategy<SimpleLineSearchCursor> temp_32_0001 = inner == null
-          ? null
-          : inner.addRef();
-      this.inner = temp_32_0001 == null ? null : temp_32_0001.addRef();
-      if (null != temp_32_0001)
-        temp_32_0001.freeRef();
-    }
+    OrientationStrategy<SimpleLineSearchCursor> temp_32_0001 = inner == null
+        ? null
+        : inner.addRef();
+    this.inner = temp_32_0001 == null ? null : temp_32_0001.addRef();
+    if (null != temp_32_0001)
+      temp_32_0001.freeRef();
     if (null != inner)
       inner.freeRef();
   }
@@ -136,8 +133,6 @@ public abstract class LayerReweightingStrategy extends OrientationStrategyBase<S
 
     public HashMapLayerReweightingStrategy(final OrientationStrategy<SimpleLineSearchCursor> inner) {
       super(inner);
-      if (null != inner)
-        inner.freeRef();
     }
 
     @Nonnull
@@ -156,10 +151,7 @@ public abstract class LayerReweightingStrategy extends OrientationStrategyBase<S
 
     @Override
     public Double getRegionPolicy(final Layer layer) {
-      Double temp_32_0002 = getMap().get(layer);
-      if (null != layer)
-        layer.freeRef();
-      return temp_32_0002;
+      return getMap().get(layer);
     }
 
     @Override

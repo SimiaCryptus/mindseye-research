@@ -59,12 +59,10 @@ public class LayerRateDiagnosticTrainer extends ReferenceCountingBase {
   private Duration timeout;
 
   public LayerRateDiagnosticTrainer(final Trainable subject) {
-    {
-      Trainable temp_31_0001 = subject == null ? null : subject.addRef();
-      this.subject = temp_31_0001 == null ? null : temp_31_0001.addRef();
-      if (null != temp_31_0001)
-        temp_31_0001.freeRef();
-    }
+    Trainable temp_31_0001 = subject == null ? null : subject.addRef();
+    this.subject = temp_31_0001 == null ? null : temp_31_0001.addRef();
+    if (null != temp_31_0001)
+      temp_31_0001.freeRef();
     if (null != subject)
       subject.freeRef();
     timeout = Duration.of(5, ChronoUnit.MINUTES);
@@ -131,15 +129,13 @@ public class LayerRateDiagnosticTrainer extends ReferenceCountingBase {
 
   @Nonnull
   public void setOrientation(final OrientationStrategy<?> orientation) {
-    {
-      OrientationStrategy<?> temp_31_0002 = orientation == null ? null
-          : orientation.addRef();
-      if (null != this.orientation)
-        this.orientation.freeRef();
-      this.orientation = temp_31_0002 == null ? null : temp_31_0002.addRef();
-      if (null != temp_31_0002)
-        temp_31_0002.freeRef();
-    }
+    OrientationStrategy<?> temp_31_0002 = orientation == null ? null
+        : orientation.addRef();
+    if (null != this.orientation)
+      this.orientation.freeRef();
+    this.orientation = temp_31_0002 == null ? null : temp_31_0002.addRef();
+    if (null != temp_31_0002)
+      temp_31_0002.freeRef();
     if (null != orientation)
       orientation.freeRef();
   }

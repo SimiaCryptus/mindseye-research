@@ -29,6 +29,9 @@ import com.simiacryptus.mindseye.opt.orient.LBFGS;
 import com.simiacryptus.mindseye.opt.orient.OrientationStrategy;
 import com.simiacryptus.ref.lang.ReferenceCounting;
 import com.simiacryptus.ref.lang.ReferenceCountingBase;
+import com.simiacryptus.ref.wrappers.RefArrayList;
+import com.simiacryptus.ref.wrappers.RefArrays;
+import com.simiacryptus.ref.wrappers.RefList;
 import com.simiacryptus.ref.wrappers.RefString;
 import com.simiacryptus.util.Util;
 import org.slf4j.Logger;
@@ -55,17 +58,15 @@ public class RoundRobinTrainer extends ReferenceCountingBase {
   private int maxIterations = Integer.MAX_VALUE;
   private TrainingMonitor monitor = new TrainingMonitor();
   @Nonnull
-  private List<? extends OrientationStrategy<?>> orientations = new ArrayList<>(Arrays.asList(new LBFGS()));
+  private RefList<OrientationStrategy<?>> orientations = new RefArrayList<>(RefArrays.asList(new LBFGS()));
   private double terminateThreshold;
   private Duration timeout;
 
   public RoundRobinTrainer(final Trainable subject) {
-    {
-      Trainable temp_34_0001 = subject == null ? null : subject.addRef();
-      this.subject = temp_34_0001 == null ? null : temp_34_0001.addRef();
-      if (null != temp_34_0001)
-        temp_34_0001.freeRef();
-    }
+    Trainable temp_34_0001 = subject == null ? null : subject.addRef();
+    this.subject = temp_34_0001 == null ? null : temp_34_0001.addRef();
+    if (null != temp_34_0001)
+      temp_34_0001.freeRef();
     if (null != subject)
       subject.freeRef();
     timeout = Duration.of(5, ChronoUnit.MINUTES);
@@ -130,15 +131,13 @@ public class RoundRobinTrainer extends ReferenceCountingBase {
   }
 
   @Nonnull
-  public List<? extends OrientationStrategy<?>> getOrientations() {
+  public RefList<? extends OrientationStrategy<?>> getOrientations() {
     return orientations;
   }
 
   @Nonnull
   public RoundRobinTrainer setOrientations(final OrientationStrategy<?>... orientations) {
-    this.orientations = new ArrayList<>(Arrays.asList(orientations));
-    if (null != orientations)
-      ReferenceCounting.freeRefs(orientations);
+    this.orientations = new RefArrayList<>(RefArrays.asList(orientations));
     return this.addRef();
   }
 

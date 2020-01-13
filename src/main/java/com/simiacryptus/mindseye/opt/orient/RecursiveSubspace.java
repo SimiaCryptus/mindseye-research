@@ -83,14 +83,12 @@ public class RecursiveSubspace extends OrientationStrategyBase<SimpleLineSearchC
   }
 
   public RecursiveSubspace setOrientation(LBFGS orientation) {
-    {
-      LBFGS temp_30_0001 = orientation == null ? null : orientation.addRef();
-      if (null != this.orientation)
-        this.orientation.freeRef();
-      this.orientation = temp_30_0001 == null ? null : temp_30_0001.addRef();
-      if (null != temp_30_0001)
-        temp_30_0001.freeRef();
-    }
+    LBFGS temp_30_0001 = orientation == null ? null : orientation.addRef();
+    if (null != this.orientation)
+      this.orientation.freeRef();
+    this.orientation = temp_30_0001 == null ? null : temp_30_0001.addRef();
+    if (null != temp_30_0001)
+      temp_30_0001.freeRef();
     if (null != orientation)
       orientation.freeRef();
     return this.addRef();
@@ -125,44 +123,39 @@ public class RecursiveSubspace extends OrientationStrategyBase<SimpleLineSearchC
   @Override
   public SimpleLineSearchCursor orient(@Nonnull Trainable subject, @Nonnull PointSample measurement,
                                        @Nonnull TrainingMonitor monitor) {
-    {
-      Trainable temp_30_0002 = subject == null ? null : subject.addRef();
-      if (null != this.subject)
-        this.subject.freeRef();
-      this.subject = temp_30_0002 == null ? null : temp_30_0002.addRef();
-      if (null != temp_30_0002)
-        temp_30_0002.freeRef();
-    }
+    Trainable temp_30_0002 = subject == null ? null : subject.addRef();
+    if (null != this.subject)
+      this.subject.freeRef();
+    this.subject = temp_30_0002 == null ? null : temp_30_0002.addRef();
+    if (null != temp_30_0002)
+      temp_30_0002.freeRef();
     PointSample temp_30_0015 = measurement.copyFull();
     @Nonnull
     PointSample origin = temp_30_0015.backup();
     if (null != temp_30_0015)
       temp_30_0015.freeRef();
     @Nullable
-    Layer macroLayer = buildSubspace(subject, measurement, monitor);
-    measurement.freeRef();
-    {
-      train(monitor, macroLayer);
-      Result eval = macroLayer.eval(((Result) null).addRef());
-      RefUtil.freeRef(eval.getData());
-      if (null != eval)
-        eval.freeRef();
-      @Nonnull
-      StateSet<UUID> backupCopy = origin.weights.copy();
-      @Nonnull
-      DeltaSet<UUID> delta = backupCopy.subtract(origin.weights.addRef());
-      backupCopy.freeRef();
-      RefUtil.freeRef(origin.restore());
-      @Nonnull
-      SimpleLineSearchCursor simpleLineSearchCursor = new SimpleLineSearchCursor(subject == null ? null : subject,
-          origin == null ? null : origin, delta == null ? null : delta);
-      if (null != macroLayer)
-        macroLayer.freeRef();
-      SimpleLineSearchCursor temp_30_0006 = simpleLineSearchCursor
-          .setDirectionType(CURSOR_LABEL);
-      simpleLineSearchCursor.freeRef();
-      return temp_30_0006;
-    }
+    Layer macroLayer = buildSubspace(subject.addRef(), measurement, monitor);
+    train(monitor, macroLayer);
+    Result eval = macroLayer.eval(((Result) null).addRef());
+    RefUtil.freeRef(eval.getData());
+    if (null != eval)
+      eval.freeRef();
+    @Nonnull
+    StateSet<UUID> backupCopy = origin.weights.copy();
+    @Nonnull
+    DeltaSet<UUID> delta = backupCopy.subtract(origin.weights.addRef());
+    backupCopy.freeRef();
+    RefUtil.freeRef(origin.restore());
+    @Nonnull
+    SimpleLineSearchCursor simpleLineSearchCursor = new SimpleLineSearchCursor(subject,
+        origin, delta);
+    if (null != macroLayer)
+      macroLayer.freeRef();
+    SimpleLineSearchCursor temp_30_0006 = simpleLineSearchCursor
+        .setDirectionType(CURSOR_LABEL);
+    simpleLineSearchCursor.freeRef();
+    return temp_30_0006;
   }
 
   public Layer toLayer(UUID id) {
@@ -209,11 +202,8 @@ public class RecursiveSubspace extends OrientationStrategyBase<SimpleLineSearchC
     int size = deltaLayers.size() + (hasPlaceholders ? 1 : 0);
     if (null == weights || weights.length != size)
       weights = new double[size];
-    RecursiveSubspace.MyLayerBase temp_30_0007 = new MyLayerBase(origin,
-        deltaLayers, directionMap, hasPlaceholders, subject, monitor, RecursiveSubspace.this);
-    subject.freeRef();
-    origin.freeRef();
-    return temp_30_0007;
+    return new MyLayerBase(origin,
+        deltaLayers, directionMap, hasPlaceholders, subject, monitor, this);
   }
 
   public void train(@Nonnull TrainingMonitor monitor, Layer macroLayer) {
@@ -292,31 +282,25 @@ public class RecursiveSubspace extends OrientationStrategyBase<SimpleLineSearchC
 
     public MyLayerBase(PointSample origin, List<UUID> deltaLayers, Map<UUID, Delta<UUID>> directionMap,
                        boolean hasPlaceholders, Trainable subject, TrainingMonitor monitor, RecursiveSubspace parent) {
-      {
-        RecursiveSubspace temp_30_0003 = parent == null ? null : parent.addRef();
-        this.parent = temp_30_0003 == null ? null : temp_30_0003.addRef();
-        if (null != temp_30_0003)
-          temp_30_0003.freeRef();
-      }
+      RecursiveSubspace temp_30_0003 = parent == null ? null : parent.addRef();
+      this.parent = temp_30_0003 == null ? null : temp_30_0003.addRef();
+      if (null != temp_30_0003)
+        temp_30_0003.freeRef();
       if (null != parent)
         parent.freeRef();
-      {
-        PointSample temp_30_0004 = origin == null ? null : origin.addRef();
-        this.origin = temp_30_0004 == null ? null : temp_30_0004.addRef();
-        if (null != temp_30_0004)
-          temp_30_0004.freeRef();
-      }
+      PointSample temp_30_0004 = origin == null ? null : origin.addRef();
+      this.origin = temp_30_0004 == null ? null : temp_30_0004.addRef();
+      if (null != temp_30_0004)
+        temp_30_0004.freeRef();
       if (null != origin)
         origin.freeRef();
       this.deltaLayers = deltaLayers;
       this.directionMap = directionMap;
       this.hasPlaceholders = hasPlaceholders;
-      {
-        Trainable temp_30_0005 = subject == null ? null : subject.addRef();
-        this.subject = temp_30_0005 == null ? null : temp_30_0005.addRef();
-        if (null != temp_30_0005)
-          temp_30_0005.freeRef();
-      }
+      Trainable temp_30_0005 = subject == null ? null : subject.addRef();
+      this.subject = temp_30_0005 == null ? null : temp_30_0005.addRef();
+      if (null != temp_30_0005)
+        temp_30_0005.freeRef();
       if (null != subject)
         subject.freeRef();
       this.monitor = monitor;
