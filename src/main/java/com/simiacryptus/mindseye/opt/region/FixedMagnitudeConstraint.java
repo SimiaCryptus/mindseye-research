@@ -30,9 +30,10 @@ import java.util.stream.IntStream;
 
 public class FixedMagnitudeConstraint implements TrustRegion {
 
+  @Nonnull
   private final int[][] indexMap;
 
-  public FixedMagnitudeConstraint(int[]... indexMap) {
+  public FixedMagnitudeConstraint(@Nonnull int[]... indexMap) {
     if (Arrays.stream(indexMap).mapToInt(x -> x.length).distinct().count() != 1) {
       throw new AssertionError();
     }
@@ -42,15 +43,15 @@ public class FixedMagnitudeConstraint implements TrustRegion {
     this.indexMap = indexMap;
   }
 
-  public static double dot(double[] a, double[] b) {
+  public static double dot(@Nonnull double[] a, double[] b) {
     return IntStream.range(0, a.length).mapToDouble(i -> a[i] * b[i]).sum();
   }
 
-  public static double[] add(double[] a, double[] b) {
+  public static double[] add(@Nonnull double[] a, double[] b) {
     return IntStream.range(0, a.length).mapToDouble(i -> a[i] + b[i]).toArray();
   }
 
-  public static double[] scale(double[] a, double b) {
+  public static double[] scale(@Nonnull double[] a, double b) {
     return Arrays.stream(a).map(v -> v * b).toArray();
   }
 
@@ -58,7 +59,7 @@ public class FixedMagnitudeConstraint implements TrustRegion {
     return ArrayUtil.magnitude(weights);
   }
 
-  public List<double[]> setMags(final List<double[]> base, final List<double[]> point) {
+  public List<double[]> setMags(@Nonnull final List<double[]> base, @Nonnull final List<double[]> point) {
     double[] magnitudes_Base = base.stream().mapToDouble(x -> Math.sqrt(Arrays.stream(x).map(a -> a * a).sum())).toArray();
     double[] magnitudes_Point = point.stream().mapToDouble(x -> Math.sqrt(Arrays.stream(x).map(a -> a * a).sum())).toArray();
     return IntStream.range(0, magnitudes_Point.length).mapToObj(n ->
@@ -78,7 +79,8 @@ public class FixedMagnitudeConstraint implements TrustRegion {
     return recompose(normalized);
   }
 
-  public double[] recompose(final List<double[]> unitVectors) {
+  @Nonnull
+  public double[] recompose(@Nonnull final List<double[]> unitVectors) {
     double[] doubles = RecycleBin.DOUBLES.create(Arrays.stream(indexMap).mapToInt(x -> x.length).sum());
     IntStream.range(0, indexMap.length).forEach(n -> {
       double[] array = unitVectors.get(n);

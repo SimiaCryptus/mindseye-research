@@ -53,6 +53,7 @@ public class RangeConstraint implements TrustRegion {
     return min;
   }
 
+  @Nonnull
   public RangeConstraint setMin(double min) {
     this.min = min;
     return this;

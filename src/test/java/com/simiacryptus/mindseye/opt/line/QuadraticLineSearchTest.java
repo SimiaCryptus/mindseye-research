@@ -35,6 +35,7 @@ import com.simiacryptus.ref.lang.RefUtil;
 import com.simiacryptus.ref.lang.ReferenceCounting;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
@@ -46,16 +47,18 @@ public class QuadraticLineSearchTest extends MnistTestBase {
     return QuadraticSearch.class;
   }
 
+  @Nullable
   public static @SuppressWarnings("unused")
-  QuadraticLineSearchTest[] addRefs(QuadraticLineSearchTest[] array) {
+  QuadraticLineSearchTest[] addRefs(@Nullable QuadraticLineSearchTest[] array) {
     if (array == null)
       return null;
     return Arrays.stream(array).filter((x) -> x != null).map(QuadraticLineSearchTest::addRef)
         .toArray((x) -> new QuadraticLineSearchTest[x]);
   }
 
+  @Nullable
   public static @SuppressWarnings("unused")
-  QuadraticLineSearchTest[][] addRefs(QuadraticLineSearchTest[][] array) {
+  QuadraticLineSearchTest[][] addRefs(@Nullable QuadraticLineSearchTest[][] array) {
     if (array == null)
       return null;
     return Arrays.stream(array).filter((x) -> x != null).map(QuadraticLineSearchTest::addRefs)
@@ -67,13 +70,13 @@ public class QuadraticLineSearchTest extends MnistTestBase {
                     @Nonnull final Tensor[][] trainingData, final TrainingMonitor monitor) {
     log.eval(RefUtil
         .wrapInterface((UncheckedSupplier<Double>) () -> {
-          @Nonnull final SimpleLossNetwork supervisedNetwork = new SimpleLossNetwork(network == null ? null : network.addRef(),
+          @Nonnull final SimpleLossNetwork supervisedNetwork = new SimpleLossNetwork(network.addRef(),
               new EntropyLossLayer());
           @Nonnull final Trainable trainable = new SampledArrayTrainable(
               Tensor.addRefs(trainingData),
-              supervisedNetwork == null ? null : supervisedNetwork, 1000);
+              supervisedNetwork, 1000);
           IterativeTrainer temp_37_0002 = new IterativeTrainer(
-              trainable == null ? null : trainable);
+              trainable);
           IterativeTrainer temp_37_0003 = temp_37_0002.setMonitor(monitor);
           IterativeTrainer temp_37_0004 = temp_37_0003
               .setOrientation(new GradientDescent());
@@ -82,20 +85,14 @@ public class QuadraticLineSearchTest extends MnistTestBase {
           IterativeTrainer temp_37_0006 = temp_37_0005.setTimeout(3, TimeUnit.MINUTES);
           IterativeTrainer temp_37_0007 = temp_37_0006.setMaxIterations(500);
           double temp_37_0001 = temp_37_0007.run();
-          if (null != temp_37_0007)
-            temp_37_0007.freeRef();
-          if (null != temp_37_0006)
-            temp_37_0006.freeRef();
-          if (null != temp_37_0005)
-            temp_37_0005.freeRef();
-          if (null != temp_37_0004)
-            temp_37_0004.freeRef();
-          if (null != temp_37_0003)
-            temp_37_0003.freeRef();
-          if (null != temp_37_0002)
-            temp_37_0002.freeRef();
+          temp_37_0007.freeRef();
+          temp_37_0006.freeRef();
+          temp_37_0005.freeRef();
+          temp_37_0004.freeRef();
+          temp_37_0003.freeRef();
+          temp_37_0002.freeRef();
           return temp_37_0001;
-        }, network == null ? null : network, Tensor.addRefs(trainingData)));
+        }, network, Tensor.addRefs(trainingData)));
     ReferenceCounting.freeRefs(trainingData);
   }
 
@@ -103,6 +100,7 @@ public class QuadraticLineSearchTest extends MnistTestBase {
   void _free() {
   }
 
+  @Nonnull
   public @Override
   @SuppressWarnings("unused")
   QuadraticLineSearchTest addRef() {

@@ -55,7 +55,9 @@ public class RecursiveSubspace extends OrientationStrategyBase<SimpleLineSearchC
   @Nullable
   private double[] weights = null;
   private double terminateThreshold;
+  @Nullable
   private Trainable subject;
+  @Nullable
   private LBFGS orientation = new LBFGS();
   private LineSearchStrategy lineSearch = new ArmijoWolfeSearch();
 
@@ -73,16 +75,19 @@ public class RecursiveSubspace extends OrientationStrategyBase<SimpleLineSearchC
     return lineSearch;
   }
 
+  @Nonnull
   public RecursiveSubspace setLineSearch(LineSearchStrategy lineSearch) {
     this.lineSearch = lineSearch;
     return this.addRef();
   }
 
+  @Nullable
   public LBFGS getOrientation() {
     return orientation == null ? null : orientation.addRef();
   }
 
-  public RecursiveSubspace setOrientation(LBFGS orientation) {
+  @Nonnull
+  public RecursiveSubspace setOrientation(@Nullable LBFGS orientation) {
     LBFGS temp_30_0001 = orientation == null ? null : orientation.addRef();
     if (null != this.orientation)
       this.orientation.freeRef();
@@ -98,21 +103,24 @@ public class RecursiveSubspace extends OrientationStrategyBase<SimpleLineSearchC
     return terminateThreshold;
   }
 
+  @Nonnull
   public RecursiveSubspace setTerminateThreshold(double terminateThreshold) {
     this.terminateThreshold = terminateThreshold;
     return this.addRef();
   }
 
+  @Nullable
   public static @SuppressWarnings("unused")
-  RecursiveSubspace[] addRefs(RecursiveSubspace[] array) {
+  RecursiveSubspace[] addRefs(@Nullable RecursiveSubspace[] array) {
     if (array == null)
       return null;
     return Arrays.stream(array).filter((x) -> x != null).map(RecursiveSubspace::addRef)
         .toArray((x) -> new RecursiveSubspace[x]);
   }
 
+  @Nullable
   public static @SuppressWarnings("unused")
-  RecursiveSubspace[][] addRefs(RecursiveSubspace[][] array) {
+  RecursiveSubspace[][] addRefs(@Nullable RecursiveSubspace[][] array) {
     if (array == null)
       return null;
     return Arrays.stream(array).filter((x) -> x != null).map(RecursiveSubspace::addRefs)
@@ -123,7 +131,7 @@ public class RecursiveSubspace extends OrientationStrategyBase<SimpleLineSearchC
   @Override
   public SimpleLineSearchCursor orient(@Nonnull Trainable subject, @Nonnull PointSample measurement,
                                        @Nonnull TrainingMonitor monitor) {
-    Trainable temp_30_0002 = subject == null ? null : subject.addRef();
+    Trainable temp_30_0002 = subject.addRef();
     if (null != this.subject)
       this.subject.freeRef();
     this.subject = temp_30_0002 == null ? null : temp_30_0002.addRef();
@@ -132,15 +140,15 @@ public class RecursiveSubspace extends OrientationStrategyBase<SimpleLineSearchC
     PointSample temp_30_0015 = measurement.copyFull();
     @Nonnull
     PointSample origin = temp_30_0015.backup();
-    if (null != temp_30_0015)
-      temp_30_0015.freeRef();
+    temp_30_0015.freeRef();
     @Nullable
     Layer macroLayer = buildSubspace(subject.addRef(), measurement, monitor);
     train(monitor, macroLayer);
+    assert macroLayer != null;
     Result eval = macroLayer.eval(((Result) null).addRef());
+    assert eval != null;
     RefUtil.freeRef(eval.getData());
-    if (null != eval)
-      eval.freeRef();
+    eval.freeRef();
     @Nonnull
     StateSet<UUID> backupCopy = origin.weights.copy();
     @Nonnull
@@ -150,24 +158,22 @@ public class RecursiveSubspace extends OrientationStrategyBase<SimpleLineSearchC
     @Nonnull
     SimpleLineSearchCursor simpleLineSearchCursor = new SimpleLineSearchCursor(subject,
         origin, delta);
-    if (null != macroLayer)
-      macroLayer.freeRef();
+    macroLayer.freeRef();
     SimpleLineSearchCursor temp_30_0006 = simpleLineSearchCursor
         .setDirectionType(CURSOR_LABEL);
     simpleLineSearchCursor.freeRef();
     return temp_30_0006;
   }
 
-  public Layer toLayer(UUID id) {
-    assert null != id;
+  @javax.annotation.Nullable
+  public Layer toLayer(@Nonnull UUID id) {
+    assert subject != null;
     DAGNetwork dagNetwork = (DAGNetwork) subject.getLayer();
     RefMap<UUID, Layer> temp_30_0016 = dagNetwork
         .getLayersById();
     Layer layer = temp_30_0016.get(id);
-    if (null != temp_30_0016)
-      temp_30_0016.freeRef();
-    if (null != dagNetwork)
-      dagNetwork.freeRef();
+    temp_30_0016.freeRef();
+    dagNetwork.freeRef();
     assert null != layer;
     return layer;
   }
@@ -178,8 +184,7 @@ public class RecursiveSubspace extends OrientationStrategyBase<SimpleLineSearchC
     PointSample temp_30_0017 = measurement.copyFull();
     @Nonnull
     PointSample origin = temp_30_0017.backup();
-    if (null != temp_30_0017)
-      temp_30_0017.freeRef();
+    temp_30_0017.freeRef();
     @Nonnull final DeltaSet<UUID> direction = measurement.delta.scale(-1);
     measurement.freeRef();
     final double magnitude = direction.getMagnitude();
@@ -195,27 +200,26 @@ public class RecursiveSubspace extends OrientationStrategyBase<SimpleLineSearchC
 
     List<UUID> deltaLayers = directionMap.entrySet().stream().map(x -> {
       UUID temp_30_0008 = x.getKey();
-      if (null != x)
-        RefUtil.freeRef(x);
+      RefUtil.freeRef(x);
       return temp_30_0008;
     }).collect(Collectors.toList());
-    int size = deltaLayers.size() + (hasPlaceholders ? 1 : 0);
+    int size = deltaLayers.size() + 0;
     if (null == weights || weights.length != size)
       weights = new double[size];
     return new MyLayerBase(origin,
-        deltaLayers, directionMap, hasPlaceholders, subject, monitor, this);
+        deltaLayers, directionMap, false, subject, monitor, this);
   }
 
-  public void train(@Nonnull TrainingMonitor monitor, Layer macroLayer) {
+  public void train(@Nonnull TrainingMonitor monitor, @Nullable Layer macroLayer) {
     @Nonnull
     BasicTrainable inner = new BasicTrainable(macroLayer == null ? null : macroLayer.addRef());
     if (null != macroLayer)
       macroLayer.freeRef();
     @Nonnull
-    ArrayTrainable trainable = new ArrayTrainable(inner == null ? null : inner, new Tensor[][]{{}});
+    ArrayTrainable trainable = new ArrayTrainable(inner, new Tensor[][]{{}});
     LBFGS orientation = getOrientation();
     IterativeTrainer temp_30_0014 = new IterativeTrainer(
-        trainable == null ? null : trainable);
+        trainable);
     IterativeTrainer temp_30_0018 = temp_30_0014
         .setOrientation(orientation == null ? null : orientation.addRef());
     IterativeTrainer temp_30_0019 = temp_30_0018.setLineSearchFactory(n -> {
@@ -232,20 +236,13 @@ public class RecursiveSubspace extends OrientationStrategyBase<SimpleLineSearchC
     IterativeTrainer temp_30_0023 = temp_30_0022
         .setTerminateThreshold(terminateThreshold);
     temp_30_0023.run();
-    if (null != temp_30_0023)
-      temp_30_0023.freeRef();
-    if (null != temp_30_0022)
-      temp_30_0022.freeRef();
-    if (null != temp_30_0021)
-      temp_30_0021.freeRef();
-    if (null != temp_30_0020)
-      temp_30_0020.freeRef();
-    if (null != temp_30_0019)
-      temp_30_0019.freeRef();
-    if (null != temp_30_0018)
-      temp_30_0018.freeRef();
-    if (null != temp_30_0014)
-      temp_30_0014.freeRef();
+    temp_30_0023.freeRef();
+    temp_30_0022.freeRef();
+    temp_30_0021.freeRef();
+    temp_30_0020.freeRef();
+    temp_30_0019.freeRef();
+    temp_30_0018.freeRef();
+    temp_30_0014.freeRef();
     if (null != orientation)
       orientation.freeRef();
   }
@@ -265,6 +262,7 @@ public class RecursiveSubspace extends OrientationStrategyBase<SimpleLineSearchC
     subject = null;
   }
 
+  @Nonnull
   public @Override
   @SuppressWarnings("unused")
   RecursiveSubspace addRef() {
@@ -272,16 +270,19 @@ public class RecursiveSubspace extends OrientationStrategyBase<SimpleLineSearchC
   }
 
   private static class MyLayerBase extends LayerBase {
+    @Nullable
     private final RecursiveSubspace parent;
+    @Nonnull
     private final PointSample origin;
     private final List<UUID> deltaLayers;
     private final Map<UUID, Delta<UUID>> directionMap;
     private final boolean hasPlaceholders;
+    @Nullable
     private final Trainable subject;
     private final TrainingMonitor monitor;
 
-    public MyLayerBase(PointSample origin, List<UUID> deltaLayers, Map<UUID, Delta<UUID>> directionMap,
-                       boolean hasPlaceholders, Trainable subject, TrainingMonitor monitor, RecursiveSubspace parent) {
+    public MyLayerBase(@Nullable PointSample origin, List<UUID> deltaLayers, Map<UUID, Delta<UUID>> directionMap,
+                       boolean hasPlaceholders, @Nullable Trainable subject, TrainingMonitor monitor, @Nullable RecursiveSubspace parent) {
       RecursiveSubspace temp_30_0003 = parent == null ? null : parent.addRef();
       this.parent = temp_30_0003 == null ? null : temp_30_0003.addRef();
       if (null != temp_30_0003)
@@ -306,8 +307,9 @@ public class RecursiveSubspace extends OrientationStrategyBase<SimpleLineSearchC
       this.monitor = monitor;
     }
 
+    @Nullable
     public static @SuppressWarnings("unused")
-    MyLayerBase[] addRefs(MyLayerBase[] array) {
+    MyLayerBase[] addRefs(@Nullable MyLayerBase[] array) {
       if (array == null)
         return null;
       return Arrays.stream(array).filter((x) -> x != null).map(MyLayerBase::addRef)
@@ -316,7 +318,7 @@ public class RecursiveSubspace extends OrientationStrategyBase<SimpleLineSearchC
 
     @Nonnull
     @Override
-    public Result eval(Result... array) {
+    public Result eval(@Nullable Result... array) {
       if (null != array)
         ReferenceCounting.freeRefs(array);
       assertAlive();
@@ -325,27 +327,32 @@ public class RecursiveSubspace extends OrientationStrategyBase<SimpleLineSearchC
         UUID key = deltaLayers.get(i);
         assert null != key;
         Delta<UUID> temp_30_0024 = directionMap.get(key);
+        assert parent != null;
+        assert parent.weights != null;
         temp_30_0024.accumulate(parent.weights[hasPlaceholders ? (i + 1) : i]);
-        if (null != temp_30_0024)
-          temp_30_0024.freeRef();
+        temp_30_0024.freeRef();
       });
       if (hasPlaceholders) {
         directionMap.entrySet().stream().filter(x -> {
-          boolean temp_30_0009 = parent.toLayer(x.getKey()) instanceof PlaceholderLayer;
-          if (null != x)
-            RefUtil.freeRef(x);
+          assert parent != null;
+          Layer layer = parent.toLayer(x.getKey());
+          boolean temp_30_0009 = layer instanceof PlaceholderLayer;
+          assert layer != null;
+          layer.freeRef();
+          RefUtil.freeRef(x);
           return temp_30_0009;
         }).distinct().forEach(entry -> {
           Delta<UUID> temp_30_0025 = entry.getValue();
+          assert parent.weights != null;
           temp_30_0025.accumulate(parent.weights[0]);
-          if (null != temp_30_0025)
-            temp_30_0025.freeRef();
-          if (null != entry)
-            RefUtil.freeRef(entry);
+          temp_30_0025.freeRef();
+          RefUtil.freeRef(entry);
         });
       }
+      assert subject != null;
       PointSample measure = subject.measure(monitor);
       double mean = measure.getMean();
+      assert parent != null;
       monitor.log(RefString.format("RecursiveSubspace: %s <- %s", mean, Arrays.toString(parent.weights)));
       final MyLayerBase myLayerBase = this.addRef();
       try {
@@ -355,7 +362,7 @@ public class RecursiveSubspace extends OrientationStrategyBase<SimpleLineSearchC
             }
 
             @Override
-            public void accept(DeltaSet<UUID> buffer, TensorList data) {
+            public void accept(@Nonnull DeltaSet<UUID> buffer, @Nullable TensorList data) {
               if (null != data)
                 data.freeRef();
               DoubleStream deltaStream = deltaLayers.stream().mapToDouble(RefUtil
@@ -364,45 +371,48 @@ public class RecursiveSubspace extends OrientationStrategyBase<SimpleLineSearchC
                     RefMap<UUID, Delta<UUID>> temp_30_0026 = measure.delta
                         .getMap();
                     Delta<UUID> b = temp_30_0026.get(layer);
-                    if (null != temp_30_0026)
-                      temp_30_0026.freeRef();
-                    double temp_30_0012 = b.dot(a == null ? null : a.addRef())
-                        / Math.max(Math.sqrt(a.dot(a == null ? null : a.addRef())), 1e-8);
-                    if (null != b)
-                      b.freeRef();
-                    if (null != a)
-                      a.freeRef();
+                    temp_30_0026.freeRef();
+                    assert a != null;
+                    assert b != null;
+                    double temp_30_0012 = b.dot(a.addRef())
+                        / Math.max(Math.sqrt(a.dot(a.addRef())), 1e-8);
+                    b.freeRef();
+                    a.freeRef();
                     return temp_30_0012;
-                  }, measure == null ? null : measure.addRef()));
+                  }, measure.addRef()));
               if (hasPlaceholders) {
                 deltaStream = DoubleStream.concat(DoubleStream
-                        .of(directionMap.keySet().stream().filter(x -> parent.toLayer(x) instanceof PlaceholderLayer)
+                        .of(directionMap.keySet().stream().filter(x -> {
+                          Layer layer = parent.toLayer(x);
+                          boolean b = layer instanceof PlaceholderLayer;
+                          assert layer != null;
+                          layer.freeRef();
+                          return b;
+                        })
                             .distinct().mapToDouble(RefUtil
                                 .wrapInterface((ToDoubleFunction<? super UUID>) id -> {
                                   Delta<UUID> a = directionMap.get(id);
                                   RefMap<UUID, Delta<UUID>> temp_30_0027 = measure.delta
                                       .getMap();
                                   Delta<UUID> b = temp_30_0027.get(id);
-                                  if (null != temp_30_0027)
-                                    temp_30_0027.freeRef();
-                                  double temp_30_0013 = b.dot(a == null ? null : a.addRef())
-                                      / Math.max(Math.sqrt(a.dot(a == null ? null : a.addRef())), 1e-8);
-                                  if (null != b)
-                                    b.freeRef();
-                                  if (null != a)
-                                    a.freeRef();
+                                  temp_30_0027.freeRef();
+                                  assert a != null;
+                                  assert b != null;
+                                  double temp_30_0013 = b.dot(a.addRef())
+                                      / Math.max(Math.sqrt(a.dot(a.addRef())), 1e-8);
+                                  b.freeRef();
+                                  a.freeRef();
                                   return temp_30_0013;
-                                }, measure == null ? null : measure.addRef()))
+                                }, measure.addRef()))
                             .sum()),
                     deltaStream);
               }
               Delta<UUID> temp_30_0028 = buffer.get(myLayerBase.getId(),
                   parent.weights);
+              assert temp_30_0028 != null;
               RefUtil.freeRef(temp_30_0028.addInPlace(deltaStream.toArray()));
-              if (null != temp_30_0028)
-                temp_30_0028.freeRef();
-              if (null != buffer)
-                buffer.freeRef();
+              temp_30_0028.freeRef();
+              buffer.freeRef();
             }
 
             public @SuppressWarnings("unused")
@@ -419,12 +429,10 @@ public class RecursiveSubspace extends OrientationStrategyBase<SimpleLineSearchC
             }
           };
         } finally {
-          if (null != myLayerBase)
-            myLayerBase.freeRef();
+          myLayerBase.freeRef();
         }
       } finally {
-        if (null != measure)
-          measure.freeRef();
+        measure.freeRef();
       }
     }
 
@@ -444,13 +452,13 @@ public class RecursiveSubspace extends OrientationStrategyBase<SimpleLineSearchC
     public void _free() {
       if (null != subject)
         subject.freeRef();
-      if (null != origin)
-        origin.freeRef();
+      origin.freeRef();
       if (null != parent)
         parent.freeRef();
       super._free();
     }
 
+    @Nonnull
     public @Override
     @SuppressWarnings("unused")
     MyLayerBase addRef() {

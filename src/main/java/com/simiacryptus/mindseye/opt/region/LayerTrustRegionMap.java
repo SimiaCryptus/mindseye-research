@@ -41,25 +41,28 @@ public class LayerTrustRegionMap extends TrustRegionStrategy {
 
   @Nonnull
   public RefMap<Layer, TrustRegion> getRegionPolicies() {
-    return regionPolicies;
+    return regionPolicies.addRef();
   }
 
+  @Nullable
   public static @SuppressWarnings("unused")
-  LayerTrustRegionMap[] addRefs(LayerTrustRegionMap[] array) {
+  LayerTrustRegionMap[] addRefs(@Nullable LayerTrustRegionMap[] array) {
     if (array == null)
       return null;
     return Arrays.stream(array).filter((x) -> x != null).map(LayerTrustRegionMap::addRef)
         .toArray((x) -> new LayerTrustRegionMap[x]);
   }
 
+  @Nullable
   public static @SuppressWarnings("unused")
-  LayerTrustRegionMap[][] addRefs(LayerTrustRegionMap[][] array) {
+  LayerTrustRegionMap[][] addRefs(@Nullable LayerTrustRegionMap[][] array) {
     if (array == null)
       return null;
     return Arrays.stream(array).filter((x) -> x != null).map(LayerTrustRegionMap::addRefs)
         .toArray((x) -> new LayerTrustRegionMap[x][]);
   }
 
+  @javax.annotation.Nullable
   @Override
   public TrustRegion getRegionPolicy(final Layer layer) {
     return regionPolicies.getOrDefault(layer, defaultRegionPolicy);
@@ -67,6 +70,7 @@ public class LayerTrustRegionMap extends TrustRegionStrategy {
 
   @Override
   public void reset() {
+    assert inner != null;
     inner.reset();
   }
 
@@ -80,6 +84,7 @@ public class LayerTrustRegionMap extends TrustRegionStrategy {
   void _free() {
   }
 
+  @Nonnull
   public @Override
   @SuppressWarnings("unused")
   LayerTrustRegionMap addRef() {

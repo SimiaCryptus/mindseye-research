@@ -33,9 +33,9 @@ import com.simiacryptus.mindseye.opt.TrainingMonitor;
 import com.simiacryptus.notebook.NotebookOutput;
 import com.simiacryptus.ref.lang.RefUtil;
 import com.simiacryptus.ref.lang.ReferenceCounting;
-import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
@@ -47,16 +47,18 @@ public class L1NormalizationTest extends MnistTestBase {
     return L12Normalizer.class;
   }
 
+  @Nullable
   public static @SuppressWarnings("unused")
-  L1NormalizationTest[] addRefs(L1NormalizationTest[] array) {
+  L1NormalizationTest[] addRefs(@Nullable L1NormalizationTest[] array) {
     if (array == null)
       return null;
     return Arrays.stream(array).filter((x) -> x != null).map(L1NormalizationTest::addRef)
         .toArray((x) -> new L1NormalizationTest[x]);
   }
 
+  @Nullable
   public static @SuppressWarnings("unused")
-  L1NormalizationTest[][] addRefs(L1NormalizationTest[][] array) {
+  L1NormalizationTest[][] addRefs(@Nullable L1NormalizationTest[][] array) {
     if (array == null)
       return null;
     return Arrays.stream(array).filter((x) -> x != null).map(L1NormalizationTest::addRefs)
@@ -68,14 +70,15 @@ public class L1NormalizationTest extends MnistTestBase {
                     @Nonnull final Tensor[][] trainingData, final TrainingMonitor monitor) {
     log.eval(RefUtil
         .wrapInterface((UncheckedSupplier<Double>) () -> {
-          @Nonnull final SimpleLossNetwork supervisedNetwork = new SimpleLossNetwork(network == null ? null : network.addRef(),
+          @Nonnull final SimpleLossNetwork supervisedNetwork = new SimpleLossNetwork(network.addRef(),
               new EntropyLossLayer());
           @Nonnull final Trainable trainable = new L12Normalizer(
               new SampledArrayTrainable(Tensor.addRefs(trainingData),
-                  supervisedNetwork == null ? null : supervisedNetwork, 1000)) {
-            @NotNull
+                  supervisedNetwork, 1000)) {
+            @Nonnull
             @Override
             public Layer getLayer() {
+              assert inner != null;
               return inner.getLayer();
             }
 
@@ -84,35 +87,31 @@ public class L1NormalizationTest extends MnistTestBase {
             }
 
             @Override
-            protected double getL1(final Layer layer) {
+            protected double getL1(@Nullable final Layer layer) {
               if (null != layer)
                 layer.freeRef();
               return 1.0;
             }
 
             @Override
-            protected double getL2(final Layer layer) {
+            protected double getL2(@Nullable final Layer layer) {
               if (null != layer)
                 layer.freeRef();
               return 0;
             }
           };
           IterativeTrainer temp_47_0002 = new IterativeTrainer(
-              trainable == null ? null : trainable);
+              trainable);
           IterativeTrainer temp_47_0003 = temp_47_0002.setMonitor(monitor);
           IterativeTrainer temp_47_0004 = temp_47_0003.setTimeout(3, TimeUnit.MINUTES);
           IterativeTrainer temp_47_0005 = temp_47_0004.setMaxIterations(500);
           double temp_47_0001 = temp_47_0005.run();
-          if (null != temp_47_0005)
-            temp_47_0005.freeRef();
-          if (null != temp_47_0004)
-            temp_47_0004.freeRef();
-          if (null != temp_47_0003)
-            temp_47_0003.freeRef();
-          if (null != temp_47_0002)
-            temp_47_0002.freeRef();
+          temp_47_0005.freeRef();
+          temp_47_0004.freeRef();
+          temp_47_0003.freeRef();
+          temp_47_0002.freeRef();
           return temp_47_0001;
-        }, network == null ? null : network, Tensor.addRefs(trainingData)));
+        }, network, Tensor.addRefs(trainingData)));
     ReferenceCounting.freeRefs(trainingData);
   }
 
@@ -120,6 +119,7 @@ public class L1NormalizationTest extends MnistTestBase {
   void _free() {
   }
 
+  @Nonnull
   public @Override
   @SuppressWarnings("unused")
   L1NormalizationTest addRef() {

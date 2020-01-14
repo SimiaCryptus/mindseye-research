@@ -35,6 +35,7 @@ import com.simiacryptus.ref.lang.RefUtil;
 import com.simiacryptus.ref.lang.ReferenceCounting;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
@@ -46,16 +47,18 @@ public class TrustSphereTest extends MnistTestBase {
     return AdaptiveTrustSphere.class;
   }
 
+  @Nullable
   public static @SuppressWarnings("unused")
-  TrustSphereTest[] addRefs(TrustSphereTest[] array) {
+  TrustSphereTest[] addRefs(@Nullable TrustSphereTest[] array) {
     if (array == null)
       return null;
     return Arrays.stream(array).filter((x) -> x != null).map(TrustSphereTest::addRef)
         .toArray((x) -> new TrustSphereTest[x]);
   }
 
+  @Nullable
   public static @SuppressWarnings("unused")
-  TrustSphereTest[][] addRefs(TrustSphereTest[][] array) {
+  TrustSphereTest[][] addRefs(@Nullable TrustSphereTest[][] array) {
     if (array == null)
       return null;
     return Arrays.stream(array).filter((x) -> x != null).map(TrustSphereTest::addRefs)
@@ -67,14 +70,15 @@ public class TrustSphereTest extends MnistTestBase {
                     @Nonnull final Tensor[][] trainingData, final TrainingMonitor monitor) {
     log.eval(RefUtil
         .wrapInterface((UncheckedSupplier<Double>) () -> {
-          @Nonnull final SimpleLossNetwork supervisedNetwork = new SimpleLossNetwork(network == null ? null : network.addRef(),
+          @Nonnull final SimpleLossNetwork supervisedNetwork = new SimpleLossNetwork(network.addRef(),
               new EntropyLossLayer());
           @Nonnull final Trainable trainable = new SampledArrayTrainable(
               Tensor.addRefs(trainingData),
-              supervisedNetwork == null ? null : supervisedNetwork, 10000);
+              supervisedNetwork, 10000);
           @Nonnull final TrustRegionStrategy trustRegionStrategy = new TrustRegionStrategy() {
+            @Nonnull
             @Override
-            public TrustRegion getRegionPolicy(final Layer layer) {
+            public TrustRegion getRegionPolicy(@Nullable final Layer layer) {
               if (null != layer)
                 layer.freeRef();
               return new AdaptiveTrustSphere();
@@ -85,30 +89,24 @@ public class TrustSphereTest extends MnistTestBase {
             }
           };
           IterativeTrainer temp_39_0002 = new IterativeTrainer(
-              trainable == null ? null : trainable);
+              trainable);
           IterativeTrainer temp_39_0003 = temp_39_0002.setIterationsPerSample(100);
           IterativeTrainer temp_39_0004 = temp_39_0003.setMonitor(monitor);
           IterativeTrainer temp_39_0005 = temp_39_0004
               //.setOrientation(new ValidatingOrientationWrapper(trustRegionStrategy))
-              .setOrientation(trustRegionStrategy == null ? null : trustRegionStrategy);
+              .setOrientation(trustRegionStrategy);
           IterativeTrainer temp_39_0006 = temp_39_0005.setTimeout(3, TimeUnit.MINUTES);
           IterativeTrainer temp_39_0007 = temp_39_0006.setMaxIterations(500);
           double temp_39_0001 = temp_39_0007.run();
-          if (null != temp_39_0007)
-            temp_39_0007.freeRef();
-          if (null != temp_39_0006)
-            temp_39_0006.freeRef();
-          if (null != temp_39_0005)
-            temp_39_0005.freeRef();
-          if (null != temp_39_0004)
-            temp_39_0004.freeRef();
-          if (null != temp_39_0003)
-            temp_39_0003.freeRef();
-          if (null != temp_39_0002)
-            temp_39_0002.freeRef();
+          temp_39_0007.freeRef();
+          temp_39_0006.freeRef();
+          temp_39_0005.freeRef();
+          temp_39_0004.freeRef();
+          temp_39_0003.freeRef();
+          temp_39_0002.freeRef();
           //.setOrientation(new ValidatingOrientationWrapper(trustRegionStrategy))
           return temp_39_0001;
-        }, Tensor.addRefs(trainingData), network == null ? null : network));
+        }, Tensor.addRefs(trainingData), network));
     ReferenceCounting.freeRefs(trainingData);
   }
 
@@ -116,6 +114,7 @@ public class TrustSphereTest extends MnistTestBase {
   void _free() {
   }
 
+  @Nonnull
   public @Override
   @SuppressWarnings("unused")
   TrustSphereTest addRef() {

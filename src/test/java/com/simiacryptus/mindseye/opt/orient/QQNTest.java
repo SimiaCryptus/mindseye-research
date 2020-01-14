@@ -35,6 +35,7 @@ import com.simiacryptus.ref.lang.ReferenceCounting;
 import com.simiacryptus.ref.wrappers.RefList;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
@@ -46,15 +47,17 @@ public class QQNTest extends MnistTestBase {
     return QQN.class;
   }
 
+  @Nullable
   public static @SuppressWarnings("unused")
-  QQNTest[] addRefs(QQNTest[] array) {
+  QQNTest[] addRefs(@Nullable QQNTest[] array) {
     if (array == null)
       return null;
     return Arrays.stream(array).filter((x) -> x != null).map(QQNTest::addRef).toArray((x) -> new QQNTest[x]);
   }
 
+  @Nullable
   public static @SuppressWarnings("unused")
-  QQNTest[][] addRefs(QQNTest[][] array) {
+  QQNTest[][] addRefs(@Nullable QQNTest[][] array) {
     if (array == null)
       return null;
     return Arrays.stream(array).filter((x) -> x != null).map(QQNTest::addRefs)
@@ -66,36 +69,31 @@ public class QQNTest extends MnistTestBase {
                     @Nonnull final Tensor[][] trainingData, final TrainingMonitor monitor) {
     log.eval(RefUtil
         .wrapInterface((UncheckedSupplier<Double>) () -> {
-          @Nonnull final SimpleLossNetwork supervisedNetwork = new SimpleLossNetwork(network == null ? null : network.addRef(),
+          @Nonnull final SimpleLossNetwork supervisedNetwork = new SimpleLossNetwork(network.addRef(),
               new EntropyLossLayer());
           ValidatingTrainer temp_45_0002 = new ValidatingTrainer(
               new SampledArrayTrainable(Tensor.addRefs(trainingData),
-                  supervisedNetwork == null ? null : supervisedNetwork, 1000, 10000),
+                  supervisedNetwork, 1000, 10000),
               new ArrayTrainable(Tensor.addRefs(trainingData),
-                  supervisedNetwork == null ? null : supervisedNetwork.addRef()));
+                  supervisedNetwork.addRef()));
           //return new IterativeTrainer(new SampledArrayTrainable(trainingData, supervisedNetwork, 10000))
           @Nonnull
           ValidatingTrainer trainer = temp_45_0002.setMonitor(monitor);
-          if (null != temp_45_0002)
-            temp_45_0002.freeRef();
+          temp_45_0002.freeRef();
           RefList<ValidatingTrainer.TrainingPhase> temp_45_0003 = trainer
               .getRegimen();
           ValidatingTrainer.TrainingPhase temp_45_0004 = temp_45_0003.get(0);
           RefUtil.freeRef(temp_45_0004.setOrientation(new QQN()));
-          if (null != temp_45_0004)
-            temp_45_0004.freeRef();
-          if (null != temp_45_0003)
-            temp_45_0003.freeRef();
+          temp_45_0004.freeRef();
+          temp_45_0003.freeRef();
           ValidatingTrainer temp_45_0005 = trainer.setTimeout(5, TimeUnit.MINUTES);
           ValidatingTrainer temp_45_0006 = temp_45_0005.setMaxIterations(500);
           double temp_45_0001 = temp_45_0006.run();
-          if (null != temp_45_0006)
-            temp_45_0006.freeRef();
-          if (null != temp_45_0005)
-            temp_45_0005.freeRef();
+          temp_45_0006.freeRef();
+          temp_45_0005.freeRef();
           trainer.freeRef();
           return temp_45_0001;
-        }, Tensor.addRefs(trainingData), network == null ? null : network));
+        }, Tensor.addRefs(trainingData), network));
     ReferenceCounting.freeRefs(trainingData);
   }
 
@@ -103,6 +101,7 @@ public class QQNTest extends MnistTestBase {
   void _free() {
   }
 
+  @Nonnull
   public @Override
   @SuppressWarnings("unused")
   QQNTest addRef() {

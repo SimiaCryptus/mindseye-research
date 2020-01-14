@@ -34,6 +34,7 @@ import com.simiacryptus.ref.lang.RefUtil;
 import com.simiacryptus.ref.lang.ReferenceCounting;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
@@ -45,15 +46,17 @@ public class GDTest extends MnistTestBase {
     return GradientDescent.class;
   }
 
+  @Nullable
   public static @SuppressWarnings("unused")
-  GDTest[] addRefs(GDTest[] array) {
+  GDTest[] addRefs(@Nullable GDTest[] array) {
     if (array == null)
       return null;
     return Arrays.stream(array).filter((x) -> x != null).map(GDTest::addRef).toArray((x) -> new GDTest[x]);
   }
 
+  @Nullable
   public static @SuppressWarnings("unused")
-  GDTest[][] addRefs(GDTest[][] array) {
+  GDTest[][] addRefs(@Nullable GDTest[][] array) {
     if (array == null)
       return null;
     return Arrays.stream(array).filter((x) -> x != null).map(GDTest::addRefs).toArray((x) -> new GDTest[x][]);
@@ -64,31 +67,26 @@ public class GDTest extends MnistTestBase {
                     @Nonnull final Tensor[][] trainingData, final TrainingMonitor monitor) {
     log.eval(RefUtil
         .wrapInterface((UncheckedSupplier<Double>) () -> {
-          @Nonnull final SimpleLossNetwork supervisedNetwork = new SimpleLossNetwork(network == null ? null : network.addRef(),
+          @Nonnull final SimpleLossNetwork supervisedNetwork = new SimpleLossNetwork(network.addRef(),
               new EntropyLossLayer());
           @Nonnull final Trainable trainable = new SampledArrayTrainable(
               Tensor.addRefs(trainingData),
-              supervisedNetwork == null ? null : supervisedNetwork, 1000);
+              supervisedNetwork, 1000);
           IterativeTrainer temp_42_0002 = new IterativeTrainer(
-              trainable == null ? null : trainable);
+              trainable);
           IterativeTrainer temp_42_0003 = temp_42_0002.setMonitor(monitor);
           IterativeTrainer temp_42_0004 = temp_42_0003
               .setOrientation(new GradientDescent());
           IterativeTrainer temp_42_0005 = temp_42_0004.setTimeout(5, TimeUnit.MINUTES);
           IterativeTrainer temp_42_0006 = temp_42_0005.setMaxIterations(500);
           double temp_42_0001 = temp_42_0006.run();
-          if (null != temp_42_0006)
-            temp_42_0006.freeRef();
-          if (null != temp_42_0005)
-            temp_42_0005.freeRef();
-          if (null != temp_42_0004)
-            temp_42_0004.freeRef();
-          if (null != temp_42_0003)
-            temp_42_0003.freeRef();
-          if (null != temp_42_0002)
-            temp_42_0002.freeRef();
+          temp_42_0006.freeRef();
+          temp_42_0005.freeRef();
+          temp_42_0004.freeRef();
+          temp_42_0003.freeRef();
+          temp_42_0002.freeRef();
           return temp_42_0001;
-        }, Tensor.addRefs(trainingData), network == null ? null : network));
+        }, Tensor.addRefs(trainingData), network));
     ReferenceCounting.freeRefs(trainingData);
   }
 
@@ -96,6 +94,7 @@ public class GDTest extends MnistTestBase {
   void _free() {
   }
 
+  @Nonnull
   public @Override
   @SuppressWarnings("unused")
   GDTest addRef() {

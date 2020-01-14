@@ -35,6 +35,7 @@ import com.simiacryptus.ref.lang.RefUtil;
 import com.simiacryptus.ref.lang.ReferenceCounting;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
@@ -46,18 +47,20 @@ public class SingleOrthantTrustRegionTest extends MnistTestBase {
     return SingleOrthant.class;
   }
 
+  @Nullable
   public static @SuppressWarnings("unused")
   SingleOrthantTrustRegionTest[] addRefs(
-      SingleOrthantTrustRegionTest[] array) {
+      @Nullable SingleOrthantTrustRegionTest[] array) {
     if (array == null)
       return null;
     return Arrays.stream(array).filter((x) -> x != null).map(SingleOrthantTrustRegionTest::addRef)
         .toArray((x) -> new SingleOrthantTrustRegionTest[x]);
   }
 
+  @Nullable
   public static @SuppressWarnings("unused")
   SingleOrthantTrustRegionTest[][] addRefs(
-      SingleOrthantTrustRegionTest[][] array) {
+      @Nullable SingleOrthantTrustRegionTest[][] array) {
     if (array == null)
       return null;
     return Arrays.stream(array).filter((x) -> x != null).map(SingleOrthantTrustRegionTest::addRefs)
@@ -69,14 +72,15 @@ public class SingleOrthantTrustRegionTest extends MnistTestBase {
                     @Nonnull final Tensor[][] trainingData, final TrainingMonitor monitor) {
     log.eval(RefUtil
         .wrapInterface((UncheckedSupplier<Double>) () -> {
-          @Nonnull final SimpleLossNetwork supervisedNetwork = new SimpleLossNetwork(network == null ? null : network.addRef(),
+          @Nonnull final SimpleLossNetwork supervisedNetwork = new SimpleLossNetwork(network.addRef(),
               new EntropyLossLayer());
           @Nonnull final Trainable trainable = new SampledArrayTrainable(
               Tensor.addRefs(trainingData),
-              supervisedNetwork == null ? null : supervisedNetwork, 10000);
+              supervisedNetwork, 10000);
           @Nonnull final TrustRegionStrategy trustRegionStrategy = new TrustRegionStrategy() {
+            @Nonnull
             @Override
-            public TrustRegion getRegionPolicy(final Layer layer) {
+            public TrustRegion getRegionPolicy(@Nullable final Layer layer) {
               if (null != layer)
                 layer.freeRef();
               return new SingleOrthant();
@@ -87,30 +91,24 @@ public class SingleOrthantTrustRegionTest extends MnistTestBase {
             }
           };
           IterativeTrainer temp_44_0002 = new IterativeTrainer(
-              trainable == null ? null : trainable);
+              trainable);
           IterativeTrainer temp_44_0003 = temp_44_0002.setIterationsPerSample(100);
           IterativeTrainer temp_44_0004 = temp_44_0003.setMonitor(monitor);
           IterativeTrainer temp_44_0005 = temp_44_0004
               //.setOrientation(new ValidatingOrientationWrapper(trustRegionStrategy))
-              .setOrientation(trustRegionStrategy == null ? null : trustRegionStrategy);
+              .setOrientation(trustRegionStrategy);
           IterativeTrainer temp_44_0006 = temp_44_0005.setTimeout(3, TimeUnit.MINUTES);
           IterativeTrainer temp_44_0007 = temp_44_0006.setMaxIterations(500);
           double temp_44_0001 = temp_44_0007.run();
-          if (null != temp_44_0007)
-            temp_44_0007.freeRef();
-          if (null != temp_44_0006)
-            temp_44_0006.freeRef();
-          if (null != temp_44_0005)
-            temp_44_0005.freeRef();
-          if (null != temp_44_0004)
-            temp_44_0004.freeRef();
-          if (null != temp_44_0003)
-            temp_44_0003.freeRef();
-          if (null != temp_44_0002)
-            temp_44_0002.freeRef();
+          temp_44_0007.freeRef();
+          temp_44_0006.freeRef();
+          temp_44_0005.freeRef();
+          temp_44_0004.freeRef();
+          temp_44_0003.freeRef();
+          temp_44_0002.freeRef();
           //.setOrientation(new ValidatingOrientationWrapper(trustRegionStrategy))
           return temp_44_0001;
-        }, network == null ? null : network, Tensor.addRefs(trainingData)));
+        }, network, Tensor.addRefs(trainingData)));
     ReferenceCounting.freeRefs(trainingData);
   }
 
@@ -118,6 +116,7 @@ public class SingleOrthantTrustRegionTest extends MnistTestBase {
   void _free() {
   }
 
+  @Nonnull
   public @Override
   @SuppressWarnings("unused")
   SingleOrthantTrustRegionTest addRef() {

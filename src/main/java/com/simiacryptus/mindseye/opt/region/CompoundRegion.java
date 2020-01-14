@@ -19,6 +19,8 @@
 
 package com.simiacryptus.mindseye.opt.region;
 
+import javax.annotation.Nonnull;
+
 public class CompoundRegion implements TrustRegion {
 
   private final TrustRegion[] inner;
@@ -28,7 +30,7 @@ public class CompoundRegion implements TrustRegion {
   }
 
   @Override
-  public double[] project(final double[][] history, final double[] point) {
+  public double[] project(@Nonnull final double[][] history, final double[] point) {
     double[] returnValue = point;
     for (int i = 0; i < inner.length; i++) {
       returnValue = inner[i].project(history, returnValue);

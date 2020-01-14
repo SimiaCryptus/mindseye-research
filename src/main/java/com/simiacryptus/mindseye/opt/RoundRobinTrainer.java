@@ -27,21 +27,20 @@ import com.simiacryptus.mindseye.opt.line.LineSearchCursor;
 import com.simiacryptus.mindseye.opt.line.LineSearchStrategy;
 import com.simiacryptus.mindseye.opt.orient.LBFGS;
 import com.simiacryptus.mindseye.opt.orient.OrientationStrategy;
-import com.simiacryptus.ref.lang.ReferenceCounting;
 import com.simiacryptus.ref.lang.ReferenceCountingBase;
-import com.simiacryptus.ref.wrappers.RefArrayList;
-import com.simiacryptus.ref.wrappers.RefArrays;
-import com.simiacryptus.ref.wrappers.RefList;
-import com.simiacryptus.ref.wrappers.RefString;
+import com.simiacryptus.ref.wrappers.*;
 import com.simiacryptus.util.Util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalUnit;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
@@ -51,6 +50,7 @@ public class RoundRobinTrainer extends ReferenceCountingBase {
   private static final Logger log = LoggerFactory.getLogger(RoundRobinTrainer.class);
 
   private final Map<CharSequence, LineSearchStrategy> lineSearchStrategyMap = new HashMap<>();
+  @Nullable
   private final Trainable subject;
   private AtomicInteger currentIteration = new AtomicInteger(0);
   private int iterationsPerSample = 1;
@@ -62,7 +62,7 @@ public class RoundRobinTrainer extends ReferenceCountingBase {
   private double terminateThreshold;
   private Duration timeout;
 
-  public RoundRobinTrainer(final Trainable subject) {
+  public RoundRobinTrainer(@Nullable final Trainable subject) {
     Trainable temp_34_0001 = subject == null ? null : subject.addRef();
     this.subject = temp_34_0001 == null ? null : temp_34_0001.addRef();
     if (null != temp_34_0001)
@@ -132,7 +132,7 @@ public class RoundRobinTrainer extends ReferenceCountingBase {
 
   @Nonnull
   public RefList<? extends OrientationStrategy<?>> getOrientations() {
-    return orientations;
+    return orientations.addRef();
   }
 
   @Nonnull
@@ -161,34 +161,36 @@ public class RoundRobinTrainer extends ReferenceCountingBase {
     return this.addRef();
   }
 
+  @Nullable
   public static @SuppressWarnings("unused")
-  RoundRobinTrainer[] addRefs(RoundRobinTrainer[] array) {
+  RoundRobinTrainer[] addRefs(@Nullable RoundRobinTrainer[] array) {
     if (array == null)
       return null;
     return Arrays.stream(array).filter((x) -> x != null).map(RoundRobinTrainer::addRef)
         .toArray((x) -> new RoundRobinTrainer[x]);
   }
 
+  @Nullable
   public static @SuppressWarnings("unused")
-  RoundRobinTrainer[][] addRefs(RoundRobinTrainer[][] array) {
+  RoundRobinTrainer[][] addRefs(@Nullable RoundRobinTrainer[][] array) {
     if (array == null)
       return null;
     return Arrays.stream(array).filter((x) -> x != null).map(RoundRobinTrainer::addRefs)
         .toArray((x) -> new RoundRobinTrainer[x][]);
   }
 
+  @Nullable
   public PointSample measure() {
     PointSample currentPoint = null;
     int retries = 0;
     do {
-      if (!subject.reseed(com.simiacryptus.ref.wrappers.RefSystem.nanoTime()) && retries > 0) {
-        if (null != currentPoint)
-          currentPoint.freeRef();
+      assert subject != null;
+      if (!subject.reseed(RefSystem.nanoTime()) && retries > 0) {
+        currentPoint.freeRef();
         throw new IterativeStopException();
       }
       if (10 < retries++) {
-        if (null != currentPoint)
-          currentPoint.freeRef();
+        currentPoint.freeRef();
         throw new IterativeStopException();
       }
       currentPoint = subject.measure(monitor);
@@ -198,48 +200,34 @@ public class RoundRobinTrainer extends ReferenceCountingBase {
   }
 
   public double run() {
-    final long timeoutMs = com.simiacryptus.ref.wrappers.RefSystem.currentTimeMillis() + timeout.toMillis();
+    final long timeoutMs = RefSystem.currentTimeMillis() + timeout.toMillis();
     PointSample currentPoint = measure();
+    assert currentPoint != null;
+    assert currentPoint != null;
 mainLoop:
-    while (timeoutMs > com.simiacryptus.ref.wrappers.RefSystem.currentTimeMillis() && currentPoint.sum > terminateThreshold) {
+    while (timeoutMs > RefSystem.currentTimeMillis() && currentPoint.sum > terminateThreshold) {
       if (currentIteration.get() > maxIterations) {
         break;
       }
       currentPoint = measure();
       for (int subiteration = 0; subiteration < iterationsPerSample; subiteration++) {
         final PointSample previousOrientations = currentPoint == null ? null : currentPoint.addRef();
-        for (@Nonnull final OrientationStrategy<?> orientation : orientations) {
-          if (currentIteration.incrementAndGet() > maxIterations) {
+        RefIterator<OrientationStrategy<?>> orientationStrategyRefIterator = orientations.iterator();
+        while (orientationStrategyRefIterator.hasNext()) {
+          OrientationStrategy<?> orientation = orientationStrategyRefIterator.next();
+          if (currentIteration.incrementAndGet() <= maxIterations) {
+            assert orientation != null;
+            currentPoint = getPointSample(currentPoint, orientation);
+          } else {
             break;
           }
-          final LineSearchCursor direction = orientation.orient(subject == null ? null : subject.addRef(),
-              currentPoint == null ? null : currentPoint.addRef(), monitor);
-          @Nonnull final CharSequence directionType = direction.getDirectionType() + "+"
-              + Long.toHexString(com.simiacryptus.ref.wrappers.RefSystem.identityHashCode(orientation));
-          LineSearchStrategy lineSearchStrategy;
-          if (lineSearchStrategyMap.containsKey(directionType)) {
-            lineSearchStrategy = lineSearchStrategyMap.get(directionType);
-          } else {
-            log.info(RefString.format("Constructing line search parameters: %s", directionType));
-            lineSearchStrategy = lineSearchFactory.apply(directionType);
-            lineSearchStrategyMap.put(directionType, lineSearchStrategy);
-          }
-          final PointSample previous = currentPoint == null ? null : currentPoint.addRef();
-          currentPoint = lineSearchStrategy.step(direction == null ? null : direction.addRef(), monitor);
-          if (null != direction)
-            direction.freeRef();
-          monitor.onStepComplete(new Step(currentPoint == null ? null : currentPoint.addRef(), currentIteration.get()));
-          if (previous.sum == currentPoint.sum) {
-            monitor.log(
-                RefString.format("Iteration %s failed, ignoring. Error: %s", currentIteration.get(), currentPoint.sum));
-          } else {
-            monitor.log(RefString.format("Iteration %s complete. Error: %s", currentIteration.get(), currentPoint.sum));
-          }
-          if (null != previous)
-            previous.freeRef();
         }
+        orientationStrategyRefIterator.freeRef();
+        assert currentPoint != null;
+        assert previousOrientations != null;
         if (previousOrientations.sum <= currentPoint.sum) {
-          if (subject.reseed(com.simiacryptus.ref.wrappers.RefSystem.nanoTime())) {
+          assert subject != null;
+          if (subject.reseed(RefSystem.nanoTime())) {
             monitor.log(RefString.format("MacroIteration %s failed, retrying. Error: %s", currentIteration.get(),
                 currentPoint.sum));
             break;
@@ -249,14 +237,44 @@ mainLoop:
             break mainLoop;
           }
         }
-        if (null != previousOrientations)
-          previousOrientations.freeRef();
+        previousOrientations.freeRef();
       }
     }
     double temp_34_0002 = null == currentPoint ? Double.NaN : currentPoint.sum;
     if (null != currentPoint)
       currentPoint.freeRef();
     return temp_34_0002;
+  }
+
+  @Nonnull
+  public PointSample getPointSample(@javax.annotation.Nullable PointSample currentPoint, @Nonnull OrientationStrategy<?> orientation) {
+    final LineSearchCursor direction = orientation.orient(subject == null ? null : subject.addRef(),
+        currentPoint == null ? null : currentPoint.addRef(), monitor);
+    @Nonnull final CharSequence directionType = direction.getDirectionType() + "+"
+        + Long.toHexString(RefSystem.identityHashCode(orientation));
+    LineSearchStrategy lineSearchStrategy;
+    if (lineSearchStrategyMap.containsKey(directionType)) {
+      lineSearchStrategy = lineSearchStrategyMap.get(directionType);
+    } else {
+      log.info(RefString.format("Constructing line search parameters: %s", directionType));
+      lineSearchStrategy = lineSearchFactory.apply(directionType);
+      lineSearchStrategyMap.put(directionType, lineSearchStrategy);
+    }
+    final PointSample previous = currentPoint == null ? null : currentPoint.addRef();
+    assert currentPoint != null;
+    currentPoint.freeRef();
+    currentPoint = lineSearchStrategy.step(direction.addRef(), monitor);
+    direction.freeRef();
+    monitor.onStepComplete(new Step(currentPoint == null ? null : currentPoint.addRef(), currentIteration.get()));
+    assert currentPoint != null;
+    if (previous.sum == currentPoint.sum) {
+      monitor.log(
+          RefString.format("Iteration %s failed, ignoring. Error: %s", currentIteration.get(), currentPoint.sum));
+    } else {
+      monitor.log(RefString.format("Iteration %s complete. Error: %s", currentIteration.get(), currentPoint.sum));
+    }
+    previous.freeRef();
+    return currentPoint;
   }
 
   @Nonnull
@@ -274,8 +292,10 @@ mainLoop:
   void _free() {
     if (null != subject)
       subject.freeRef();
+    orientations.freeRef();
   }
 
+  @Nonnull
   public @Override
   @SuppressWarnings("unused")
   RoundRobinTrainer addRef() {

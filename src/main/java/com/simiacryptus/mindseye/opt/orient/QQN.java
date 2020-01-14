@@ -31,6 +31,7 @@ import com.simiacryptus.ref.lang.RefUtil;
 import com.simiacryptus.ref.wrappers.RefString;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.Arrays;
 import java.util.UUID;
 
@@ -59,15 +60,17 @@ public class QQN extends OrientationStrategyBase<LineSearchCursor> {
     return this.addRef();
   }
 
+  @Nullable
   public static @SuppressWarnings("unused")
-  QQN[] addRefs(QQN[] array) {
+  QQN[] addRefs(@Nullable QQN[] array) {
     if (array == null)
       return null;
     return Arrays.stream(array).filter((x) -> x != null).map(QQN::addRef).toArray((x) -> new QQN[x]);
   }
 
+  @Nullable
   public static @SuppressWarnings("unused")
-  QQN[][] addRefs(QQN[][] array) {
+  QQN[][] addRefs(@Nullable QQN[][] array) {
     if (array == null)
       return null;
     return Arrays.stream(array).filter((x) -> x != null).map(QQN::addRefs).toArray((x) -> new QQN[x][]);
@@ -76,9 +79,10 @@ public class QQN extends OrientationStrategyBase<LineSearchCursor> {
   @Override
   public LineSearchCursor orient(@Nonnull final Trainable subject, @Nonnull final PointSample origin,
                                  @Nonnull final TrainingMonitor monitor) {
-    inner.addToHistory(origin == null ? null : origin.addRef(), monitor);
-    final SimpleLineSearchCursor lbfgsCursor = inner.orient(subject == null ? null : subject.addRef(),
-        origin == null ? null : origin.addRef(), monitor);
+    inner.addToHistory(origin.addRef(), monitor);
+    final SimpleLineSearchCursor lbfgsCursor = inner.orient(subject.addRef(),
+        origin.addRef(), monitor);
+    assert lbfgsCursor.direction != null;
     final DeltaSet<UUID> lbfgs = lbfgsCursor.direction.addRef();
     @Nonnull final DeltaSet<UUID> gd = origin.delta.scale(-1.0);
     origin.freeRef();
@@ -86,91 +90,82 @@ public class QQN extends OrientationStrategyBase<LineSearchCursor> {
     final double gdMag = gd.getMagnitude();
     if (Math.abs(lbfgsMag - gdMag) / (lbfgsMag + gdMag) > 1e-2) {
       @Nonnull final DeltaSet<UUID> scaledGradient = gd.scale(lbfgsMag / gdMag);
+      gd.freeRef();
       monitor.log(RefString.format("Returning Quadratic Cursor %s GD, %s QN", gdMag, lbfgsMag));
       try {
-        try {
-          gd.freeRef();
-          try {
-            try {
-              return new LineSearchCursorBase() {
+        return new LineSearchCursorBase() {
 
-                {
-                  subject.addRef();
-                }
-
-                @Nonnull
-                @Override
-                public CharSequence getDirectionType() {
-                  return CURSOR_NAME;
-                }
-
-                @Override
-                public DeltaSet<UUID> position(final double t) {
-                  if (!Double.isFinite(t))
-                    throw new IllegalArgumentException();
-                  DeltaSet<UUID> temp_38_0007 = scaledGradient
-                      .scale(t - t * t);
-                  DeltaSet<UUID> temp_38_0006 = temp_38_0007
-                      .add(lbfgs.scale(t * t));
-                  if (null != temp_38_0007)
-                    temp_38_0007.freeRef();
-                  return temp_38_0006;
-                }
-
-                @Override
-                public void reset() {
-                  lbfgsCursor.reset();
-                }
-
-                @Nonnull
-                @Override
-                public LineSearchPoint step(final double t, @Nonnull final TrainingMonitor monitor) {
-                  if (!Double.isFinite(t))
-                    throw new IllegalArgumentException();
-                  reset();
-                  DeltaSet<UUID> temp_38_0008 = position(t);
-                  temp_38_0008.accumulate(1);
-                  if (null != temp_38_0008)
-                    temp_38_0008.freeRef();
-                  PointSample temp_38_0009 = subject.measure(monitor);
-                  @Nonnull final PointSample sample = temp_38_0009.setRate(t);
-                  if (null != temp_38_0009)
-                    temp_38_0009.freeRef();
-                  //monitor.log(String.format("evalInputDelta buffers %d %d %d %d %d", sample.evalInputDelta.apply.size(), origin.evalInputDelta.apply.size(), lbfgs.apply.size(), gd.apply.size(), scaledGradient.apply.size()));
-                  inner.addToHistory(sample == null ? null : sample.addRef(), monitor);
-                  DeltaSet<UUID> temp_38_0010 = scaledGradient
-                      .scale(1 - 2 * t);
-                  @Nonnull final DeltaSet<UUID> tangent = temp_38_0010.add(lbfgs.scale(2 * t));
-                  if (null != temp_38_0010)
-                    temp_38_0010.freeRef();
-                  LineSearchPoint temp_38_0004 = new LineSearchPoint(
-                      sample == null ? null : sample, tangent.dot(sample.delta.addRef()));
-                  tangent.freeRef();
-                  return temp_38_0004;
-                }
-
-                @Override
-                public void _free() {
-                  subject.freeRef();
-                }
-              };
-            } finally {
-              subject.freeRef();
-            }
-          } finally {
-            scaledGradient.freeRef();
+          {
+            subject.addRef();
+            scaledGradient.addRef();
+            lbfgs.addRef();
+            lbfgsCursor.addRef();
+            inner.addRef();
           }
-        } finally {
-          if (null != lbfgs)
+
+          @Nonnull
+          @Override
+          public CharSequence getDirectionType() {
+            return CURSOR_NAME;
+          }
+
+          @Nonnull
+          @Override
+          public DeltaSet<UUID> position(final double t) {
+            if (!Double.isFinite(t))
+              throw new IllegalArgumentException();
+            DeltaSet<UUID> temp_38_0007 = scaledGradient
+                .scale(t - t * t);
+            DeltaSet<UUID> temp_38_0006 = temp_38_0007
+                .add(lbfgs.scale(t * t));
+            temp_38_0007.freeRef();
+            return temp_38_0006;
+          }
+
+          @Override
+          public void reset() {
+            lbfgsCursor.reset();
+          }
+
+          @Nonnull
+          @Override
+          public LineSearchPoint step(final double t, @Nonnull final TrainingMonitor monitor) {
+            if (!Double.isFinite(t))
+              throw new IllegalArgumentException();
+            reset();
+            DeltaSet<UUID> temp_38_0008 = position(t);
+            temp_38_0008.accumulate(1);
+            temp_38_0008.freeRef();
+            PointSample temp_38_0009 = subject.measure(monitor);
+            @Nonnull final PointSample sample = temp_38_0009.setRate(t);
+            temp_38_0009.freeRef();
+            //monitor.log(String.format("evalInputDelta buffers %d %d %d %d %d", sample.evalInputDelta.apply.size(), origin.evalInputDelta.apply.size(), lbfgs.apply.size(), gd.apply.size(), scaledGradient.apply.size()));
+            inner.addToHistory(sample.addRef(), monitor);
+            DeltaSet<UUID> temp_38_0010 = scaledGradient.scale(1 - 2 * t);
+            @Nonnull final DeltaSet<UUID> tangent = temp_38_0010.add(lbfgs.scale(2 * t));
+            temp_38_0010.freeRef();
+            double dot = tangent.dot(sample.delta.addRef());
+            tangent.freeRef();
+            return new LineSearchPoint(sample, dot);
+          }
+
+          @Override
+          public void _free() {
+            subject.freeRef();
+            scaledGradient.freeRef();
             lbfgs.freeRef();
-        }
+            lbfgsCursor.freeRef();
+            inner.freeRef();
+          }
+        };
       } finally {
-        if (null != lbfgsCursor)
-          lbfgsCursor.freeRef();
+        subject.freeRef();
+        scaledGradient.freeRef();
+        lbfgs.freeRef();
+        lbfgsCursor.freeRef();
       }
     } else {
-      if (null != lbfgs)
-        lbfgs.freeRef();
+      lbfgs.freeRef();
       gd.freeRef();
       subject.freeRef();
       return lbfgsCursor;
@@ -184,10 +179,10 @@ public class QQN extends OrientationStrategyBase<LineSearchCursor> {
 
   @Override
   public void _free() {
-    if (null != inner)
-      inner.freeRef();
+    inner.freeRef();
   }
 
+  @Nonnull
   public @Override
   @SuppressWarnings("unused")
   QQN addRef() {

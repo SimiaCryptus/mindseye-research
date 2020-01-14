@@ -44,6 +44,7 @@ import java.util.stream.Stream;
 
 public abstract class TrustRegionStrategy extends OrientationStrategyBase<LineSearchCursor> {
 
+  @Nullable
   public final OrientationStrategy<? extends SimpleLineSearchCursor> inner;
   private final List<PointSample> history = new LinkedList<>();
   private int maxHistory = 10;
@@ -52,7 +53,7 @@ public abstract class TrustRegionStrategy extends OrientationStrategyBase<LineSe
     this(new LBFGS());
   }
 
-  protected TrustRegionStrategy(final OrientationStrategy<? extends SimpleLineSearchCursor> inner) {
+  protected TrustRegionStrategy(@Nullable final OrientationStrategy<? extends SimpleLineSearchCursor> inner) {
     OrientationStrategy<? extends SimpleLineSearchCursor> temp_33_0001 = inner == null
         ? null
         : inner.addRef();
@@ -76,20 +77,27 @@ public abstract class TrustRegionStrategy extends OrientationStrategyBase<LineSe
   public static double dot(@Nonnull final List<DoubleBuffer<UUID>> a, @Nonnull final List<DoubleBuffer<UUID>> b) {
     assert a.size() == b.size();
     return IntStream.range(0, a.size()).mapToDouble(i -> {
-      return a.get(i).dot(b.get(i));
+      DoubleBuffer<UUID> ai = a.get(i);
+      DoubleBuffer<UUID> bi = b.get(i);
+      double dot = ai.dot(bi);
+      ai.freeRef();
+      bi.freeRef();
+      return dot;
     }).sum();
   }
 
+  @Nullable
   public static @SuppressWarnings("unused")
-  TrustRegionStrategy[] addRefs(TrustRegionStrategy[] array) {
+  TrustRegionStrategy[] addRefs(@Nullable TrustRegionStrategy[] array) {
     if (array == null)
       return null;
     return Arrays.stream(array).filter((x) -> x != null).map(TrustRegionStrategy::addRef)
         .toArray((x) -> new TrustRegionStrategy[x]);
   }
 
+  @Nullable
   public static @SuppressWarnings("unused")
-  TrustRegionStrategy[][] addRefs(TrustRegionStrategy[][] array) {
+  TrustRegionStrategy[][] addRefs(@Nullable TrustRegionStrategy[][] array) {
     if (array == null)
       return null;
     return Arrays.stream(array).filter((x) -> x != null).map(TrustRegionStrategy::addRefs)
@@ -100,12 +108,13 @@ public abstract class TrustRegionStrategy extends OrientationStrategyBase<LineSe
 
   @Nonnull
   @Override
-  public LineSearchCursor orient(@Nonnull final Trainable subject, final PointSample origin,
+  public LineSearchCursor orient(@Nonnull final Trainable subject, @Nonnull final PointSample origin,
                                  final TrainingMonitor monitor) {
     history.add(0, origin.addRef());
     while (history.size() > maxHistory) {
       RefUtil.freeRef(history.remove(history.size() - 1));
     }
+    assert inner != null;
     final SimpleLineSearchCursor cursor = inner.orient(subject.addRef(), origin, monitor);
     TrustRegionStrategy.TrustRegionCursor temp_33_0005 = new TrustRegionCursor(
         cursor, subject, TrustRegionStrategy.this);
@@ -116,6 +125,7 @@ public abstract class TrustRegionStrategy extends OrientationStrategyBase<LineSe
 
   @Override
   public void reset() {
+    assert inner != null;
     inner.reset();
   }
 
@@ -125,6 +135,7 @@ public abstract class TrustRegionStrategy extends OrientationStrategyBase<LineSe
       inner.freeRef();
   }
 
+  @Nonnull
   public @Override
   @SuppressWarnings("unused")
   TrustRegionStrategy addRef() {
@@ -132,11 +143,14 @@ public abstract class TrustRegionStrategy extends OrientationStrategyBase<LineSe
   }
 
   private static class TrustRegionCursor extends LineSearchCursorBase {
+    @Nullable
     private final SimpleLineSearchCursor cursor;
+    @Nullable
     private final Trainable subject;
+    @Nullable
     private final TrustRegionStrategy parent;
 
-    public TrustRegionCursor(SimpleLineSearchCursor cursor, Trainable subject, TrustRegionStrategy parent) {
+    public TrustRegionCursor(@Nullable SimpleLineSearchCursor cursor, @Nullable Trainable subject, @Nullable TrustRegionStrategy parent) {
       TrustRegionStrategy temp_33_0002 = parent == null ? null : parent.addRef();
       this.parent = temp_33_0002 == null ? null : temp_33_0002.addRef();
       if (null != temp_33_0002)
@@ -161,11 +175,13 @@ public abstract class TrustRegionStrategy extends OrientationStrategyBase<LineSe
     @Nonnull
     @Override
     public CharSequence getDirectionType() {
+      assert cursor != null;
       return cursor.getDirectionType() + "+Trust";
     }
 
+    @Nullable
     public static @SuppressWarnings("unused")
-    TrustRegionCursor[] addRefs(TrustRegionCursor[] array) {
+    TrustRegionCursor[] addRefs(@Nullable TrustRegionCursor[] array) {
       if (array == null)
         return null;
       return Arrays.stream(array).filter((x) -> x != null).map(TrustRegionCursor::addRef)
@@ -175,6 +191,7 @@ public abstract class TrustRegionStrategy extends OrientationStrategyBase<LineSe
     @Override
     public PointSample afterStep(@Nonnull PointSample step) {
       super.afterStep(step.addRef());
+      assert cursor != null;
       return cursor.afterStep(step);
     }
 
@@ -182,30 +199,28 @@ public abstract class TrustRegionStrategy extends OrientationStrategyBase<LineSe
     @Override
     public DeltaSet<UUID> position(final double alpha) {
       //reset();
+      assert cursor != null;
       @Nonnull final DeltaSet<UUID> adjustedPosVector = cursor.position(alpha);
       RefUtil.freeRef(project(adjustedPosVector, new TrainingMonitor()));
       return adjustedPosVector;
     }
 
+    @Nullable
     public Layer toLayer(UUID id) {
+      assert subject != null;
       DAGNetwork layer = (DAGNetwork) subject.getLayer();
-      if (null == layer) {
-        if (null != layer)
-          layer.freeRef();
-        return null;
-      }
       RefMap<UUID, Layer> temp_33_0010 = layer
           .getLayersById();
       Layer temp_33_0006 = temp_33_0010.get(id);
-      if (null != temp_33_0010)
-        temp_33_0010.freeRef();
-      if (null != layer)
-        layer.freeRef();
+      temp_33_0010.freeRef();
+      layer.freeRef();
       return temp_33_0006;
     }
 
     @Nonnull
     public DeltaSet<UUID> project(@Nonnull final DeltaSet<UUID> deltaIn, final TrainingMonitor monitor) {
+      assert cursor != null;
+      assert cursor.direction != null;
       final DeltaSet<UUID> originalAlphaDerivative = cursor.direction.addRef();
       @Nonnull final DeltaSet<UUID> newAlphaDerivative = originalAlphaDerivative.copy();
       RefMap<UUID, Delta<UUID>> temp_33_0011 = deltaIn
@@ -215,25 +230,24 @@ public abstract class TrustRegionStrategy extends OrientationStrategyBase<LineSe
               id, buffer) -> {
             @Nullable final double[] delta = buffer.getDelta();
             if (null == delta) {
-              if (null != buffer)
-                buffer.freeRef();
+              buffer.freeRef();
               return;
             }
             final double[] currentPosition = buffer.target;
-            if (null != buffer)
-              buffer.freeRef();
+            buffer.freeRef();
             Delta<UUID> temp_33_0012 = originalAlphaDerivative.get(id,
                 currentPosition);
+            assert temp_33_0012 != null;
             @Nullable final double[] originalAlphaD = temp_33_0012.getDelta();
-            if (null != temp_33_0012)
-              temp_33_0012.freeRef();
+            temp_33_0012.freeRef();
             Delta<UUID> temp_33_0013 = newAlphaDerivative.get(id,
                 currentPosition);
+            assert temp_33_0013 != null;
             @Nullable final double[] newAlphaD = temp_33_0013.getDelta();
-            if (null != temp_33_0013)
-              temp_33_0013.freeRef();
+            temp_33_0013.freeRef();
             @Nonnull final double[] proposedPosition = ArrayUtil.add(currentPosition, delta);
             Layer temp_33_0014 = toLayer(id);
+            assert parent != null;
             final TrustRegion region = parent.getRegionPolicy(temp_33_0014);
             if (null != temp_33_0014)
               temp_33_0014.freeRef();
@@ -242,8 +256,7 @@ public abstract class TrustRegionStrategy extends OrientationStrategyBase<LineSe
                 RefMap<UUID, State<UUID>> temp_33_0015 = pointSample.weights
                     .getMap();
                 final DoubleBuffer<UUID> d = temp_33_0015.get(id);
-                if (null != temp_33_0015)
-                  temp_33_0015.freeRef();
+                temp_33_0015.freeRef();
                 pointSample.freeRef();
                 double[] temp_33_0007 = null == d ? null : d.getDelta();
                 if (null != d)
@@ -265,11 +278,13 @@ public abstract class TrustRegionStrategy extends OrientationStrategyBase<LineSe
                 //                ArrayUtil.dot(currentPosition,currentPosition),
                 //                normalMagSq));
                 if (0 < normalMagSq) {
+                  assert originalAlphaD != null;
                   final double a = ArrayUtil.dot(originalAlphaD, normal);
                   if (a != -1) {
                     @Nonnull final double[] tangent = ArrayUtil.add(originalAlphaD,
                         ArrayUtil.multiply(normal, -a / normalMagSq));
                     for (int i = 0; i < tangent.length; i++) {
+                      assert newAlphaD != null;
                       newAlphaD[i] = tangent[i];
                     }
                     //                  double newAlphaDerivSq = ArrayUtil.dot(tangent, tangent);
@@ -282,40 +297,39 @@ public abstract class TrustRegionStrategy extends OrientationStrategyBase<LineSe
 
               }
             }
-          }, originalAlphaDerivative == null ? null : originalAlphaDerivative.addRef(),
-          newAlphaDerivative == null ? null : newAlphaDerivative.addRef()));
-      if (null != temp_33_0011)
-        temp_33_0011.freeRef();
+          }, originalAlphaDerivative.addRef(),
+          newAlphaDerivative.addRef()));
+      temp_33_0011.freeRef();
       deltaIn.freeRef();
-      if (null != originalAlphaDerivative)
-        originalAlphaDerivative.freeRef();
+      originalAlphaDerivative.freeRef();
       return newAlphaDerivative;
     }
 
     @Override
     public void reset() {
+      assert cursor != null;
       cursor.reset();
     }
 
     @Nonnull
     @Override
     public LineSearchPoint step(final double alpha, final TrainingMonitor monitor) {
+      assert cursor != null;
       cursor.reset();
       @Nonnull final DeltaSet<UUID> adjustedPosVector = cursor.position(alpha);
       @Nonnull final DeltaSet<UUID> adjustedGradient = project(adjustedPosVector, monitor);
       adjustedPosVector.accumulate(1);
       adjustedPosVector.freeRef();
+      assert subject != null;
       PointSample temp_33_0016 = subject.measure(monitor);
       PointSample temp_33_0017 = temp_33_0016.setRate(alpha);
       @Nonnull final PointSample sample = afterStep(temp_33_0017);
-      if (null != temp_33_0017)
-        temp_33_0017.freeRef();
-      if (null != temp_33_0016)
-        temp_33_0016.freeRef();
+      temp_33_0017.freeRef();
+      temp_33_0016.freeRef();
       double dot = adjustedGradient.dot(sample.delta.addRef());
       adjustedGradient.freeRef();
       LineSearchPoint temp_33_0008 = new LineSearchPoint(
-          sample == null ? null : sample, dot);
+          sample, dot);
       return temp_33_0008;
     }
 
@@ -329,6 +343,7 @@ public abstract class TrustRegionStrategy extends OrientationStrategyBase<LineSe
         cursor.freeRef();
     }
 
+    @Nonnull
     public @Override
     @SuppressWarnings("unused")
     TrustRegionCursor addRef() {

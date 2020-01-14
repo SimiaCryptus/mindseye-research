@@ -34,6 +34,7 @@ import com.simiacryptus.ref.lang.RefUtil;
 import com.simiacryptus.ref.lang.ReferenceCounting;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -48,16 +49,18 @@ public class SimpleGradientDescentTest extends MnistTestBase {
     return ArrayTrainable.class;
   }
 
+  @Nullable
   public static @SuppressWarnings("unused")
-  SimpleGradientDescentTest[] addRefs(SimpleGradientDescentTest[] array) {
+  SimpleGradientDescentTest[] addRefs(@Nullable SimpleGradientDescentTest[] array) {
     if (array == null)
       return null;
     return Arrays.stream(array).filter((x) -> x != null).map(SimpleGradientDescentTest::addRef)
         .toArray((x) -> new SimpleGradientDescentTest[x]);
   }
 
+  @Nullable
   public static @SuppressWarnings("unused")
-  SimpleGradientDescentTest[][] addRefs(SimpleGradientDescentTest[][] array) {
+  SimpleGradientDescentTest[][] addRefs(@Nullable SimpleGradientDescentTest[][] array) {
     if (array == null)
       return null;
     return Arrays.stream(array).filter((x) -> x != null).map(SimpleGradientDescentTest::addRefs)
@@ -74,31 +77,27 @@ public class SimpleGradientDescentTest extends MnistTestBase {
             + "The final output is the last output value of the loss function when evaluating the last batch.");
     log.eval(RefUtil
         .wrapInterface((UncheckedSupplier<Double>) () -> {
-          @Nonnull final SimpleLossNetwork supervisedNetwork = new SimpleLossNetwork(network == null ? null : network.addRef(),
+          @Nonnull final SimpleLossNetwork supervisedNetwork = new SimpleLossNetwork(network.addRef(),
               new EntropyLossLayer());
           @Nonnull final ArrayList<Tensor[]> trainingList = new ArrayList<>(
-              Arrays.stream(trainingData).collect(Collectors.toList()));
+              Arrays.stream(Tensor.addRefs(trainingData)).collect(Collectors.toList()));
           Collections.shuffle(trainingList);
           @Nonnull final Tensor[][] randomSelection = trainingList.subList(0, 10000).toArray(new Tensor[][]{});
           @Nonnull final Trainable trainable = new ArrayTrainable(Tensor.addRefs(randomSelection),
-              supervisedNetwork == null ? null : supervisedNetwork);
+              supervisedNetwork);
           ReferenceCounting.freeRefs(randomSelection);
           IterativeTrainer temp_40_0002 = new IterativeTrainer(
-              trainable == null ? null : trainable);
+              trainable);
           IterativeTrainer temp_40_0003 = temp_40_0002.setMonitor(monitor);
           IterativeTrainer temp_40_0004 = temp_40_0003.setTimeout(3, TimeUnit.MINUTES);
           IterativeTrainer temp_40_0005 = temp_40_0004.setMaxIterations(500);
           double temp_40_0001 = temp_40_0005.run();
-          if (null != temp_40_0005)
-            temp_40_0005.freeRef();
-          if (null != temp_40_0004)
-            temp_40_0004.freeRef();
-          if (null != temp_40_0003)
-            temp_40_0003.freeRef();
-          if (null != temp_40_0002)
-            temp_40_0002.freeRef();
+          temp_40_0005.freeRef();
+          temp_40_0004.freeRef();
+          temp_40_0003.freeRef();
+          temp_40_0002.freeRef();
           return temp_40_0001;
-        }, Tensor.addRefs(trainingData), network == null ? null : network));
+        }, Tensor.addRefs(trainingData), network));
     ReferenceCounting.freeRefs(trainingData);
   }
 
@@ -106,6 +105,7 @@ public class SimpleGradientDescentTest extends MnistTestBase {
   void _free() {
   }
 
+  @Nonnull
   public @Override
   @SuppressWarnings("unused")
   SimpleGradientDescentTest addRef() {
