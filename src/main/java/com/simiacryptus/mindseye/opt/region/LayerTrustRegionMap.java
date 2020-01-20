@@ -21,6 +21,7 @@ package com.simiacryptus.mindseye.opt.region;
 
 import com.simiacryptus.mindseye.lang.Layer;
 import com.simiacryptus.mindseye.opt.orient.TrustRegionStrategy;
+import com.simiacryptus.ref.lang.RefUtil;
 import com.simiacryptus.ref.wrappers.RefHashMap;
 import com.simiacryptus.ref.wrappers.RefMap;
 
@@ -56,10 +57,7 @@ public class LayerTrustRegionMap extends TrustRegionStrategy {
   @Nullable
   public static @SuppressWarnings("unused")
   LayerTrustRegionMap[][] addRefs(@Nullable LayerTrustRegionMap[][] array) {
-    if (array == null)
-      return null;
-    return Arrays.stream(array).filter((x) -> x != null).map(LayerTrustRegionMap::addRefs)
-        .toArray((x) -> new LayerTrustRegionMap[x][]);
+    return RefUtil.addRefs(array);
   }
 
   @javax.annotation.Nullable
@@ -75,9 +73,8 @@ public class LayerTrustRegionMap extends TrustRegionStrategy {
   }
 
   @Nonnull
-  public TrustRegionStrategy setDefaultRegionPolicy(final TrustRegion defaultRegionPolicy) {
+  public void setDefaultRegionPolicy(final TrustRegion defaultRegionPolicy) {
     this.defaultRegionPolicy = defaultRegionPolicy;
-    return this.addRef();
   }
 
   public @SuppressWarnings("unused")

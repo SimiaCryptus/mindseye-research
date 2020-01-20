@@ -61,10 +61,7 @@ public class SimpleGradientDescentTest extends MnistTestBase {
   @Nullable
   public static @SuppressWarnings("unused")
   SimpleGradientDescentTest[][] addRefs(@Nullable SimpleGradientDescentTest[][] array) {
-    if (array == null)
-      return null;
-    return Arrays.stream(array).filter((x) -> x != null).map(SimpleGradientDescentTest::addRefs)
-        .toArray((x) -> new SimpleGradientDescentTest[x][]);
+    return RefUtil.addRefs(array);
   }
 
   @Override
@@ -80,24 +77,27 @@ public class SimpleGradientDescentTest extends MnistTestBase {
           @Nonnull final SimpleLossNetwork supervisedNetwork = new SimpleLossNetwork(network.addRef(),
               new EntropyLossLayer());
           @Nonnull final ArrayList<Tensor[]> trainingList = new ArrayList<>(
-              Arrays.stream(Tensor.addRefs(trainingData)).collect(Collectors.toList()));
+              Arrays.stream(RefUtil.addRefs(trainingData)).collect(Collectors.toList()));
           Collections.shuffle(trainingList);
           @Nonnull final Tensor[][] randomSelection = trainingList.subList(0, 10000).toArray(new Tensor[][]{});
-          @Nonnull final Trainable trainable = new ArrayTrainable(Tensor.addRefs(randomSelection),
+          @Nonnull final Trainable trainable = new ArrayTrainable(RefUtil.addRefs(randomSelection),
               supervisedNetwork);
           ReferenceCounting.freeRefs(randomSelection);
           IterativeTrainer temp_40_0002 = new IterativeTrainer(
               trainable);
-          IterativeTrainer temp_40_0003 = temp_40_0002.setMonitor(monitor);
-          IterativeTrainer temp_40_0004 = temp_40_0003.setTimeout(3, TimeUnit.MINUTES);
-          IterativeTrainer temp_40_0005 = temp_40_0004.setMaxIterations(500);
+          temp_40_0002.setMonitor(monitor);
+          IterativeTrainer temp_40_0003 = temp_40_0002.addRef();
+          temp_40_0003.setTimeout(3, TimeUnit.MINUTES);
+          IterativeTrainer temp_40_0004 = temp_40_0003.addRef();
+          temp_40_0004.setMaxIterations(500);
+          IterativeTrainer temp_40_0005 = temp_40_0004.addRef();
           double temp_40_0001 = temp_40_0005.run();
           temp_40_0005.freeRef();
           temp_40_0004.freeRef();
           temp_40_0003.freeRef();
           temp_40_0002.freeRef();
           return temp_40_0001;
-        }, Tensor.addRefs(trainingData), network));
+        }, RefUtil.addRefs(trainingData), network));
     ReferenceCounting.freeRefs(trainingData);
   }
 

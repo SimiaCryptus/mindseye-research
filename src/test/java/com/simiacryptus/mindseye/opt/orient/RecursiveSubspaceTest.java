@@ -71,10 +71,7 @@ public abstract class RecursiveSubspaceTest extends MnistTestBase {
   @Nullable
   public static @SuppressWarnings("unused")
   RecursiveSubspaceTest[][] addRefs(@Nullable RecursiveSubspaceTest[][] array) {
-    if (array == null)
-      return null;
-    return Arrays.stream(array).filter((x) -> x != null).map(RecursiveSubspaceTest::addRefs)
-        .toArray((x) -> new RecursiveSubspaceTest[x][]);
+    return RefUtil.addRefs(array);
   }
 
   @Override
@@ -92,7 +89,8 @@ public abstract class RecursiveSubspaceTest extends MnistTestBase {
       temp_46_0002.freeRef();
       RefUtil.freeRef(network.add(new ImgBandBiasLayer(5)));
       PoolingLayer temp_46_0003 = new PoolingLayer();
-      RefUtil.freeRef(network.add(temp_46_0003.setMode(PoolingLayer.PoolingMode.Max)));
+      temp_46_0003.setMode(PoolingLayer.PoolingMode.Max);
+      RefUtil.freeRef(network.add(temp_46_0003.addRef()));
       temp_46_0003.freeRef();
       RefUtil.freeRef(network.add(new ActivationLayer(ActivationLayer.Mode.RELU)));
       RefUtil.freeRef(network.add(newNormalizationLayer()));
@@ -102,7 +100,8 @@ public abstract class RecursiveSubspaceTest extends MnistTestBase {
       temp_46_0004.freeRef();
       RefUtil.freeRef(network.add(new ImgBandBiasLayer(5)));
       PoolingLayer temp_46_0005 = new PoolingLayer();
-      RefUtil.freeRef(network.add(temp_46_0005.setMode(PoolingLayer.PoolingMode.Max)));
+      temp_46_0005.setMode(PoolingLayer.PoolingMode.Max);
+      RefUtil.freeRef(network.add(temp_46_0005.addRef()));
       temp_46_0005.freeRef();
       RefUtil.freeRef(network.add(new ActivationLayer(ActivationLayer.Mode.RELU)));
       RefUtil.freeRef(network.add(newNormalizationLayer()));
@@ -110,7 +109,8 @@ public abstract class RecursiveSubspaceTest extends MnistTestBase {
       RefUtil.freeRef(network.add(new BiasLayer(7, 7, 5)));
       FullyConnectedLayer temp_46_0006 = new FullyConnectedLayer(
           new int[]{7, 7, 5}, new int[]{10});
-      RefUtil.freeRef(network.add(temp_46_0006.set(init)));
+      temp_46_0006.set(init);
+      RefUtil.freeRef(network.add(temp_46_0006.addRef()));
       temp_46_0006.freeRef();
       RefUtil.freeRef(network.add(new SoftmaxLayer()));
       return network;
@@ -125,34 +125,36 @@ public abstract class RecursiveSubspaceTest extends MnistTestBase {
           @Nonnull final SimpleLossNetwork supervisedNetwork = new SimpleLossNetwork(network.addRef(),
               new EntropyLossLayer());
           ArrayTrainable temp_46_0007 = new ArrayTrainable(
-              Tensor.addRefs(trainingData),
+              RefUtil.addRefs(trainingData),
               supervisedNetwork.addRef(), 1000);
           ValidatingTrainer temp_46_0008 = new ValidatingTrainer(
-              new SampledArrayTrainable(Tensor.addRefs(trainingData),
+              new SampledArrayTrainable(RefUtil.addRefs(trainingData),
                   supervisedNetwork, 1000, 1000),
               temp_46_0007.cached());
+          temp_46_0008.setMonitor(monitor);
           @Nonnull
-          ValidatingTrainer trainer = temp_46_0008.setMonitor(monitor);
+          ValidatingTrainer trainer = temp_46_0008.addRef();
           temp_46_0008.freeRef();
           temp_46_0007.freeRef();
           RefList<ValidatingTrainer.TrainingPhase> temp_46_0009 = trainer
               .getRegimen();
           ValidatingTrainer.TrainingPhase temp_46_0010 = temp_46_0009.get(0);
-          ValidatingTrainer.TrainingPhase temp_46_0011 = temp_46_0010
-              .setOrientation(getOrientation());
-          RefUtil.freeRef(temp_46_0011.setLineSearchFactory(
-              name -> name.toString().contains("LBFGS") ? new StaticLearningRate(1.0) : new QuadraticSearch()));
+          temp_46_0010.setOrientation(getOrientation());
+          ValidatingTrainer.TrainingPhase temp_46_0011 = temp_46_0010.addRef();
+          temp_46_0011.setLineSearchFactory(name -> name.toString().contains("LBFGS") ? new StaticLearningRate(1.0) : new QuadraticSearch());
           temp_46_0011.freeRef();
           temp_46_0010.freeRef();
           temp_46_0009.freeRef();
-          ValidatingTrainer temp_46_0012 = trainer.setTimeout(15, TimeUnit.MINUTES);
-          ValidatingTrainer temp_46_0013 = temp_46_0012.setMaxIterations(500);
+          trainer.setTimeout(15, TimeUnit.MINUTES);
+          ValidatingTrainer temp_46_0012 = trainer.addRef();
+          temp_46_0012.setMaxIterations(500);
+          ValidatingTrainer temp_46_0013 = temp_46_0012.addRef();
           double temp_46_0001 = temp_46_0013.run();
           temp_46_0013.freeRef();
           temp_46_0012.freeRef();
           trainer.freeRef();
           return temp_46_0001;
-        }, network, Tensor.addRefs(trainingData)));
+        }, network, RefUtil.addRefs(trainingData)));
     ReferenceCounting.freeRefs(trainingData);
   }
 
@@ -198,7 +200,6 @@ public abstract class RecursiveSubspaceTest extends MnistTestBase {
     Baseline addRef() {
       return (Baseline) super.addRef();
     }
-
   }
 
   public static class Normalized extends RecursiveSubspaceTest {
@@ -245,9 +246,7 @@ public abstract class RecursiveSubspaceTest extends MnistTestBase {
     @Nullable
     public static @SuppressWarnings("unused")
     Demo[] addRefs(@Nullable Demo[] array) {
-      if (array == null)
-        return null;
-      return Arrays.stream(array).filter((x) -> x != null).map(Demo::addRef).toArray((x) -> new Demo[x]);
+      return RefUtil.addRefs(array);
     }
 
     public @SuppressWarnings("unused")
@@ -260,7 +259,6 @@ public abstract class RecursiveSubspaceTest extends MnistTestBase {
     Demo addRef() {
       return (Demo) super.addRef();
     }
-
   }
 
 }

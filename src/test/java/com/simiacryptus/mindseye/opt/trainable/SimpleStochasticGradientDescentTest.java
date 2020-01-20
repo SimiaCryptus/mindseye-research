@@ -61,10 +61,7 @@ public class SimpleStochasticGradientDescentTest extends MnistTestBase {
   public static @SuppressWarnings("unused")
   SimpleStochasticGradientDescentTest[][] addRefs(
       @Nullable SimpleStochasticGradientDescentTest[][] array) {
-    if (array == null)
-      return null;
-    return Arrays.stream(array).filter((x) -> x != null).map(SimpleStochasticGradientDescentTest::addRefs)
-        .toArray((x) -> new SimpleStochasticGradientDescentTest[x][]);
+    return RefUtil.addRefs(array);
   }
 
   @Override
@@ -80,15 +77,18 @@ public class SimpleStochasticGradientDescentTest extends MnistTestBase {
           @Nonnull final SimpleLossNetwork supervisedNetwork = new SimpleLossNetwork(network.addRef(),
               new EntropyLossLayer());
           @Nonnull final Trainable trainable = new SampledArrayTrainable(
-              Tensor.addRefs(trainingData),
+              RefUtil.addRefs(trainingData),
               supervisedNetwork, 10000);
           IterativeTrainer temp_36_0002 = new IterativeTrainer(
               trainable);
-          IterativeTrainer temp_36_0003 = temp_36_0002.setMonitor(monitor);
-          IterativeTrainer temp_36_0004 = temp_36_0003
-              .setOrientation(new GradientDescent());
-          IterativeTrainer temp_36_0005 = temp_36_0004.setTimeout(5, TimeUnit.MINUTES);
-          IterativeTrainer temp_36_0006 = temp_36_0005.setMaxIterations(500);
+          temp_36_0002.setMonitor(monitor);
+          IterativeTrainer temp_36_0003 = temp_36_0002.addRef();
+          temp_36_0003.setOrientation(new GradientDescent());
+          IterativeTrainer temp_36_0004 = temp_36_0003.addRef();
+          temp_36_0004.setTimeout(5, TimeUnit.MINUTES);
+          IterativeTrainer temp_36_0005 = temp_36_0004.addRef();
+          temp_36_0005.setMaxIterations(500);
+          IterativeTrainer temp_36_0006 = temp_36_0005.addRef();
           double temp_36_0001 = temp_36_0006.run();
           temp_36_0006.freeRef();
           temp_36_0005.freeRef();
@@ -96,7 +96,7 @@ public class SimpleStochasticGradientDescentTest extends MnistTestBase {
           temp_36_0003.freeRef();
           temp_36_0002.freeRef();
           return temp_36_0001;
-        }, Tensor.addRefs(trainingData), network));
+        }, RefUtil.addRefs(trainingData), network));
     ReferenceCounting.freeRefs(trainingData);
   }
 

@@ -27,6 +27,7 @@ import com.simiacryptus.mindseye.opt.line.LineSearchCursor;
 import com.simiacryptus.mindseye.opt.line.LineSearchStrategy;
 import com.simiacryptus.mindseye.opt.orient.LBFGS;
 import com.simiacryptus.mindseye.opt.orient.OrientationStrategy;
+import com.simiacryptus.ref.lang.RefUtil;
 import com.simiacryptus.ref.lang.ReferenceCountingBase;
 import com.simiacryptus.ref.wrappers.*;
 import com.simiacryptus.util.Util;
@@ -78,56 +79,44 @@ public class RoundRobinTrainer extends ReferenceCountingBase {
   }
 
   @Nonnull
-  public RoundRobinTrainer setCurrentIteration(final AtomicInteger currentIteration) {
+  public void setCurrentIteration(final AtomicInteger currentIteration) {
     this.currentIteration = currentIteration;
-    return this.addRef();
   }
 
   public int getIterationsPerSample() {
     return iterationsPerSample;
   }
 
-  @Nonnull
-  public RoundRobinTrainer setIterationsPerSample(final int iterationsPerSample) {
+  public void setIterationsPerSample(int iterationsPerSample) {
     this.iterationsPerSample = iterationsPerSample;
-    return this.addRef();
   }
 
   public Function<CharSequence, ? extends LineSearchStrategy> getLineSearchFactory() {
     return lineSearchFactory;
   }
 
-  @Nonnull
-  public RoundRobinTrainer setLineSearchFactory(@Nonnull final Supplier<LineSearchStrategy> lineSearchFactory) {
+  public void setLineSearchFactory(@Nonnull Supplier<LineSearchStrategy> lineSearchFactory) {
     this.lineSearchFactory = s -> lineSearchFactory.get();
-    return this.addRef();
   }
 
-  @Nonnull
-  public RoundRobinTrainer setLineSearchFactory(
-      final Function<CharSequence, ? extends LineSearchStrategy> lineSearchFactory) {
+  public void setLineSearchFactory(Function<CharSequence, ? extends LineSearchStrategy> lineSearchFactory) {
     this.lineSearchFactory = lineSearchFactory;
-    return this.addRef();
   }
 
   public int getMaxIterations() {
     return maxIterations;
   }
 
-  @Nonnull
-  public RoundRobinTrainer setMaxIterations(final int maxIterations) {
+  public void setMaxIterations(int maxIterations) {
     this.maxIterations = maxIterations;
-    return this.addRef();
   }
 
   public TrainingMonitor getMonitor() {
     return monitor;
   }
 
-  @Nonnull
-  public RoundRobinTrainer setMonitor(final TrainingMonitor monitor) {
+  public void setMonitor(TrainingMonitor monitor) {
     this.monitor = monitor;
-    return this.addRef();
   }
 
   @Nonnull
@@ -136,9 +125,8 @@ public class RoundRobinTrainer extends ReferenceCountingBase {
   }
 
   @Nonnull
-  public RoundRobinTrainer setOrientations(final OrientationStrategy<?>... orientations) {
+  public void setOrientations(final OrientationStrategy<?>... orientations) {
     this.orientations = new RefArrayList<>(RefArrays.asList(orientations));
-    return this.addRef();
   }
 
   public double getTerminateThreshold() {
@@ -146,19 +134,16 @@ public class RoundRobinTrainer extends ReferenceCountingBase {
   }
 
   @Nonnull
-  public RoundRobinTrainer setTerminateThreshold(final double terminateThreshold) {
+  public void setTerminateThreshold(final double terminateThreshold) {
     this.terminateThreshold = terminateThreshold;
-    return this.addRef();
   }
 
   public Duration getTimeout() {
     return timeout;
   }
 
-  @Nonnull
-  public RoundRobinTrainer setTimeout(final Duration timeout) {
+  public void setTimeout(Duration timeout) {
     this.timeout = timeout;
-    return this.addRef();
   }
 
   @Nullable
@@ -173,10 +158,7 @@ public class RoundRobinTrainer extends ReferenceCountingBase {
   @Nullable
   public static @SuppressWarnings("unused")
   RoundRobinTrainer[][] addRefs(@Nullable RoundRobinTrainer[][] array) {
-    if (array == null)
-      return null;
-    return Arrays.stream(array).filter((x) -> x != null).map(RoundRobinTrainer::addRefs)
-        .toArray((x) -> new RoundRobinTrainer[x][]);
+    return RefUtil.addRefs(array);
   }
 
   @Nullable
@@ -277,15 +259,14 @@ mainLoop:
     return currentPoint;
   }
 
-  @Nonnull
-  public RoundRobinTrainer setTimeout(final int number, @Nonnull final TemporalUnit units) {
+  public void setTimeout(int number, @Nonnull TemporalUnit units) {
     timeout = Duration.of(number, units);
-    return this.addRef();
   }
 
   @Nonnull
   public RoundRobinTrainer setTimeout(final int number, @Nonnull final TimeUnit units) {
-    return setTimeout(number, Util.cvt(units));
+    setTimeout(number, Util.cvt(units));
+    return this.addRef();
   }
 
   public @SuppressWarnings("unused")

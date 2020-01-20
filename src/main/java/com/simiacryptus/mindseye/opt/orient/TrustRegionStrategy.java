@@ -69,9 +69,8 @@ public abstract class TrustRegionStrategy extends OrientationStrategyBase<LineSe
   }
 
   @Nonnull
-  public TrustRegionStrategy setMaxHistory(final int maxHistory) {
+  public void setMaxHistory(final int maxHistory) {
     this.maxHistory = maxHistory;
-    return this.addRef();
   }
 
   public static double dot(@Nonnull final List<DoubleBuffer<UUID>> a, @Nonnull final List<DoubleBuffer<UUID>> b) {
@@ -98,10 +97,7 @@ public abstract class TrustRegionStrategy extends OrientationStrategyBase<LineSe
   @Nullable
   public static @SuppressWarnings("unused")
   TrustRegionStrategy[][] addRefs(@Nullable TrustRegionStrategy[][] array) {
-    if (array == null)
-      return null;
-    return Arrays.stream(array).filter((x) -> x != null).map(TrustRegionStrategy::addRefs)
-        .toArray((x) -> new TrustRegionStrategy[x][]);
+    return RefUtil.addRefs(array);
   }
 
   public abstract TrustRegion getRegionPolicy(Layer layer);
@@ -294,7 +290,6 @@ public abstract class TrustRegionStrategy extends OrientationStrategyBase<LineSe
                     //                  monitor.log(String.format("%s: normalMagSq = %s, newAlphaDerivSq = %s, originalAlphaDerivSq = %s", key, normalMagSq, newAlphaDerivSq, originalAlphaDerivSq));
                   }
                 }
-
               }
             }
           }, originalAlphaDerivative.addRef(),
@@ -322,7 +317,8 @@ public abstract class TrustRegionStrategy extends OrientationStrategyBase<LineSe
       adjustedPosVector.freeRef();
       assert subject != null;
       PointSample temp_33_0016 = subject.measure(monitor);
-      PointSample temp_33_0017 = temp_33_0016.setRate(alpha);
+      temp_33_0016.setRate(alpha);
+      PointSample temp_33_0017 = temp_33_0016.addRef();
       @Nonnull final PointSample sample = afterStep(temp_33_0017);
       temp_33_0017.freeRef();
       temp_33_0016.freeRef();

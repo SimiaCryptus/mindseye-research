@@ -60,10 +60,7 @@ public class LBFGSTest extends MnistTestBase {
   @Nullable
   public static @SuppressWarnings("unused")
   LBFGSTest[][] addRefs(@Nullable LBFGSTest[][] array) {
-    if (array == null)
-      return null;
-    return Arrays.stream(array).filter((x) -> x != null).map(LBFGSTest::addRefs)
-        .toArray((x) -> new LBFGSTest[x][]);
+    return RefUtil.addRefs(array);
   }
 
   @Override
@@ -74,36 +71,38 @@ public class LBFGSTest extends MnistTestBase {
           @Nonnull final SimpleLossNetwork supervisedNetwork = new SimpleLossNetwork(network.addRef(),
               new EntropyLossLayer());
           ArrayTrainable temp_35_0002 = new ArrayTrainable(
-              Tensor.addRefs(trainingData),
+              RefUtil.addRefs(trainingData),
               supervisedNetwork.addRef());
           ValidatingTrainer temp_35_0003 = new ValidatingTrainer(
-              new SampledArrayTrainable(Tensor.addRefs(trainingData),
+              new SampledArrayTrainable(RefUtil.addRefs(trainingData),
                   supervisedNetwork, 1000, 10000),
               temp_35_0002.cached());
+          temp_35_0003.setMonitor(monitor);
           @Nonnull
-          ValidatingTrainer trainer = temp_35_0003.setMonitor(monitor);
+          ValidatingTrainer trainer = temp_35_0003.addRef();
           temp_35_0003.freeRef();
           temp_35_0002.freeRef();
           RefList<ValidatingTrainer.TrainingPhase> temp_35_0004 = trainer
               .getRegimen();
           ValidatingTrainer.TrainingPhase temp_35_0005 = temp_35_0004.get(0);
-          ValidatingTrainer.TrainingPhase temp_35_0006 = temp_35_0005
-              //.setOrientation(new ValidatingOrientationWrapper(new LBFGS()))
-              .setOrientation(new LBFGS());
-          RefUtil.freeRef(temp_35_0006.setLineSearchFactory(
-              name -> name.toString().contains("LBFGS") ? new QuadraticSearch().setCurrentRate(1.0)
-                  : new QuadraticSearch()));
+          temp_35_0005.setOrientation(new LBFGS());
+          //.setOrientation(new ValidatingOrientationWrapper(new LBFGS()))
+          ValidatingTrainer.TrainingPhase temp_35_0006 = temp_35_0005.addRef();
+          temp_35_0006.setLineSearchFactory(name -> name.toString().contains("LBFGS") ? new QuadraticSearch().setCurrentRate(1.0)
+                      : new QuadraticSearch());
           temp_35_0006.freeRef();
           temp_35_0005.freeRef();
           temp_35_0004.freeRef();
-          ValidatingTrainer temp_35_0007 = trainer.setTimeout(5, TimeUnit.MINUTES);
-          ValidatingTrainer temp_35_0008 = temp_35_0007.setMaxIterations(500);
+          trainer.setTimeout(5, TimeUnit.MINUTES);
+          ValidatingTrainer temp_35_0007 = trainer.addRef();
+          temp_35_0007.setMaxIterations(500);
+          ValidatingTrainer temp_35_0008 = temp_35_0007.addRef();
           double temp_35_0001 = temp_35_0008.run();
           temp_35_0008.freeRef();
           temp_35_0007.freeRef();
           trainer.freeRef();
           return temp_35_0001;
-        }, Tensor.addRefs(trainingData), network));
+        }, RefUtil.addRefs(trainingData), network));
     ReferenceCounting.freeRefs(trainingData);
   }
 

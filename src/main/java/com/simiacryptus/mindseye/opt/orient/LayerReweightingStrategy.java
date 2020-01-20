@@ -63,10 +63,7 @@ public abstract class LayerReweightingStrategy extends OrientationStrategyBase<S
   @Nullable
   public static @SuppressWarnings("unused")
   LayerReweightingStrategy[][] addRefs(@Nullable LayerReweightingStrategy[][] array) {
-    if (array == null)
-      return null;
-    return Arrays.stream(array).filter((x) -> x != null).map(LayerReweightingStrategy::addRefs)
-        .toArray((x) -> new LayerReweightingStrategy[x][]);
+    return RefUtil.addRefs(array);
   }
 
   @Nullable

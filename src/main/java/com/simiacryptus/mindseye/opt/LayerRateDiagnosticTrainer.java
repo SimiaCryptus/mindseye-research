@@ -77,19 +77,16 @@ public class LayerRateDiagnosticTrainer extends ReferenceCountingBase {
   }
 
   @Nonnull
-  public LayerRateDiagnosticTrainer setCurrentIteration(final AtomicInteger currentIteration) {
+  public void setCurrentIteration(final AtomicInteger currentIteration) {
     this.currentIteration = currentIteration;
-    return this.addRef();
   }
 
   public int getIterationsPerSample() {
     return iterationsPerSample;
   }
 
-  @Nonnull
-  public LayerRateDiagnosticTrainer setIterationsPerSample(final int iterationsPerSample) {
+  public void setIterationsPerSample(int iterationsPerSample) {
     this.iterationsPerSample = iterationsPerSample;
-    return this.addRef();
   }
 
   @Nonnull
@@ -106,20 +103,16 @@ public class LayerRateDiagnosticTrainer extends ReferenceCountingBase {
     return maxIterations;
   }
 
-  @Nonnull
-  public LayerRateDiagnosticTrainer setMaxIterations(final int maxIterations) {
+  public void setMaxIterations(int maxIterations) {
     this.maxIterations = maxIterations;
-    return this.addRef();
   }
 
   public TrainingMonitor getMonitor() {
     return monitor;
   }
 
-  @Nonnull
-  public LayerRateDiagnosticTrainer setMonitor(final TrainingMonitor monitor) {
+  public void setMonitor(TrainingMonitor monitor) {
     this.monitor = monitor;
-    return this.addRef();
   }
 
   @Nullable
@@ -145,9 +138,8 @@ public class LayerRateDiagnosticTrainer extends ReferenceCountingBase {
   }
 
   @Nonnull
-  public LayerRateDiagnosticTrainer setTerminateThreshold(final double terminateThreshold) {
+  public void setTerminateThreshold(final double terminateThreshold) {
     this.terminateThreshold = terminateThreshold;
-    return this.addRef();
   }
 
   public Duration getTimeout() {
@@ -155,9 +147,8 @@ public class LayerRateDiagnosticTrainer extends ReferenceCountingBase {
   }
 
   @Nonnull
-  public LayerRateDiagnosticTrainer setTimeout(final Duration timeout) {
+  public void setTimeout(final Duration timeout) {
     this.timeout = timeout;
-    return this.addRef();
   }
 
   public boolean isStrict() {
@@ -165,9 +156,8 @@ public class LayerRateDiagnosticTrainer extends ReferenceCountingBase {
   }
 
   @Nonnull
-  public LayerRateDiagnosticTrainer setStrict(final boolean strict) {
+  public void setStrict(final boolean strict) {
     this.strict = strict;
-    return this.addRef();
   }
 
   @Nullable
@@ -183,10 +173,7 @@ public class LayerRateDiagnosticTrainer extends ReferenceCountingBase {
   public static @SuppressWarnings("unused")
   LayerRateDiagnosticTrainer[][] addRefs(
       @Nullable LayerRateDiagnosticTrainer[][] array) {
-    if (array == null)
-      return null;
-    return Arrays.stream(array).filter((x) -> x != null).map(LayerRateDiagnosticTrainer::addRefs)
-        .toArray((x) -> new LayerRateDiagnosticTrainer[x][]);
+    return RefUtil.addRefs(array);
   }
 
   @javax.annotation.Nullable
@@ -355,15 +342,14 @@ public class LayerRateDiagnosticTrainer extends ReferenceCountingBase {
     return getLayerRates();
   }
 
-  @Nonnull
-  public LayerRateDiagnosticTrainer setTimeout(final int number, @Nonnull final TemporalUnit units) {
+  public void setTimeout(int number, @Nonnull TemporalUnit units) {
     timeout = Duration.of(number, units);
-    return this.addRef();
   }
 
   @Nonnull
   public LayerRateDiagnosticTrainer setTimeout(final int number, @Nonnull final TimeUnit units) {
-    return setTimeout(number, Util.cvt(units));
+    setTimeout(number, Util.cvt(units));
+    return this.addRef();
   }
 
   public @SuppressWarnings("unused")
@@ -401,7 +387,7 @@ public class LayerRateDiagnosticTrainer extends ReferenceCountingBase {
     Delta<UUID> temp_31_0015 = direction.get(layer.getId(), (double[]) null);
     assert temp_31_0015 != null;
     assert temp_31_0014 != null;
-    RefUtil.freeRef(temp_31_0014.addInPlace(temp_31_0015.getDelta()));
+    temp_31_0014.addInPlace(temp_31_0015.getDelta());
     temp_31_0015.freeRef();
     temp_31_0014.freeRef();
     temp_31_0013.freeRef();

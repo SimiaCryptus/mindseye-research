@@ -59,10 +59,7 @@ public class LinearSumConstraintTest extends MnistTestBase {
   @Nullable
   public static @SuppressWarnings("unused")
   LinearSumConstraintTest[][] addRefs(@Nullable LinearSumConstraintTest[][] array) {
-    if (array == null)
-      return null;
-    return Arrays.stream(array).filter((x) -> x != null).map(LinearSumConstraintTest::addRefs)
-        .toArray((x) -> new LinearSumConstraintTest[x][]);
+    return RefUtil.addRefs(array);
   }
 
   @Override
@@ -73,7 +70,7 @@ public class LinearSumConstraintTest extends MnistTestBase {
           @Nonnull final SimpleLossNetwork supervisedNetwork = new SimpleLossNetwork(network.addRef(),
               new EntropyLossLayer());
           @Nonnull final Trainable trainable = new SampledArrayTrainable(
-              Tensor.addRefs(trainingData),
+              RefUtil.addRefs(trainingData),
               supervisedNetwork, 10000);
           @Nonnull final TrustRegionStrategy trustRegionStrategy = new TrustRegionStrategy() {
             @Nonnull
@@ -90,13 +87,17 @@ public class LinearSumConstraintTest extends MnistTestBase {
           };
           IterativeTrainer temp_49_0002 = new IterativeTrainer(
               trainable);
-          IterativeTrainer temp_49_0003 = temp_49_0002.setIterationsPerSample(100);
-          IterativeTrainer temp_49_0004 = temp_49_0003.setMonitor(monitor);
-          IterativeTrainer temp_49_0005 = temp_49_0004
-              //.setOrientation(new ValidatingOrientationWrapper(trustRegionStrategy))
-              .setOrientation(trustRegionStrategy);
-          IterativeTrainer temp_49_0006 = temp_49_0005.setTimeout(3, TimeUnit.MINUTES);
-          IterativeTrainer temp_49_0007 = temp_49_0006.setMaxIterations(500);
+          temp_49_0002.setIterationsPerSample(100);
+          IterativeTrainer temp_49_0003 = temp_49_0002.addRef();
+          temp_49_0003.setMonitor(monitor);
+          IterativeTrainer temp_49_0004 = temp_49_0003.addRef();
+          temp_49_0004.setOrientation(trustRegionStrategy);
+          //.setOrientation(new ValidatingOrientationWrapper(trustRegionStrategy))
+          IterativeTrainer temp_49_0005 = temp_49_0004.addRef();
+          temp_49_0005.setTimeout(3, TimeUnit.MINUTES);
+          IterativeTrainer temp_49_0006 = temp_49_0005.addRef();
+          temp_49_0006.setMaxIterations(500);
+          IterativeTrainer temp_49_0007 = temp_49_0006.addRef();
           double temp_49_0001 = temp_49_0007.run();
           temp_49_0007.freeRef();
           temp_49_0006.freeRef();
@@ -106,7 +107,7 @@ public class LinearSumConstraintTest extends MnistTestBase {
           temp_49_0002.freeRef();
           //.setOrientation(new ValidatingOrientationWrapper(trustRegionStrategy))
           return temp_49_0001;
-        }, Tensor.addRefs(trainingData), network));
+        }, RefUtil.addRefs(trainingData), network));
     ReferenceCounting.freeRefs(trainingData);
   }
 

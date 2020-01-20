@@ -59,10 +59,7 @@ public class L1NormalizationTest extends MnistTestBase {
   @Nullable
   public static @SuppressWarnings("unused")
   L1NormalizationTest[][] addRefs(@Nullable L1NormalizationTest[][] array) {
-    if (array == null)
-      return null;
-    return Arrays.stream(array).filter((x) -> x != null).map(L1NormalizationTest::addRefs)
-        .toArray((x) -> new L1NormalizationTest[x][]);
+    return RefUtil.addRefs(array);
   }
 
   @Override
@@ -73,7 +70,7 @@ public class L1NormalizationTest extends MnistTestBase {
           @Nonnull final SimpleLossNetwork supervisedNetwork = new SimpleLossNetwork(network.addRef(),
               new EntropyLossLayer());
           @Nonnull final Trainable trainable = new L12Normalizer(
-              new SampledArrayTrainable(Tensor.addRefs(trainingData),
+              new SampledArrayTrainable(RefUtil.addRefs(trainingData),
                   supervisedNetwork, 1000)) {
             @Nonnull
             @Override
@@ -102,16 +99,19 @@ public class L1NormalizationTest extends MnistTestBase {
           };
           IterativeTrainer temp_47_0002 = new IterativeTrainer(
               trainable);
-          IterativeTrainer temp_47_0003 = temp_47_0002.setMonitor(monitor);
-          IterativeTrainer temp_47_0004 = temp_47_0003.setTimeout(3, TimeUnit.MINUTES);
-          IterativeTrainer temp_47_0005 = temp_47_0004.setMaxIterations(500);
+          temp_47_0002.setMonitor(monitor);
+          IterativeTrainer temp_47_0003 = temp_47_0002.addRef();
+          temp_47_0003.setTimeout(3, TimeUnit.MINUTES);
+          IterativeTrainer temp_47_0004 = temp_47_0003.addRef();
+          temp_47_0004.setMaxIterations(500);
+          IterativeTrainer temp_47_0005 = temp_47_0004.addRef();
           double temp_47_0001 = temp_47_0005.run();
           temp_47_0005.freeRef();
           temp_47_0004.freeRef();
           temp_47_0003.freeRef();
           temp_47_0002.freeRef();
           return temp_47_0001;
-        }, network, Tensor.addRefs(trainingData)));
+        }, network, RefUtil.addRefs(trainingData)));
     ReferenceCounting.freeRefs(trainingData);
   }
 

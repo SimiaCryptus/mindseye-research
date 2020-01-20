@@ -31,8 +31,6 @@ import com.simiacryptus.ref.lang.RefUtil;
 import com.simiacryptus.ref.wrappers.RefString;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import java.util.Arrays;
 import java.util.UUID;
 
 public class QQN extends OrientationStrategyBase<LineSearchCursor> {
@@ -45,9 +43,8 @@ public class QQN extends OrientationStrategyBase<LineSearchCursor> {
   }
 
   @Nonnull
-  public QQN setMaxHistory(final int maxHistory) {
-    RefUtil.freeRef(inner.setMaxHistory(maxHistory));
-    return this.addRef();
+  public void setMaxHistory(final int maxHistory) {
+    inner.setMaxHistory(maxHistory);
   }
 
   public int getMinHistory() {
@@ -55,26 +52,10 @@ public class QQN extends OrientationStrategyBase<LineSearchCursor> {
   }
 
   @Nonnull
-  public QQN setMinHistory(final int minHistory) {
-    RefUtil.freeRef(inner.setMinHistory(minHistory));
-    return this.addRef();
+  public void setMinHistory(final int minHistory) {
+    inner.setMinHistory(minHistory);
   }
 
-  @Nullable
-  public static @SuppressWarnings("unused")
-  QQN[] addRefs(@Nullable QQN[] array) {
-    if (array == null)
-      return null;
-    return Arrays.stream(array).filter((x) -> x != null).map(QQN::addRef).toArray((x) -> new QQN[x]);
-  }
-
-  @Nullable
-  public static @SuppressWarnings("unused")
-  QQN[][] addRefs(@Nullable QQN[][] array) {
-    if (array == null)
-      return null;
-    return Arrays.stream(array).filter((x) -> x != null).map(QQN::addRefs).toArray((x) -> new QQN[x][]);
-  }
 
   @Override
   public LineSearchCursor orient(@Nonnull final Trainable subject, @Nonnull final PointSample origin,
@@ -137,7 +118,8 @@ public class QQN extends OrientationStrategyBase<LineSearchCursor> {
             temp_38_0008.accumulate(1);
             temp_38_0008.freeRef();
             PointSample temp_38_0009 = subject.measure(monitor);
-            @Nonnull final PointSample sample = temp_38_0009.setRate(t);
+            temp_38_0009.setRate(t);
+            @Nonnull final PointSample sample = temp_38_0009.addRef();
             temp_38_0009.freeRef();
             //monitor.log(String.format("evalInputDelta buffers %d %d %d %d %d", sample.evalInputDelta.apply.size(), origin.evalInputDelta.apply.size(), lbfgs.apply.size(), gd.apply.size(), scaledGradient.apply.size()));
             inner.addToHistory(sample.addRef(), monitor);

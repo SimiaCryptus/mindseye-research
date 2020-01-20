@@ -58,10 +58,7 @@ public class MomentumTest extends MnistTestBase {
   @Nullable
   public static @SuppressWarnings("unused")
   MomentumTest[][] addRefs(@Nullable MomentumTest[][] array) {
-    if (array == null)
-      return null;
-    return Arrays.stream(array).filter((x) -> x != null).map(MomentumTest::addRefs)
-        .toArray((x) -> new MomentumTest[x][]);
+    return RefUtil.addRefs(array);
   }
 
   @Override
@@ -72,17 +69,21 @@ public class MomentumTest extends MnistTestBase {
           @Nonnull final SimpleLossNetwork supervisedNetwork = new SimpleLossNetwork(network.addRef(),
               new EntropyLossLayer());
           @Nonnull final Trainable trainable = new SampledArrayTrainable(
-              Tensor.addRefs(trainingData),
+              RefUtil.addRefs(trainingData),
               supervisedNetwork, 1000);
           IterativeTrainer temp_51_0002 = new IterativeTrainer(
               trainable);
           MomentumStrategy temp_51_0003 = new MomentumStrategy(
               new GradientDescent());
-          IterativeTrainer temp_51_0004 = temp_51_0002.setMonitor(monitor);
-          IterativeTrainer temp_51_0005 = temp_51_0004
-              .setOrientation(new ValidatingOrientationWrapper(temp_51_0003.setCarryOver(0.8)));
-          IterativeTrainer temp_51_0006 = temp_51_0005.setTimeout(5, TimeUnit.MINUTES);
-          IterativeTrainer temp_51_0007 = temp_51_0006.setMaxIterations(500);
+          temp_51_0002.setMonitor(monitor);
+          IterativeTrainer temp_51_0004 = temp_51_0002.addRef();
+          temp_51_0003.setCarryOver(0.8);
+          temp_51_0004.setOrientation(new ValidatingOrientationWrapper(temp_51_0003.addRef()));
+          IterativeTrainer temp_51_0005 = temp_51_0004.addRef();
+          temp_51_0005.setTimeout(5, TimeUnit.MINUTES);
+          IterativeTrainer temp_51_0006 = temp_51_0005.addRef();
+          temp_51_0006.setMaxIterations(500);
+          IterativeTrainer temp_51_0007 = temp_51_0006.addRef();
           double temp_51_0001 = temp_51_0007.run();
           temp_51_0007.freeRef();
           temp_51_0006.freeRef();
@@ -91,7 +92,7 @@ public class MomentumTest extends MnistTestBase {
           temp_51_0003.freeRef();
           temp_51_0002.freeRef();
           return temp_51_0001;
-        }, network, Tensor.addRefs(trainingData)));
+        }, network, RefUtil.addRefs(trainingData)));
     ReferenceCounting.freeRefs(trainingData);
   }
 

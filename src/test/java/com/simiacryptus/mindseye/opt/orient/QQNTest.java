@@ -36,7 +36,6 @@ import com.simiacryptus.ref.wrappers.RefList;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
 public class QQNTest extends MnistTestBase {
@@ -50,18 +49,13 @@ public class QQNTest extends MnistTestBase {
   @Nullable
   public static @SuppressWarnings("unused")
   QQNTest[] addRefs(@Nullable QQNTest[] array) {
-    if (array == null)
-      return null;
-    return Arrays.stream(array).filter((x) -> x != null).map(QQNTest::addRef).toArray((x) -> new QQNTest[x]);
+    return RefUtil.addRefs(array);
   }
 
   @Nullable
   public static @SuppressWarnings("unused")
   QQNTest[][] addRefs(@Nullable QQNTest[][] array) {
-    if (array == null)
-      return null;
-    return Arrays.stream(array).filter((x) -> x != null).map(QQNTest::addRefs)
-        .toArray((x) -> new QQNTest[x][]);
+    return RefUtil.addRefs(array);
   }
 
   @Override
@@ -72,28 +66,31 @@ public class QQNTest extends MnistTestBase {
           @Nonnull final SimpleLossNetwork supervisedNetwork = new SimpleLossNetwork(network.addRef(),
               new EntropyLossLayer());
           ValidatingTrainer temp_45_0002 = new ValidatingTrainer(
-              new SampledArrayTrainable(Tensor.addRefs(trainingData),
+              new SampledArrayTrainable(RefUtil.addRefs(trainingData),
                   supervisedNetwork, 1000, 10000),
-              new ArrayTrainable(Tensor.addRefs(trainingData),
+              new ArrayTrainable(RefUtil.addRefs(trainingData),
                   supervisedNetwork.addRef()));
           //return new IterativeTrainer(new SampledArrayTrainable(trainingData, supervisedNetwork, 10000))
+          temp_45_0002.setMonitor(monitor);
           @Nonnull
-          ValidatingTrainer trainer = temp_45_0002.setMonitor(monitor);
+          ValidatingTrainer trainer = temp_45_0002.addRef();
           temp_45_0002.freeRef();
           RefList<ValidatingTrainer.TrainingPhase> temp_45_0003 = trainer
               .getRegimen();
           ValidatingTrainer.TrainingPhase temp_45_0004 = temp_45_0003.get(0);
-          RefUtil.freeRef(temp_45_0004.setOrientation(new QQN()));
+          temp_45_0004.setOrientation(new QQN());
           temp_45_0004.freeRef();
           temp_45_0003.freeRef();
-          ValidatingTrainer temp_45_0005 = trainer.setTimeout(5, TimeUnit.MINUTES);
-          ValidatingTrainer temp_45_0006 = temp_45_0005.setMaxIterations(500);
+          trainer.setTimeout(5, TimeUnit.MINUTES);
+          ValidatingTrainer temp_45_0005 = trainer.addRef();
+          temp_45_0005.setMaxIterations(500);
+          ValidatingTrainer temp_45_0006 = temp_45_0005.addRef();
           double temp_45_0001 = temp_45_0006.run();
           temp_45_0006.freeRef();
           temp_45_0005.freeRef();
           trainer.freeRef();
           return temp_45_0001;
-        }, Tensor.addRefs(trainingData), network));
+        }, RefUtil.addRefs(trainingData), network));
     ReferenceCounting.freeRefs(trainingData);
   }
 

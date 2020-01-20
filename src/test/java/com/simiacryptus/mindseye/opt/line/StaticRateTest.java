@@ -59,10 +59,7 @@ public class StaticRateTest extends MnistTestBase {
   @Nullable
   public static @SuppressWarnings("unused")
   StaticRateTest[][] addRefs(@Nullable StaticRateTest[][] array) {
-    if (array == null)
-      return null;
-    return Arrays.stream(array).filter((x) -> x != null).map(StaticRateTest::addRefs)
-        .toArray((x) -> new StaticRateTest[x][]);
+    return RefUtil.addRefs(array);
   }
 
   @Override
@@ -73,17 +70,20 @@ public class StaticRateTest extends MnistTestBase {
           @Nonnull final SimpleLossNetwork supervisedNetwork = new SimpleLossNetwork(network.addRef(),
               new EntropyLossLayer());
           @Nonnull final Trainable trainable = new SampledArrayTrainable(
-              Tensor.addRefs(trainingData),
+              RefUtil.addRefs(trainingData),
               supervisedNetwork, 1000);
           IterativeTrainer temp_50_0002 = new IterativeTrainer(
               trainable);
-          IterativeTrainer temp_50_0003 = temp_50_0002.setMonitor(monitor);
-          IterativeTrainer temp_50_0004 = temp_50_0003
-              .setOrientation(new GradientDescent());
-          IterativeTrainer temp_50_0005 = temp_50_0004
-              .setLineSearchFactory((@Nonnull final CharSequence name) -> new StaticLearningRate(0.001));
-          IterativeTrainer temp_50_0006 = temp_50_0005.setTimeout(3, TimeUnit.MINUTES);
-          IterativeTrainer temp_50_0007 = temp_50_0006.setMaxIterations(500);
+          temp_50_0002.setMonitor(monitor);
+          IterativeTrainer temp_50_0003 = temp_50_0002.addRef();
+          temp_50_0003.setOrientation(new GradientDescent());
+          IterativeTrainer temp_50_0004 = temp_50_0003.addRef();
+          temp_50_0004.setLineSearchFactory((@Nonnull final CharSequence name) -> new StaticLearningRate(0.001));
+          IterativeTrainer temp_50_0005 = temp_50_0004.addRef();
+          temp_50_0005.setTimeout(3, TimeUnit.MINUTES);
+          IterativeTrainer temp_50_0006 = temp_50_0005.addRef();
+          temp_50_0006.setMaxIterations(500);
+          IterativeTrainer temp_50_0007 = temp_50_0006.addRef();
           double temp_50_0001 = temp_50_0007.run();
           temp_50_0007.freeRef();
           temp_50_0006.freeRef();
@@ -92,7 +92,7 @@ public class StaticRateTest extends MnistTestBase {
           temp_50_0003.freeRef();
           temp_50_0002.freeRef();
           return temp_50_0001;
-        }, network, Tensor.addRefs(trainingData)));
+        }, network, RefUtil.addRefs(trainingData)));
     ReferenceCounting.freeRefs(trainingData);
   }
 

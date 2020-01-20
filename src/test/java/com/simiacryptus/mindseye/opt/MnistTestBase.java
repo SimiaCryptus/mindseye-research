@@ -84,10 +84,7 @@ public abstract class MnistTestBase extends NotebookReportBase {
   @Nullable
   public static @SuppressWarnings("unused")
   MnistTestBase[][] addRefs(@Nullable MnistTestBase[][] array) {
-    if (array == null)
-      return null;
-    return Arrays.stream(array).filter((x) -> x != null).map(MnistTestBase::addRefs)
-        .toArray((x) -> new MnistTestBase[x][]);
+    return RefUtil.addRefs(array);
   }
 
   @Test
@@ -119,7 +116,7 @@ public abstract class MnistTestBase extends NotebookReportBase {
           Layer layer = node.getLayer();
           if (!(layer instanceof MonitoringWrapperLayer)) {
             MonitoringWrapperLayer temp_41_0004 = new MonitoringWrapperLayer(layer);
-            node.setLayer(temp_41_0004.addTo(monitoringRoot.addRef()));
+            node.setLayer(temp_41_0004.addTo2(monitoringRoot.addRef()));
             temp_41_0004.freeRef();
           }
           assert layer != null;
@@ -138,7 +135,8 @@ public abstract class MnistTestBase extends NotebookReportBase {
       RefUtil.freeRef(network.add(new BiasLayer(28, 28, 1)));
       FullyConnectedLayer temp_41_0005 = new FullyConnectedLayer(
           new int[]{28, 28, 1}, new int[]{10});
-      RefUtil.freeRef(network.add(temp_41_0005.set(() -> 0.001 * (Math.random() - 0.45))));
+      temp_41_0005.set(() -> 0.001 * (Math.random() - 0.45));
+      RefUtil.freeRef(network.add(temp_41_0005.addRef()));
       temp_41_0005.freeRef();
       RefUtil.freeRef(network.add(new SoftmaxLayer()));
       return network;
@@ -150,7 +148,8 @@ public abstract class MnistTestBase extends NotebookReportBase {
     return MNIST.trainingDataStream().map(labeledObject -> {
       @Nonnull final Tensor categoryTensor = new Tensor(10);
       final int category = parse(labeledObject.label);
-      RefUtil.freeRef(categoryTensor.set(category, 1));
+      categoryTensor.set(category, 1);
+
       Tensor[] temp_41_0001 = new Tensor[]{labeledObject.data,
           categoryTensor};
       return temp_41_0001;

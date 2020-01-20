@@ -59,10 +59,7 @@ public class QuadraticLineSearchTest extends MnistTestBase {
   @Nullable
   public static @SuppressWarnings("unused")
   QuadraticLineSearchTest[][] addRefs(@Nullable QuadraticLineSearchTest[][] array) {
-    if (array == null)
-      return null;
-    return Arrays.stream(array).filter((x) -> x != null).map(QuadraticLineSearchTest::addRefs)
-        .toArray((x) -> new QuadraticLineSearchTest[x][]);
+    return RefUtil.addRefs(array);
   }
 
   @Override
@@ -73,17 +70,20 @@ public class QuadraticLineSearchTest extends MnistTestBase {
           @Nonnull final SimpleLossNetwork supervisedNetwork = new SimpleLossNetwork(network.addRef(),
               new EntropyLossLayer());
           @Nonnull final Trainable trainable = new SampledArrayTrainable(
-              Tensor.addRefs(trainingData),
+              RefUtil.addRefs(trainingData),
               supervisedNetwork, 1000);
           IterativeTrainer temp_37_0002 = new IterativeTrainer(
               trainable);
-          IterativeTrainer temp_37_0003 = temp_37_0002.setMonitor(monitor);
-          IterativeTrainer temp_37_0004 = temp_37_0003
-              .setOrientation(new GradientDescent());
-          IterativeTrainer temp_37_0005 = temp_37_0004
-              .setLineSearchFactory((@Nonnull final CharSequence name) -> new QuadraticSearch());
-          IterativeTrainer temp_37_0006 = temp_37_0005.setTimeout(3, TimeUnit.MINUTES);
-          IterativeTrainer temp_37_0007 = temp_37_0006.setMaxIterations(500);
+          temp_37_0002.setMonitor(monitor);
+          IterativeTrainer temp_37_0003 = temp_37_0002.addRef();
+          temp_37_0003.setOrientation(new GradientDescent());
+          IterativeTrainer temp_37_0004 = temp_37_0003.addRef();
+          temp_37_0004.setLineSearchFactory((@Nonnull final CharSequence name) -> new QuadraticSearch());
+          IterativeTrainer temp_37_0005 = temp_37_0004.addRef();
+          temp_37_0005.setTimeout(3, TimeUnit.MINUTES);
+          IterativeTrainer temp_37_0006 = temp_37_0005.addRef();
+          temp_37_0006.setMaxIterations(500);
+          IterativeTrainer temp_37_0007 = temp_37_0006.addRef();
           double temp_37_0001 = temp_37_0007.run();
           temp_37_0007.freeRef();
           temp_37_0006.freeRef();
@@ -92,7 +92,7 @@ public class QuadraticLineSearchTest extends MnistTestBase {
           temp_37_0003.freeRef();
           temp_37_0002.freeRef();
           return temp_37_0001;
-        }, network, Tensor.addRefs(trainingData)));
+        }, network, RefUtil.addRefs(trainingData)));
     ReferenceCounting.freeRefs(trainingData);
   }
 

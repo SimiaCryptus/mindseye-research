@@ -59,10 +59,7 @@ public class TrustSphereTest extends MnistTestBase {
   @Nullable
   public static @SuppressWarnings("unused")
   TrustSphereTest[][] addRefs(@Nullable TrustSphereTest[][] array) {
-    if (array == null)
-      return null;
-    return Arrays.stream(array).filter((x) -> x != null).map(TrustSphereTest::addRefs)
-        .toArray((x) -> new TrustSphereTest[x][]);
+    return RefUtil.addRefs(array);
   }
 
   @Override
@@ -73,7 +70,7 @@ public class TrustSphereTest extends MnistTestBase {
           @Nonnull final SimpleLossNetwork supervisedNetwork = new SimpleLossNetwork(network.addRef(),
               new EntropyLossLayer());
           @Nonnull final Trainable trainable = new SampledArrayTrainable(
-              Tensor.addRefs(trainingData),
+              RefUtil.addRefs(trainingData),
               supervisedNetwork, 10000);
           @Nonnull final TrustRegionStrategy trustRegionStrategy = new TrustRegionStrategy() {
             @Nonnull
@@ -90,13 +87,17 @@ public class TrustSphereTest extends MnistTestBase {
           };
           IterativeTrainer temp_39_0002 = new IterativeTrainer(
               trainable);
-          IterativeTrainer temp_39_0003 = temp_39_0002.setIterationsPerSample(100);
-          IterativeTrainer temp_39_0004 = temp_39_0003.setMonitor(monitor);
-          IterativeTrainer temp_39_0005 = temp_39_0004
-              //.setOrientation(new ValidatingOrientationWrapper(trustRegionStrategy))
-              .setOrientation(trustRegionStrategy);
-          IterativeTrainer temp_39_0006 = temp_39_0005.setTimeout(3, TimeUnit.MINUTES);
-          IterativeTrainer temp_39_0007 = temp_39_0006.setMaxIterations(500);
+          temp_39_0002.setIterationsPerSample(100);
+          IterativeTrainer temp_39_0003 = temp_39_0002.addRef();
+          temp_39_0003.setMonitor(monitor);
+          IterativeTrainer temp_39_0004 = temp_39_0003.addRef();
+          temp_39_0004.setOrientation(trustRegionStrategy);
+          //.setOrientation(new ValidatingOrientationWrapper(trustRegionStrategy))
+          IterativeTrainer temp_39_0005 = temp_39_0004.addRef();
+          temp_39_0005.setTimeout(3, TimeUnit.MINUTES);
+          IterativeTrainer temp_39_0006 = temp_39_0005.addRef();
+          temp_39_0006.setMaxIterations(500);
+          IterativeTrainer temp_39_0007 = temp_39_0006.addRef();
           double temp_39_0001 = temp_39_0007.run();
           temp_39_0007.freeRef();
           temp_39_0006.freeRef();
@@ -106,7 +107,7 @@ public class TrustSphereTest extends MnistTestBase {
           temp_39_0002.freeRef();
           //.setOrientation(new ValidatingOrientationWrapper(trustRegionStrategy))
           return temp_39_0001;
-        }, Tensor.addRefs(trainingData), network));
+        }, RefUtil.addRefs(trainingData), network));
     ReferenceCounting.freeRefs(trainingData);
   }
 

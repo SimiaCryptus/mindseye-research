@@ -58,10 +58,7 @@ public class OWLQNTest extends MnistTestBase {
   @Nullable
   public static @SuppressWarnings("unused")
   OWLQNTest[][] addRefs(@Nullable OWLQNTest[][] array) {
-    if (array == null)
-      return null;
-    return Arrays.stream(array).filter((x) -> x != null).map(OWLQNTest::addRefs)
-        .toArray((x) -> new OWLQNTest[x][]);
+    return RefUtil.addRefs(array);
   }
 
   @Override
@@ -72,16 +69,20 @@ public class OWLQNTest extends MnistTestBase {
           @Nonnull final SimpleLossNetwork supervisedNetwork = new SimpleLossNetwork(network.addRef(),
               new EntropyLossLayer());
           @Nonnull final Trainable trainable = new SampledArrayTrainable(
-              Tensor.addRefs(trainingData),
+              RefUtil.addRefs(trainingData),
               supervisedNetwork, 10000);
           IterativeTrainer temp_43_0002 = new IterativeTrainer(
               trainable);
-          IterativeTrainer temp_43_0003 = temp_43_0002.setIterationsPerSample(100);
-          IterativeTrainer temp_43_0004 = temp_43_0003.setMonitor(monitor);
-          IterativeTrainer temp_43_0005 = temp_43_0004
-              .setOrientation(new ValidatingOrientationWrapper(new OwlQn()));
-          IterativeTrainer temp_43_0006 = temp_43_0005.setTimeout(5, TimeUnit.MINUTES);
-          IterativeTrainer temp_43_0007 = temp_43_0006.setMaxIterations(500);
+          temp_43_0002.setIterationsPerSample(100);
+          IterativeTrainer temp_43_0003 = temp_43_0002.addRef();
+          temp_43_0003.setMonitor(monitor);
+          IterativeTrainer temp_43_0004 = temp_43_0003.addRef();
+          temp_43_0004.setOrientation(new ValidatingOrientationWrapper(new OwlQn()));
+          IterativeTrainer temp_43_0005 = temp_43_0004.addRef();
+          temp_43_0005.setTimeout(5, TimeUnit.MINUTES);
+          IterativeTrainer temp_43_0006 = temp_43_0005.addRef();
+          temp_43_0006.setMaxIterations(500);
+          IterativeTrainer temp_43_0007 = temp_43_0006.addRef();
           double temp_43_0001 = temp_43_0007.run();
           temp_43_0007.freeRef();
           temp_43_0006.freeRef();
@@ -90,7 +91,7 @@ public class OWLQNTest extends MnistTestBase {
           temp_43_0003.freeRef();
           temp_43_0002.freeRef();
           return temp_43_0001;
-        }, Tensor.addRefs(trainingData), network));
+        }, RefUtil.addRefs(trainingData), network));
     ReferenceCounting.freeRefs(trainingData);
   }
 
