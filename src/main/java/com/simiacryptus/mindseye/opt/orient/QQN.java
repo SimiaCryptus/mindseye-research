@@ -27,7 +27,6 @@ import com.simiacryptus.mindseye.opt.line.LineSearchCursor;
 import com.simiacryptus.mindseye.opt.line.LineSearchCursorBase;
 import com.simiacryptus.mindseye.opt.line.LineSearchPoint;
 import com.simiacryptus.mindseye.opt.line.SimpleLineSearchCursor;
-import com.simiacryptus.ref.lang.RefUtil;
 import com.simiacryptus.ref.wrappers.RefString;
 
 import javax.annotation.Nonnull;
@@ -133,6 +132,7 @@ public class QQN extends OrientationStrategyBase<LineSearchCursor> {
 
           @Override
           public void _free() {
+            super._free();
             subject.freeRef();
             scaledGradient.freeRef();
             lbfgs.freeRef();
@@ -161,6 +161,7 @@ public class QQN extends OrientationStrategyBase<LineSearchCursor> {
 
   @Override
   public void _free() {
+    super._free();
     inner.freeRef();
   }
 

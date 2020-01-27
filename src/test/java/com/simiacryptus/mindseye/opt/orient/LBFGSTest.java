@@ -32,12 +32,9 @@ import com.simiacryptus.mindseye.opt.ValidatingTrainer;
 import com.simiacryptus.mindseye.opt.line.QuadraticSearch;
 import com.simiacryptus.notebook.NotebookOutput;
 import com.simiacryptus.ref.lang.RefUtil;
-import com.simiacryptus.ref.lang.ReferenceCounting;
 import com.simiacryptus.ref.wrappers.RefList;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
 public class LBFGSTest extends MnistTestBase {
@@ -46,21 +43,6 @@ public class LBFGSTest extends MnistTestBase {
   @Override
   protected Class<?> getTargetClass() {
     return LBFGS.class;
-  }
-
-  @Nullable
-  public static @SuppressWarnings("unused")
-  LBFGSTest[] addRefs(@Nullable LBFGSTest[] array) {
-    if (array == null)
-      return null;
-    return Arrays.stream(array).filter((x) -> x != null).map(LBFGSTest::addRef)
-        .toArray((x) -> new LBFGSTest[x]);
-  }
-
-  @Nullable
-  public static @SuppressWarnings("unused")
-  LBFGSTest[][] addRefs(@Nullable LBFGSTest[][] array) {
-    return RefUtil.addRefs(array);
   }
 
   @Override
@@ -103,12 +85,11 @@ public class LBFGSTest extends MnistTestBase {
           trainer.freeRef();
           return temp_35_0001;
         }, RefUtil.addRefs(trainingData), network));
-    ReferenceCounting.freeRefs(trainingData);
+    RefUtil.freeRefs(trainingData);
   }
 
   public @SuppressWarnings("unused")
-  void _free() {
-  }
+  void _free() { super._free(); }
 
   @Nonnull
   public @Override

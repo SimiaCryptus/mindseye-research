@@ -32,11 +32,9 @@ import com.simiacryptus.mindseye.opt.TrainingMonitor;
 import com.simiacryptus.mindseye.opt.orient.TrustRegionStrategy;
 import com.simiacryptus.notebook.NotebookOutput;
 import com.simiacryptus.ref.lang.RefUtil;
-import com.simiacryptus.ref.lang.ReferenceCounting;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
 public class SingleOrthantTrustRegionTest extends MnistTestBase {
@@ -45,23 +43,6 @@ public class SingleOrthantTrustRegionTest extends MnistTestBase {
   @Override
   protected Class<?> getTargetClass() {
     return SingleOrthant.class;
-  }
-
-  @Nullable
-  public static @SuppressWarnings("unused")
-  SingleOrthantTrustRegionTest[] addRefs(
-      @Nullable SingleOrthantTrustRegionTest[] array) {
-    if (array == null)
-      return null;
-    return Arrays.stream(array).filter((x) -> x != null).map(SingleOrthantTrustRegionTest::addRef)
-        .toArray((x) -> new SingleOrthantTrustRegionTest[x]);
-  }
-
-  @Nullable
-  public static @SuppressWarnings("unused")
-  SingleOrthantTrustRegionTest[][] addRefs(
-      @Nullable SingleOrthantTrustRegionTest[][] array) {
-    return RefUtil.addRefs(array);
   }
 
   @Override
@@ -84,8 +65,7 @@ public class SingleOrthantTrustRegionTest extends MnistTestBase {
             }
 
             public @SuppressWarnings("unused")
-            void _free() {
-            }
+            void _free() { super._free(); }
           };
           IterativeTrainer temp_44_0002 = new IterativeTrainer(
               trainable);
@@ -110,12 +90,11 @@ public class SingleOrthantTrustRegionTest extends MnistTestBase {
           //.setOrientation(new ValidatingOrientationWrapper(trustRegionStrategy))
           return temp_44_0001;
         }, network, RefUtil.addRefs(trainingData)));
-    ReferenceCounting.freeRefs(trainingData);
+    RefUtil.freeRefs(trainingData);
   }
 
   public @SuppressWarnings("unused")
-  void _free() {
-  }
+  void _free() { super._free(); }
 
   @Nonnull
   public @Override

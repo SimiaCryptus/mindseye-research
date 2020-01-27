@@ -39,12 +39,10 @@ import com.simiacryptus.mindseye.opt.line.QuadraticSearch;
 import com.simiacryptus.mindseye.opt.line.StaticLearningRate;
 import com.simiacryptus.notebook.NotebookOutput;
 import com.simiacryptus.ref.lang.RefUtil;
-import com.simiacryptus.ref.lang.ReferenceCounting;
 import com.simiacryptus.ref.wrappers.RefList;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 import java.util.function.DoubleSupplier;
 
@@ -57,21 +55,6 @@ public abstract class RecursiveSubspaceTest extends MnistTestBase {
   @Override
   protected Class<?> getTargetClass() {
     return RecursiveSubspace.class;
-  }
-
-  @Nullable
-  public static @SuppressWarnings("unused")
-  RecursiveSubspaceTest[] addRefs(@Nullable RecursiveSubspaceTest[] array) {
-    if (array == null)
-      return null;
-    return Arrays.stream(array).filter((x) -> x != null).map(RecursiveSubspaceTest::addRef)
-        .toArray((x) -> new RecursiveSubspaceTest[x]);
-  }
-
-  @Nullable
-  public static @SuppressWarnings("unused")
-  RecursiveSubspaceTest[][] addRefs(@Nullable RecursiveSubspaceTest[][] array) {
-    return RefUtil.addRefs(array);
   }
 
   @Override
@@ -155,12 +138,11 @@ public abstract class RecursiveSubspaceTest extends MnistTestBase {
           trainer.freeRef();
           return temp_46_0001;
         }, network, RefUtil.addRefs(trainingData)));
-    ReferenceCounting.freeRefs(trainingData);
+    RefUtil.freeRefs(trainingData);
   }
 
   public @SuppressWarnings("unused")
-  void _free() {
-  }
+  void _free() { super._free(); }
 
   @Nonnull
   public @Override
@@ -181,18 +163,8 @@ public abstract class RecursiveSubspaceTest extends MnistTestBase {
       return new LBFGS();
     }
 
-    @Nullable
-    public static @SuppressWarnings("unused")
-    Baseline[] addRefs(@Nullable Baseline[] array) {
-      if (array == null)
-        return null;
-      return Arrays.stream(array).filter((x) -> x != null).map(Baseline::addRef)
-          .toArray((x) -> new Baseline[x]);
-    }
-
     public @SuppressWarnings("unused")
-    void _free() {
-    }
+    void _free() { super._free(); }
 
     @Nonnull
     public @Override
@@ -209,18 +181,8 @@ public abstract class RecursiveSubspaceTest extends MnistTestBase {
       return new LBFGS();
     }
 
-    @Nullable
-    public static @SuppressWarnings("unused")
-    Normalized[] addRefs(@Nullable Normalized[] array) {
-      if (array == null)
-        return null;
-      return Arrays.stream(array).filter((x) -> x != null).map(Normalized::addRef)
-          .toArray((x) -> new Normalized[x]);
-    }
-
     public @SuppressWarnings("unused")
-    void _free() {
-    }
+    void _free() { super._free(); }
 
     @Nonnull
     public @Override
@@ -243,15 +205,8 @@ public abstract class RecursiveSubspaceTest extends MnistTestBase {
       return new RecursiveSubspace();
     }
 
-    @Nullable
-    public static @SuppressWarnings("unused")
-    Demo[] addRefs(@Nullable Demo[] array) {
-      return RefUtil.addRefs(array);
-    }
-
     public @SuppressWarnings("unused")
-    void _free() {
-    }
+    void _free() { super._free(); }
 
     @Nonnull
     public @Override

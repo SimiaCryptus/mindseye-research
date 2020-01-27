@@ -32,11 +32,9 @@ import com.simiacryptus.mindseye.opt.TrainingMonitor;
 import com.simiacryptus.mindseye.opt.orient.TrustRegionStrategy;
 import com.simiacryptus.notebook.NotebookOutput;
 import com.simiacryptus.ref.lang.RefUtil;
-import com.simiacryptus.ref.lang.ReferenceCounting;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
 public class TrustSphereTest extends MnistTestBase {
@@ -45,21 +43,6 @@ public class TrustSphereTest extends MnistTestBase {
   @Override
   protected Class<?> getTargetClass() {
     return AdaptiveTrustSphere.class;
-  }
-
-  @Nullable
-  public static @SuppressWarnings("unused")
-  TrustSphereTest[] addRefs(@Nullable TrustSphereTest[] array) {
-    if (array == null)
-      return null;
-    return Arrays.stream(array).filter((x) -> x != null).map(TrustSphereTest::addRef)
-        .toArray((x) -> new TrustSphereTest[x]);
-  }
-
-  @Nullable
-  public static @SuppressWarnings("unused")
-  TrustSphereTest[][] addRefs(@Nullable TrustSphereTest[][] array) {
-    return RefUtil.addRefs(array);
   }
 
   @Override
@@ -82,8 +65,7 @@ public class TrustSphereTest extends MnistTestBase {
             }
 
             public @SuppressWarnings("unused")
-            void _free() {
-            }
+            void _free() { super._free(); }
           };
           IterativeTrainer temp_39_0002 = new IterativeTrainer(
               trainable);
@@ -108,12 +90,11 @@ public class TrustSphereTest extends MnistTestBase {
           //.setOrientation(new ValidatingOrientationWrapper(trustRegionStrategy))
           return temp_39_0001;
         }, RefUtil.addRefs(trainingData), network));
-    ReferenceCounting.freeRefs(trainingData);
+    RefUtil.freeRefs(trainingData);
   }
 
   public @SuppressWarnings("unused")
-  void _free() {
-  }
+  void _free() { super._free(); }
 
   @Nonnull
   public @Override

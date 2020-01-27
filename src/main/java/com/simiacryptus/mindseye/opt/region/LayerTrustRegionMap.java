@@ -21,13 +21,11 @@ package com.simiacryptus.mindseye.opt.region;
 
 import com.simiacryptus.mindseye.lang.Layer;
 import com.simiacryptus.mindseye.opt.orient.TrustRegionStrategy;
-import com.simiacryptus.ref.lang.RefUtil;
 import com.simiacryptus.ref.wrappers.RefHashMap;
 import com.simiacryptus.ref.wrappers.RefMap;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.Arrays;
 
 public class LayerTrustRegionMap extends TrustRegionStrategy {
   @Nonnull
@@ -43,21 +41,6 @@ public class LayerTrustRegionMap extends TrustRegionStrategy {
   @Nonnull
   public RefMap<Layer, TrustRegion> getRegionPolicies() {
     return regionPolicies.addRef();
-  }
-
-  @Nullable
-  public static @SuppressWarnings("unused")
-  LayerTrustRegionMap[] addRefs(@Nullable LayerTrustRegionMap[] array) {
-    if (array == null)
-      return null;
-    return Arrays.stream(array).filter((x) -> x != null).map(LayerTrustRegionMap::addRef)
-        .toArray((x) -> new LayerTrustRegionMap[x]);
-  }
-
-  @Nullable
-  public static @SuppressWarnings("unused")
-  LayerTrustRegionMap[][] addRefs(@Nullable LayerTrustRegionMap[][] array) {
-    return RefUtil.addRefs(array);
   }
 
   @javax.annotation.Nullable
@@ -79,6 +62,8 @@ public class LayerTrustRegionMap extends TrustRegionStrategy {
 
   public @SuppressWarnings("unused")
   void _free() {
+    super._free();
+    regionPolicies.freeRef();
   }
 
   @Nonnull

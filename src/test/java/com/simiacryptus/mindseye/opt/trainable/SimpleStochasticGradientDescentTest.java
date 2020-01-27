@@ -32,11 +32,8 @@ import com.simiacryptus.mindseye.opt.TrainingMonitor;
 import com.simiacryptus.mindseye.opt.orient.GradientDescent;
 import com.simiacryptus.notebook.NotebookOutput;
 import com.simiacryptus.ref.lang.RefUtil;
-import com.simiacryptus.ref.lang.ReferenceCounting;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
 public class SimpleStochasticGradientDescentTest extends MnistTestBase {
@@ -45,23 +42,6 @@ public class SimpleStochasticGradientDescentTest extends MnistTestBase {
   @Override
   protected Class<?> getTargetClass() {
     return SampledArrayTrainable.class;
-  }
-
-  @Nullable
-  public static @SuppressWarnings("unused")
-  SimpleStochasticGradientDescentTest[] addRefs(
-      @Nullable SimpleStochasticGradientDescentTest[] array) {
-    if (array == null)
-      return null;
-    return Arrays.stream(array).filter((x) -> x != null).map(SimpleStochasticGradientDescentTest::addRef)
-        .toArray((x) -> new SimpleStochasticGradientDescentTest[x]);
-  }
-
-  @Nullable
-  public static @SuppressWarnings("unused")
-  SimpleStochasticGradientDescentTest[][] addRefs(
-      @Nullable SimpleStochasticGradientDescentTest[][] array) {
-    return RefUtil.addRefs(array);
   }
 
   @Override
@@ -97,12 +77,11 @@ public class SimpleStochasticGradientDescentTest extends MnistTestBase {
           temp_36_0002.freeRef();
           return temp_36_0001;
         }, RefUtil.addRefs(trainingData), network));
-    ReferenceCounting.freeRefs(trainingData);
+    RefUtil.freeRefs(trainingData);
   }
 
   public @SuppressWarnings("unused")
-  void _free() {
-  }
+  void _free() { super._free(); }
 
   @Nonnull
   public @Override

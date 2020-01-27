@@ -31,7 +31,6 @@ import com.simiacryptus.util.ArrayUtil;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.Arrays;
 import java.util.UUID;
 import java.util.function.BiConsumer;
 
@@ -49,21 +48,6 @@ public abstract class LayerReweightingStrategy extends OrientationStrategyBase<S
       temp_32_0001.freeRef();
     if (null != inner)
       inner.freeRef();
-  }
-
-  @Nullable
-  public static @SuppressWarnings("unused")
-  LayerReweightingStrategy[] addRefs(@Nullable LayerReweightingStrategy[] array) {
-    if (array == null)
-      return null;
-    return Arrays.stream(array).filter((x) -> x != null).map(LayerReweightingStrategy::addRef)
-        .toArray((x) -> new LayerReweightingStrategy[x]);
-  }
-
-  @Nullable
-  public static @SuppressWarnings("unused")
-  LayerReweightingStrategy[][] addRefs(@Nullable LayerReweightingStrategy[][] array) {
-    return RefUtil.addRefs(array);
   }
 
   @Nullable
@@ -95,8 +79,6 @@ public abstract class LayerReweightingStrategy extends OrientationStrategyBase<S
           Layer layer = temp_32_0004.get(uuid);
           temp_32_0004.freeRef();
           final Double weight = getRegionPolicy(layer);
-          if (null != layer)
-            layer.freeRef();
           if (null != weight && 0 < weight) {
             final DoubleBuffer<UUID> deltaBuffer = direction.get(uuid, buffer.target);
             assert deltaBuffer != null;
@@ -117,6 +99,7 @@ public abstract class LayerReweightingStrategy extends OrientationStrategyBase<S
 
   @Override
   public void _free() {
+    super._free();
     if (null != inner)
       inner.freeRef();
   }
@@ -143,16 +126,6 @@ public abstract class LayerReweightingStrategy extends OrientationStrategyBase<S
     }
 
     @Nullable
-    public static @SuppressWarnings("unused")
-    HashMapLayerReweightingStrategy[] addRefs(
-        @Nullable HashMapLayerReweightingStrategy[] array) {
-      if (array == null)
-        return null;
-      return Arrays.stream(array).filter((x) -> x != null).map(HashMapLayerReweightingStrategy::addRef)
-          .toArray((x) -> new HashMapLayerReweightingStrategy[x]);
-    }
-
-    @Nullable
     @Override
     public Double getRegionPolicy(final Layer layer) {
       return map.get(layer);
@@ -166,6 +139,8 @@ public abstract class LayerReweightingStrategy extends OrientationStrategyBase<S
 
     public @SuppressWarnings("unused")
     void _free() {
+      super._free();
+      map.freeRef();
     }
 
     @Nonnull

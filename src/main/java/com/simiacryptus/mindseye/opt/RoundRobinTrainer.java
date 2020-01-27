@@ -147,21 +147,6 @@ public class RoundRobinTrainer extends ReferenceCountingBase {
   }
 
   @Nullable
-  public static @SuppressWarnings("unused")
-  RoundRobinTrainer[] addRefs(@Nullable RoundRobinTrainer[] array) {
-    if (array == null)
-      return null;
-    return Arrays.stream(array).filter((x) -> x != null).map(RoundRobinTrainer::addRef)
-        .toArray((x) -> new RoundRobinTrainer[x]);
-  }
-
-  @Nullable
-  public static @SuppressWarnings("unused")
-  RoundRobinTrainer[][] addRefs(@Nullable RoundRobinTrainer[][] array) {
-    return RefUtil.addRefs(array);
-  }
-
-  @Nullable
   public PointSample measure() {
     PointSample currentPoint = null;
     int retries = 0;
@@ -175,6 +160,7 @@ public class RoundRobinTrainer extends ReferenceCountingBase {
         currentPoint.freeRef();
         throw new IterativeStopException();
       }
+      currentPoint.freeRef();
       currentPoint = subject.measure(monitor);
     } while (!Double.isFinite(currentPoint.sum));
     assert Double.isFinite(currentPoint.sum);
@@ -185,47 +171,51 @@ public class RoundRobinTrainer extends ReferenceCountingBase {
     final long timeoutMs = RefSystem.currentTimeMillis() + timeout.toMillis();
     PointSample currentPoint = measure();
     assert currentPoint != null;
-    assert currentPoint != null;
-mainLoop:
-    while (timeoutMs > RefSystem.currentTimeMillis() && currentPoint.sum > terminateThreshold) {
-      if (currentIteration.get() > maxIterations) {
-        break;
-      }
-      currentPoint = measure();
-      for (int subiteration = 0; subiteration < iterationsPerSample; subiteration++) {
-        final PointSample previousOrientations = currentPoint == null ? null : currentPoint.addRef();
-        RefIterator<OrientationStrategy<?>> orientationStrategyRefIterator = orientations.iterator();
-        while (orientationStrategyRefIterator.hasNext()) {
-          OrientationStrategy<?> orientation = orientationStrategyRefIterator.next();
-          if (currentIteration.incrementAndGet() <= maxIterations) {
-            assert orientation != null;
-            currentPoint = getPointSample(currentPoint, orientation);
-          } else {
-            break;
-          }
+    try {
+  mainLoop:
+      while (timeoutMs > RefSystem.currentTimeMillis() && currentPoint.sum > terminateThreshold) {
+        if (currentIteration.get() > maxIterations) {
+          break;
         }
-        orientationStrategyRefIterator.freeRef();
-        assert currentPoint != null;
-        assert previousOrientations != null;
-        if (previousOrientations.sum <= currentPoint.sum) {
-          assert subject != null;
-          if (subject.reseed(RefSystem.nanoTime())) {
-            monitor.log(RefString.format("MacroIteration %s failed, retrying. Error: %s", currentIteration.get(),
-                currentPoint.sum));
-            break;
-          } else {
-            monitor.log(RefString.format("MacroIteration %s failed, aborting. Error: %s", currentIteration.get(),
-                currentPoint.sum));
-            break mainLoop;
+        currentPoint.freeRef();
+        currentPoint = measure();
+        for (int subiteration = 0; subiteration < iterationsPerSample; subiteration++) {
+          final PointSample previousOrientations = currentPoint == null ? null : currentPoint.addRef();
+          RefIterator<OrientationStrategy<?>> orientationStrategyRefIterator = orientations.iterator();
+          while (orientationStrategyRefIterator.hasNext()) {
+            OrientationStrategy<?> orientation = orientationStrategyRefIterator.next();
+            if (currentIteration.incrementAndGet() <= maxIterations) {
+              assert orientation != null;
+              PointSample pointSample = getPointSample(currentPoint, orientation);
+              currentPoint = pointSample;
+            } else {
+              orientation.freeRef();
+              break;
+            }
           }
+          orientationStrategyRefIterator.freeRef();
+          assert currentPoint != null;
+          assert previousOrientations != null;
+          if (previousOrientations.sum <= currentPoint.sum) {
+            assert subject != null;
+            if (subject.reseed(RefSystem.nanoTime())) {
+              monitor.log(RefString.format("MacroIteration %s failed, retrying. Error: %s", currentIteration.get(),
+                  currentPoint.sum));
+              break;
+            } else {
+              monitor.log(RefString.format("MacroIteration %s failed, aborting. Error: %s", currentIteration.get(),
+                  currentPoint.sum));
+              break mainLoop;
+            }
+          }
+          previousOrientations.freeRef();
         }
-        previousOrientations.freeRef();
       }
+      return null == currentPoint ? Double.NaN : currentPoint.sum;
+    } finally {
+      if (null != currentPoint)
+        currentPoint.freeRef();
     }
-    double temp_34_0002 = null == currentPoint ? Double.NaN : currentPoint.sum;
-    if (null != currentPoint)
-      currentPoint.freeRef();
-    return temp_34_0002;
   }
 
   @Nonnull
@@ -271,6 +261,7 @@ mainLoop:
 
   public @SuppressWarnings("unused")
   void _free() {
+    super._free();
     if (null != subject)
       subject.freeRef();
     orientations.freeRef();

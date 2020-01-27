@@ -31,11 +31,9 @@ import com.simiacryptus.mindseye.opt.TrainingMonitor;
 import com.simiacryptus.mindseye.opt.ValidatingTrainer;
 import com.simiacryptus.notebook.NotebookOutput;
 import com.simiacryptus.ref.lang.RefUtil;
-import com.simiacryptus.ref.lang.ReferenceCounting;
 import com.simiacryptus.ref.wrappers.RefList;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.concurrent.TimeUnit;
 
 public class QQNTest extends MnistTestBase {
@@ -44,18 +42,6 @@ public class QQNTest extends MnistTestBase {
   @Override
   protected Class<?> getTargetClass() {
     return QQN.class;
-  }
-
-  @Nullable
-  public static @SuppressWarnings("unused")
-  QQNTest[] addRefs(@Nullable QQNTest[] array) {
-    return RefUtil.addRefs(array);
-  }
-
-  @Nullable
-  public static @SuppressWarnings("unused")
-  QQNTest[][] addRefs(@Nullable QQNTest[][] array) {
-    return RefUtil.addRefs(array);
   }
 
   @Override
@@ -91,12 +77,11 @@ public class QQNTest extends MnistTestBase {
           trainer.freeRef();
           return temp_45_0001;
         }, RefUtil.addRefs(trainingData), network));
-    ReferenceCounting.freeRefs(trainingData);
+    RefUtil.freeRefs(trainingData);
   }
 
   public @SuppressWarnings("unused")
-  void _free() {
-  }
+  void _free() { super._free(); }
 
   @Nonnull
   public @Override

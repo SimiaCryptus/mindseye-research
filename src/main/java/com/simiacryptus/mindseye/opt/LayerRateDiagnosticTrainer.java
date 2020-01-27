@@ -59,17 +59,10 @@ public class LayerRateDiagnosticTrainer extends ReferenceCountingBase {
   private Duration timeout;
 
   public LayerRateDiagnosticTrainer(@Nullable final Trainable subject) {
-    Trainable temp_31_0001 = subject == null ? null : subject.addRef();
-    this.subject = temp_31_0001 == null ? null : temp_31_0001.addRef();
-    if (null != temp_31_0001)
-      temp_31_0001.freeRef();
-    if (null != subject)
-      subject.freeRef();
+    this.subject = subject;
     timeout = Duration.of(5, ChronoUnit.MINUTES);
     terminateThreshold = Double.NEGATIVE_INFINITY;
-    GradientDescent temp_31_0003 = new GradientDescent();
-    setOrientation(temp_31_0003);
-    temp_31_0003.freeRef();
+    setOrientation(new GradientDescent());
   }
 
   public AtomicInteger getCurrentIteration() {
@@ -160,22 +153,6 @@ public class LayerRateDiagnosticTrainer extends ReferenceCountingBase {
     this.strict = strict;
   }
 
-  @Nullable
-  public static @SuppressWarnings("unused")
-  LayerRateDiagnosticTrainer[] addRefs(@Nullable LayerRateDiagnosticTrainer[] array) {
-    if (array == null)
-      return null;
-    return Arrays.stream(array).filter((x) -> x != null).map(LayerRateDiagnosticTrainer::addRef)
-        .toArray((x) -> new LayerRateDiagnosticTrainer[x]);
-  }
-
-  @Nullable
-  public static @SuppressWarnings("unused")
-  LayerRateDiagnosticTrainer[][] addRefs(
-      @Nullable LayerRateDiagnosticTrainer[][] array) {
-    return RefUtil.addRefs(array);
-  }
-
   @javax.annotation.Nullable
   public Layer toLayer(UUID id) {
     assert subject != null;
@@ -201,7 +178,9 @@ public class LayerRateDiagnosticTrainer extends ReferenceCountingBase {
         currentPoint.freeRef();
         throw new IterativeStopException();
       }
-      currentPoint = subject.measure(monitor);
+      PointSample measure = subject.measure(monitor);
+      currentPoint.freeRef();
+      currentPoint = measure;
     } while (!Double.isFinite(currentPoint.sum));
     assert Double.isFinite(currentPoint.sum);
     return currentPoint;
@@ -222,7 +201,7 @@ public class LayerRateDiagnosticTrainer extends ReferenceCountingBase {
         break;
       }
       final PointSample initialPhasePoint = measure();
-
+      measure.freeRef();
       measure = initialPhasePoint == null ? null : initialPhasePoint.addRef();
       for (int subiteration = 0; subiteration < iterationsPerSample; subiteration++) {
         if (currentIteration.incrementAndGet() > maxIterations) {
@@ -287,33 +266,38 @@ public class LayerRateDiagnosticTrainer extends ReferenceCountingBase {
           temp_31_0011.freeRef();
           assert orient.direction != null;
           assert layer != null;
-          @Nonnull final DeltaSet<UUID> direction = filterDirection(orient.direction, layer);
+          @Nonnull final DeltaSet<UUID> direction = filterDirection(orient.direction, layer.addRef());
           if (direction.getMagnitude() == 0) {
-            monitor.log(RefString.format("Zero derivative for key %s; skipping", layer));
+            monitor.log(RefString.format("Zero derivative for key %s; skipping", layer.addRef()));
             continue;
           }
           assert orient.subject != null;
-          orient = new SimpleLineSearchCursor(orient.subject.addRef(), orient.origin.addRef(),
-              direction);
-          final PointSample previous = measure == null ? null : measure.addRef();
+          SimpleLineSearchCursor searchCursor = new SimpleLineSearchCursor(orient.subject.addRef(), orient.origin.addRef(), direction);
+          if(null != orient) orient.freeRef();
+          orient = searchCursor;
+          final PointSample previous = measure;
           measure = getLineSearchStrategy().step(orient.addRef(), monitor);
           if (isStrict()) {
             assert measure != null;
             monitor.log(RefString.format("Iteration %s reverting. Error: %s", currentIteration.get(), measure.sum));
             monitor.log(RefString.format("Optimal rate for key %s: %s", layer.getName(), measure.getRate()));
             if (null == bestPoint || bestPoint.sum < measure.sum) {
+              if(null != bestOrient) bestOrient.freeRef();
               bestOrient = orient.addRef();
+              if(null != bestPoint) bestPoint.freeRef();
               bestPoint = measure.addRef();
             }
             assert initialPhasePoint != null;
             getLayerRates().put(layer, new LayerStats(measure.getRate(), initialPhasePoint.sum - measure.sum));
             RefUtil.freeRef(orient.step(0, monitor));
+            measure.freeRef();
             measure = previous.addRef();
           } else {
             assert measure != null;
             assert previous != null;
             if (previous.sum == measure.sum) {
               monitor.log(RefString.format("Iteration %s failed. Error: %s", currentIteration.get(), measure.sum));
+              layer.freeRef();
             } else {
               monitor.log(RefString.format("Iteration %s complete. Error: %s", currentIteration.get(), measure.sum));
               monitor.log(RefString.format("Optimal rate for key %s: %s", layer.getName(), measure.getRate()));
@@ -322,7 +306,6 @@ public class LayerRateDiagnosticTrainer extends ReferenceCountingBase {
           }
           previous.freeRef();
           orient.freeRef();
-          layer.freeRef();
         }
         monitor.log(RefString.format("Ideal rates: %s", getLayerRates()));
         if (null != bestPoint) {
@@ -354,6 +337,7 @@ public class LayerRateDiagnosticTrainer extends ReferenceCountingBase {
 
   public @SuppressWarnings("unused")
   void _free() {
+    super._free();
     if (null != orientation)
       orientation.freeRef();
     orientation = null;

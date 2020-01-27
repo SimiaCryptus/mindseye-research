@@ -32,11 +32,9 @@ import com.simiacryptus.mindseye.opt.TrainingMonitor;
 import com.simiacryptus.mindseye.opt.orient.TrustRegionStrategy;
 import com.simiacryptus.notebook.NotebookOutput;
 import com.simiacryptus.ref.lang.RefUtil;
-import com.simiacryptus.ref.lang.ReferenceCounting;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
 public class LinearSumConstraintTest extends MnistTestBase {
@@ -45,21 +43,6 @@ public class LinearSumConstraintTest extends MnistTestBase {
   @Override
   protected Class<?> getTargetClass() {
     return LinearSumConstraint.class;
-  }
-
-  @Nullable
-  public static @SuppressWarnings("unused")
-  LinearSumConstraintTest[] addRefs(@Nullable LinearSumConstraintTest[] array) {
-    if (array == null)
-      return null;
-    return Arrays.stream(array).filter((x) -> x != null).map(LinearSumConstraintTest::addRef)
-        .toArray((x) -> new LinearSumConstraintTest[x]);
-  }
-
-  @Nullable
-  public static @SuppressWarnings("unused")
-  LinearSumConstraintTest[][] addRefs(@Nullable LinearSumConstraintTest[][] array) {
-    return RefUtil.addRefs(array);
   }
 
   @Override
@@ -82,8 +65,7 @@ public class LinearSumConstraintTest extends MnistTestBase {
             }
 
             public @SuppressWarnings("unused")
-            void _free() {
-            }
+            void _free() { super._free(); }
           };
           IterativeTrainer temp_49_0002 = new IterativeTrainer(
               trainable);
@@ -108,12 +90,11 @@ public class LinearSumConstraintTest extends MnistTestBase {
           //.setOrientation(new ValidatingOrientationWrapper(trustRegionStrategy))
           return temp_49_0001;
         }, RefUtil.addRefs(trainingData), network));
-    ReferenceCounting.freeRefs(trainingData);
+    RefUtil.freeRefs(trainingData);
   }
 
   public @SuppressWarnings("unused")
-  void _free() {
-  }
+  void _free() { super._free(); }
 
   @Nonnull
   public @Override

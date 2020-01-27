@@ -32,11 +32,9 @@ import com.simiacryptus.mindseye.opt.MnistTestBase;
 import com.simiacryptus.mindseye.opt.TrainingMonitor;
 import com.simiacryptus.notebook.NotebookOutput;
 import com.simiacryptus.ref.lang.RefUtil;
-import com.simiacryptus.ref.lang.ReferenceCounting;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
 public class L2NormalizationTest extends MnistTestBase {
@@ -45,21 +43,6 @@ public class L2NormalizationTest extends MnistTestBase {
   @Override
   protected Class<?> getTargetClass() {
     return L12Normalizer.class;
-  }
-
-  @Nullable
-  public static @SuppressWarnings("unused")
-  L2NormalizationTest[] addRefs(@Nullable L2NormalizationTest[] array) {
-    if (array == null)
-      return null;
-    return Arrays.stream(array).filter((x) -> x != null).map(L2NormalizationTest::addRef)
-        .toArray((x) -> new L2NormalizationTest[x]);
-  }
-
-  @Nullable
-  public static @SuppressWarnings("unused")
-  L2NormalizationTest[][] addRefs(@Nullable L2NormalizationTest[][] array) {
-    return RefUtil.addRefs(array);
   }
 
   @Override
@@ -85,8 +68,7 @@ public class L2NormalizationTest extends MnistTestBase {
             }
 
             public @SuppressWarnings("unused")
-            void _free() {
-            }
+            void _free() { super._free(); }
 
             @Override
             protected double getL1(@Nullable final Layer layer) {
@@ -117,12 +99,11 @@ public class L2NormalizationTest extends MnistTestBase {
           temp_52_0002.freeRef();
           return temp_52_0001;
         }, RefUtil.addRefs(trainingData), network));
-    ReferenceCounting.freeRefs(trainingData);
+    RefUtil.freeRefs(trainingData);
   }
 
   public @SuppressWarnings("unused")
-  void _free() {
-  }
+  void _free() { super._free(); }
 
   @Nonnull
   public @Override

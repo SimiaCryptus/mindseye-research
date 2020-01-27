@@ -31,10 +31,8 @@ import com.simiacryptus.mindseye.opt.MnistTestBase;
 import com.simiacryptus.mindseye.opt.TrainingMonitor;
 import com.simiacryptus.notebook.NotebookOutput;
 import com.simiacryptus.ref.lang.RefUtil;
-import com.simiacryptus.ref.lang.ReferenceCounting;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -47,21 +45,6 @@ public class SimpleGradientDescentTest extends MnistTestBase {
   @Override
   protected Class<?> getTargetClass() {
     return ArrayTrainable.class;
-  }
-
-  @Nullable
-  public static @SuppressWarnings("unused")
-  SimpleGradientDescentTest[] addRefs(@Nullable SimpleGradientDescentTest[] array) {
-    if (array == null)
-      return null;
-    return Arrays.stream(array).filter((x) -> x != null).map(SimpleGradientDescentTest::addRef)
-        .toArray((x) -> new SimpleGradientDescentTest[x]);
-  }
-
-  @Nullable
-  public static @SuppressWarnings("unused")
-  SimpleGradientDescentTest[][] addRefs(@Nullable SimpleGradientDescentTest[][] array) {
-    return RefUtil.addRefs(array);
   }
 
   @Override
@@ -82,7 +65,7 @@ public class SimpleGradientDescentTest extends MnistTestBase {
           @Nonnull final Tensor[][] randomSelection = trainingList.subList(0, 10000).toArray(new Tensor[][]{});
           @Nonnull final Trainable trainable = new ArrayTrainable(RefUtil.addRefs(randomSelection),
               supervisedNetwork);
-          ReferenceCounting.freeRefs(randomSelection);
+          RefUtil.freeRefs(randomSelection);
           IterativeTrainer temp_40_0002 = new IterativeTrainer(
               trainable);
           temp_40_0002.setMonitor(monitor);
@@ -98,12 +81,11 @@ public class SimpleGradientDescentTest extends MnistTestBase {
           temp_40_0002.freeRef();
           return temp_40_0001;
         }, RefUtil.addRefs(trainingData), network));
-    ReferenceCounting.freeRefs(trainingData);
+    RefUtil.freeRefs(trainingData);
   }
 
   public @SuppressWarnings("unused")
-  void _free() {
-  }
+  void _free() { super._free(); }
 
   @Nonnull
   public @Override

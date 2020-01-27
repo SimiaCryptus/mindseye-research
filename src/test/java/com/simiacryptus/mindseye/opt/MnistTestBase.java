@@ -72,21 +72,6 @@ public abstract class MnistTestBase extends NotebookReportBase {
     return ReportType.Optimizers;
   }
 
-  @Nullable
-  public static @SuppressWarnings("unused")
-  MnistTestBase[] addRefs(@Nullable MnistTestBase[] array) {
-    if (array == null)
-      return null;
-    return Arrays.stream(array).filter((x) -> x != null).map(MnistTestBase::addRef)
-        .toArray((x) -> new MnistTestBase[x]);
-  }
-
-  @Nullable
-  public static @SuppressWarnings("unused")
-  MnistTestBase[][] addRefs(@Nullable MnistTestBase[][] array) {
-    return RefUtil.addRefs(array);
-  }
-
   @Test
   @Category(TestCategories.Report.class)
   public void test() {
@@ -99,15 +84,12 @@ public abstract class MnistTestBase extends NotebookReportBase {
     @Nonnull final TrainingMonitor monitor = getMonitor(history);
     final Tensor[][] trainingData = getTrainingData(log);
     final DAGNetwork network = buildModel(log);
-    addMonitoring(network, monitoringRoot);
+    addMonitoring(network.addRef(), monitoringRoot.addRef());
     log.h1("Training");
-    train(log, network, trainingData, monitor);
-    ReferenceCounting.freeRefs(trainingData);
-    report(log, monitoringRoot, history, network);
-    monitoringRoot.freeRef();
-    validate(log, network);
+    train(log, network.addRef(), trainingData, monitor);
+    report(log, monitoringRoot, history, network.addRef());
+    validate(log, network.addRef());
     removeMonitoring(network);
-    network.freeRef();
   }
 
   public void addMonitoring(@Nonnull final DAGNetwork network, @Nonnull final MonitoredObject monitoringRoot) {
@@ -118,9 +100,10 @@ public abstract class MnistTestBase extends NotebookReportBase {
             MonitoringWrapperLayer temp_41_0004 = new MonitoringWrapperLayer(layer);
             node.setLayer(temp_41_0004.addTo2(monitoringRoot.addRef()));
             temp_41_0004.freeRef();
+          } else {
+            assert layer != null;
+            layer.freeRef();
           }
-          assert layer != null;
-          layer.freeRef();
           node.freeRef();
         }, monitoringRoot));
     network.freeRef();
@@ -294,8 +277,7 @@ public abstract class MnistTestBase extends NotebookReportBase {
   }
 
   public @SuppressWarnings("unused")
-  void _free() {
-  }
+  void _free() { super._free(); }
 
   @Nonnull
   public @Override

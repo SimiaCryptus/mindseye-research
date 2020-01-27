@@ -32,7 +32,6 @@ import com.simiacryptus.mindseye.opt.line.ArmijoWolfeSearch;
 import com.simiacryptus.mindseye.opt.line.LineSearchStrategy;
 import com.simiacryptus.mindseye.opt.line.SimpleLineSearchCursor;
 import com.simiacryptus.ref.lang.RefUtil;
-import com.simiacryptus.ref.lang.ReferenceCounting;
 import com.simiacryptus.ref.wrappers.RefList;
 import com.simiacryptus.ref.wrappers.RefMap;
 import com.simiacryptus.ref.wrappers.RefSet;
@@ -104,21 +103,6 @@ public class RecursiveSubspace extends OrientationStrategyBase<SimpleLineSearchC
     this.terminateThreshold = terminateThreshold;
   }
 
-  @Nullable
-  public static @SuppressWarnings("unused")
-  RecursiveSubspace[] addRefs(@Nullable RecursiveSubspace[] array) {
-    if (array == null)
-      return null;
-    return Arrays.stream(array).filter((x) -> x != null).map(RecursiveSubspace::addRef)
-        .toArray((x) -> new RecursiveSubspace[x]);
-  }
-
-  @Nullable
-  public static @SuppressWarnings("unused")
-  RecursiveSubspace[][] addRefs(@Nullable RecursiveSubspace[][] array) {
-    return RefUtil.addRefs(array);
-  }
-
   @Nonnull
   @Override
   public SimpleLineSearchCursor orient(@Nonnull Trainable subject, @Nonnull PointSample measurement,
@@ -136,9 +120,10 @@ public class RecursiveSubspace extends OrientationStrategyBase<SimpleLineSearchC
     temp_30_0015.freeRef();
     @Nullable
     Layer macroLayer = buildSubspace(subject.addRef(), measurement, monitor);
-    train(monitor, macroLayer);
+    train(monitor, macroLayer.addRef());
     assert macroLayer != null;
     Result eval = macroLayer.eval(((Result) null).addRef());
+    macroLayer.freeRef();
     assert eval != null;
     RefUtil.freeRef(eval.getData());
     eval.freeRef();
@@ -150,7 +135,6 @@ public class RecursiveSubspace extends OrientationStrategyBase<SimpleLineSearchC
     origin.restore();
     @Nonnull
     SimpleLineSearchCursor simpleLineSearchCursor = new SimpleLineSearchCursor(subject, origin, delta);
-    macroLayer.freeRef();
     simpleLineSearchCursor.setDirectionType(CURSOR_LABEL);
     SimpleLineSearchCursor temp_30_0006 = simpleLineSearchCursor.addRef();
     simpleLineSearchCursor.freeRef();
@@ -251,6 +235,7 @@ public class RecursiveSubspace extends OrientationStrategyBase<SimpleLineSearchC
 
   @Override
   public void _free() {
+    super._free();
     if (null != orientation)
       orientation.freeRef();
     orientation = null;
@@ -305,17 +290,11 @@ public class RecursiveSubspace extends OrientationStrategyBase<SimpleLineSearchC
       this.monitor = monitor;
     }
 
-    @Nullable
-    public static @SuppressWarnings("unused")
-    MyLayerBase[] addRefs(@Nullable MyLayerBase[] array) {
-      return RefUtil.addRefs(array);
-    }
-
     @Nonnull
     @Override
     public Result eval(@Nullable Result... array) {
       if (null != array)
-        ReferenceCounting.freeRefs(array);
+        RefUtil.freeRefs(array);
       assertAlive();
       origin.restore();
       IntStream.range(0, deltaLayers.size()).forEach(i -> {
@@ -409,6 +388,7 @@ public class RecursiveSubspace extends OrientationStrategyBase<SimpleLineSearchC
 
           public @SuppressWarnings("unused")
           void _free() {
+            super._free();
             directionMap.freeRef();
             measure.freeRef();
             parent.freeRef();
@@ -418,6 +398,11 @@ public class RecursiveSubspace extends OrientationStrategyBase<SimpleLineSearchC
           @Override
           public boolean isAlive() {
             return true;
+          }
+
+          @Override
+          public void _free() {
+            super._free();
           }
         };
       } finally {
