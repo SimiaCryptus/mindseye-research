@@ -294,7 +294,7 @@ public class RecursiveSubspace extends OrientationStrategyBase<SimpleLineSearchC
     @Override
     public Result eval(@Nullable Result... array) {
       if (null != array)
-        RefUtil.freeRefs(array);
+        RefUtil.freeRef(array);
       assertAlive();
       origin.restore();
       IntStream.range(0, deltaLayers.size()).forEach(i -> {
@@ -303,7 +303,7 @@ public class RecursiveSubspace extends OrientationStrategyBase<SimpleLineSearchC
         Delta<UUID> temp_30_0024 = directionMap.get(key);
         assert parent != null;
         assert parent.weights != null;
-        temp_30_0024.accumulate(parent.weights[hasPlaceholders ? (i + 1) : i]);
+        temp_30_0024.accumulate(parent.weights[hasPlaceholders ? i + 1 : i]);
         temp_30_0024.freeRef();
       });
       if (hasPlaceholders) {

@@ -75,16 +75,7 @@ public class BisectionLineSearchTest extends MnistTestBase {
           temp_48_0002.freeRef();
           return temp_48_0001;
         }, network, RefUtil.addRefs(trainingData)));
-    RefUtil.freeRefs(trainingData);
+    RefUtil.freeRef(trainingData);
   }
 
-  public @SuppressWarnings("unused")
-  void _free() { super._free(); }
-
-  @Nonnull
-  public @Override
-  @SuppressWarnings("unused")
-  BisectionLineSearchTest addRef() {
-    return (BisectionLineSearchTest) super.addRef();
-  }
 }

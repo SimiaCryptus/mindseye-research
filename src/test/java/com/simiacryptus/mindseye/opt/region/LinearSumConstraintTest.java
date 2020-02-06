@@ -90,16 +90,7 @@ public class LinearSumConstraintTest extends MnistTestBase {
           //.setOrientation(new ValidatingOrientationWrapper(trustRegionStrategy))
           return temp_49_0001;
         }, RefUtil.addRefs(trainingData), network));
-    RefUtil.freeRefs(trainingData);
+    RefUtil.freeRef(trainingData);
   }
 
-  public @SuppressWarnings("unused")
-  void _free() { super._free(); }
-
-  @Nonnull
-  public @Override
-  @SuppressWarnings("unused")
-  LinearSumConstraintTest addRef() {
-    return (LinearSumConstraintTest) super.addRef();
-  }
 }

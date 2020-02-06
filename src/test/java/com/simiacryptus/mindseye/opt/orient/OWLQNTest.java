@@ -74,16 +74,7 @@ public class OWLQNTest extends MnistTestBase {
           temp_43_0002.freeRef();
           return temp_43_0001;
         }, RefUtil.addRefs(trainingData), network));
-    RefUtil.freeRefs(trainingData);
+    RefUtil.freeRef(trainingData);
   }
 
-  public @SuppressWarnings("unused")
-  void _free() { super._free(); }
-
-  @Nonnull
-  public @Override
-  @SuppressWarnings("unused")
-  OWLQNTest addRef() {
-    return (OWLQNTest) super.addRef();
-  }
 }

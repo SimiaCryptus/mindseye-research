@@ -138,17 +138,7 @@ public abstract class RecursiveSubspaceTest extends MnistTestBase {
           trainer.freeRef();
           return temp_46_0001;
         }, network, RefUtil.addRefs(trainingData)));
-    RefUtil.freeRefs(trainingData);
-  }
-
-  public @SuppressWarnings("unused")
-  void _free() { super._free(); }
-
-  @Nonnull
-  public @Override
-  @SuppressWarnings("unused")
-  RecursiveSubspaceTest addRef() {
-    return (RecursiveSubspaceTest) super.addRef();
+    RefUtil.freeRef(trainingData);
   }
 
   @Nullable
@@ -163,15 +153,6 @@ public abstract class RecursiveSubspaceTest extends MnistTestBase {
       return new LBFGS();
     }
 
-    public @SuppressWarnings("unused")
-    void _free() { super._free(); }
-
-    @Nonnull
-    public @Override
-    @SuppressWarnings("unused")
-    Baseline addRef() {
-      return (Baseline) super.addRef();
-    }
   }
 
   public static class Normalized extends RecursiveSubspaceTest {
@@ -179,16 +160,6 @@ public abstract class RecursiveSubspaceTest extends MnistTestBase {
     @Nonnull
     public OrientationStrategy<?> getOrientation() {
       return new LBFGS();
-    }
-
-    public @SuppressWarnings("unused")
-    void _free() { super._free(); }
-
-    @Nonnull
-    public @Override
-    @SuppressWarnings("unused")
-    Normalized addRef() {
-      return (Normalized) super.addRef();
     }
 
     @Nonnull
@@ -205,15 +176,6 @@ public abstract class RecursiveSubspaceTest extends MnistTestBase {
       return new RecursiveSubspace();
     }
 
-    public @SuppressWarnings("unused")
-    void _free() { super._free(); }
-
-    @Nonnull
-    public @Override
-    @SuppressWarnings("unused")
-    Demo addRef() {
-      return (Demo) super.addRef();
-    }
   }
 
 }

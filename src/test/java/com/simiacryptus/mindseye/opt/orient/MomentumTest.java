@@ -75,16 +75,7 @@ public class MomentumTest extends MnistTestBase {
           temp_51_0002.freeRef();
           return temp_51_0001;
         }, network, RefUtil.addRefs(trainingData)));
-    RefUtil.freeRefs(trainingData);
+    RefUtil.freeRef(trainingData);
   }
 
-  public @SuppressWarnings("unused")
-  void _free() { super._free(); }
-
-  @Nonnull
-  public @Override
-  @SuppressWarnings("unused")
-  MomentumTest addRef() {
-    return (MomentumTest) super.addRef();
-  }
 }

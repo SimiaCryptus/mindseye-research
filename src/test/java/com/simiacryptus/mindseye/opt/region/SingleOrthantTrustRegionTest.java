@@ -90,16 +90,7 @@ public class SingleOrthantTrustRegionTest extends MnistTestBase {
           //.setOrientation(new ValidatingOrientationWrapper(trustRegionStrategy))
           return temp_44_0001;
         }, network, RefUtil.addRefs(trainingData)));
-    RefUtil.freeRefs(trainingData);
+    RefUtil.freeRef(trainingData);
   }
 
-  public @SuppressWarnings("unused")
-  void _free() { super._free(); }
-
-  @Nonnull
-  public @Override
-  @SuppressWarnings("unused")
-  SingleOrthantTrustRegionTest addRef() {
-    return (SingleOrthantTrustRegionTest) super.addRef();
-  }
 }

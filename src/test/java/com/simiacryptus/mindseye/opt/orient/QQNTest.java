@@ -77,16 +77,7 @@ public class QQNTest extends MnistTestBase {
           trainer.freeRef();
           return temp_45_0001;
         }, RefUtil.addRefs(trainingData), network));
-    RefUtil.freeRefs(trainingData);
+    RefUtil.freeRef(trainingData);
   }
 
-  public @SuppressWarnings("unused")
-  void _free() { super._free(); }
-
-  @Nonnull
-  public @Override
-  @SuppressWarnings("unused")
-  QQNTest addRef() {
-    return (QQNTest) super.addRef();
-  }
 }

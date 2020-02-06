@@ -75,16 +75,7 @@ public class QuadraticLineSearchTest extends MnistTestBase {
           temp_37_0002.freeRef();
           return temp_37_0001;
         }, network, RefUtil.addRefs(trainingData)));
-    RefUtil.freeRefs(trainingData);
+    RefUtil.freeRef(trainingData);
   }
 
-  public @SuppressWarnings("unused")
-  void _free() { super._free(); }
-
-  @Nonnull
-  public @Override
-  @SuppressWarnings("unused")
-  QuadraticLineSearchTest addRef() {
-    return (QuadraticLineSearchTest) super.addRef();
-  }
 }

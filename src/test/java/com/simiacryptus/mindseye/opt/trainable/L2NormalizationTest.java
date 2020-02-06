@@ -99,16 +99,7 @@ public class L2NormalizationTest extends MnistTestBase {
           temp_52_0002.freeRef();
           return temp_52_0001;
         }, RefUtil.addRefs(trainingData), network));
-    RefUtil.freeRefs(trainingData);
+    RefUtil.freeRef(trainingData);
   }
 
-  public @SuppressWarnings("unused")
-  void _free() { super._free(); }
-
-  @Nonnull
-  public @Override
-  @SuppressWarnings("unused")
-  L2NormalizationTest addRef() {
-    return (L2NormalizationTest) super.addRef();
-  }
 }

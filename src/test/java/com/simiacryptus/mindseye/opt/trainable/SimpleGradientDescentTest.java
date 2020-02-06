@@ -65,7 +65,7 @@ public class SimpleGradientDescentTest extends MnistTestBase {
           @Nonnull final Tensor[][] randomSelection = trainingList.subList(0, 10000).toArray(new Tensor[][]{});
           @Nonnull final Trainable trainable = new ArrayTrainable(RefUtil.addRefs(randomSelection),
               supervisedNetwork);
-          RefUtil.freeRefs(randomSelection);
+          RefUtil.freeRef(randomSelection);
           IterativeTrainer temp_40_0002 = new IterativeTrainer(
               trainable);
           temp_40_0002.setMonitor(monitor);
@@ -81,16 +81,7 @@ public class SimpleGradientDescentTest extends MnistTestBase {
           temp_40_0002.freeRef();
           return temp_40_0001;
         }, RefUtil.addRefs(trainingData), network));
-    RefUtil.freeRefs(trainingData);
+    RefUtil.freeRef(trainingData);
   }
 
-  public @SuppressWarnings("unused")
-  void _free() { super._free(); }
-
-  @Nonnull
-  public @Override
-  @SuppressWarnings("unused")
-  SimpleGradientDescentTest addRef() {
-    return (SimpleGradientDescentTest) super.addRef();
-  }
 }

@@ -94,16 +94,7 @@ public class L1NormalizationTest extends MnistTestBase {
           temp_47_0002.freeRef();
           return temp_47_0001;
         }, network, RefUtil.addRefs(trainingData)));
-    RefUtil.freeRefs(trainingData);
+    RefUtil.freeRef(trainingData);
   }
 
-  public @SuppressWarnings("unused")
-  void _free() { super._free(); }
-
-  @Nonnull
-  public @Override
-  @SuppressWarnings("unused")
-  L1NormalizationTest addRef() {
-    return (L1NormalizationTest) super.addRef();
-  }
 }

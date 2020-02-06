@@ -75,7 +75,7 @@ public abstract class MnistTestBase extends NotebookReportBase {
   @Test
   @Category(TestCategories.Report.class)
   public void test() {
-    run(this::run);
+    run(log1 -> run(log1));
   }
 
   public void run(@Nonnull NotebookOutput log) {
@@ -271,18 +271,9 @@ public abstract class MnistTestBase extends NotebookReportBase {
             if (null != x)
               x.freeRef();
             return temp_41_0003;
-          }).limit(10).forEach(table::putRow);
+          }).limit(10).forEach(properties -> table.putRow(properties));
           return table;
         }, network));
   }
 
-  public @SuppressWarnings("unused")
-  void _free() { super._free(); }
-
-  @Nonnull
-  public @Override
-  @SuppressWarnings("unused")
-  MnistTestBase addRef() {
-    return (MnistTestBase) super.addRef();
-  }
 }
