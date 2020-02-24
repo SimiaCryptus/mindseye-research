@@ -1,3 +1,5 @@
 .idea/
 mindseye-research.iml
 target/
+*.hprof
+

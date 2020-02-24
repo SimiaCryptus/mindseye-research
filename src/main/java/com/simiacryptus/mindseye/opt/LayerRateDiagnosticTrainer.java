@@ -38,10 +38,12 @@ import javax.annotation.Nullable;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalUnit;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.BiConsumer;
 
 public class LayerRateDiagnosticTrainer extends ReferenceCountingBase {
 
@@ -157,6 +159,7 @@ public class LayerRateDiagnosticTrainer extends ReferenceCountingBase {
   public Layer toLayer(UUID id) {
     assert subject != null;
     DAGNetwork dagNetwork = (DAGNetwork) subject.getLayer();
+    if(null == dagNetwork) return null;
     RefMap<UUID, Layer> temp_31_0005 = dagNetwork.getLayersById();
     dagNetwork.freeRef();
     Layer temp_31_0004 = temp_31_0005.get(id);
@@ -217,13 +220,11 @@ public class LayerRateDiagnosticTrainer extends ReferenceCountingBase {
           final double stepSize = 1e-12 * orient.origin.sum;
           LineSearchPoint temp_31_0008 = orient.step(stepSize, monitor);
           assert temp_31_0008 != null;
-          assert temp_31_0008.point != null;
-          @Nonnull final DeltaSet<UUID> pointB = temp_31_0008.point.delta.copy();
+          @Nonnull final DeltaSet<UUID> pointB = temp_31_0008.copyPointDelta();
           temp_31_0008.freeRef();
           LineSearchPoint temp_31_0009 = orient.step(0.0, monitor);
           assert temp_31_0009 != null;
-          assert temp_31_0009.point != null;
-          @Nonnull final DeltaSet<UUID> pointA = temp_31_0009.point.delta.copy();
+          @Nonnull final DeltaSet<UUID> pointA = temp_31_0009.copyPointDelta();
           temp_31_0009.freeRef();
           orient.freeRef();
           @Nonnull final DeltaSet<UUID> d1 = pointA;
@@ -273,7 +274,7 @@ public class LayerRateDiagnosticTrainer extends ReferenceCountingBase {
           }
           assert orient.subject != null;
           SimpleLineSearchCursor searchCursor = new SimpleLineSearchCursor(orient.subject.addRef(), orient.origin.addRef(), direction);
-          if(null != orient) orient.freeRef();
+          if (null != orient) orient.freeRef();
           orient = searchCursor;
           final PointSample previous = measure;
           measure = getLineSearchStrategy().step(orient.addRef(), monitor);
@@ -282,9 +283,9 @@ public class LayerRateDiagnosticTrainer extends ReferenceCountingBase {
             monitor.log(RefString.format("Iteration %s reverting. Error: %s", currentIteration.get(), measure.sum));
             monitor.log(RefString.format("Optimal rate for key %s: %s", layer.getName(), measure.getRate()));
             if (null == bestPoint || bestPoint.sum < measure.sum) {
-              if(null != bestOrient) bestOrient.freeRef();
+              if (null != bestOrient) bestOrient.freeRef();
               bestOrient = orient.addRef();
-              if(null != bestPoint) bestPoint.freeRef();
+              if (null != bestPoint) bestPoint.freeRef();
               bestPoint = measure.addRef();
             }
             assert initialPhasePoint != null;
@@ -355,26 +356,29 @@ public class LayerRateDiagnosticTrainer extends ReferenceCountingBase {
   @Nonnull
   private DeltaSet<UUID> filterDirection(@Nonnull final DeltaSet<UUID> direction, @Nonnull final Layer layer) {
     @Nonnull final DeltaSet<UUID> maskedDelta = new DeltaSet<UUID>();
-    RefMap<UUID, Delta<UUID>> temp_31_0012 = direction
-        .getMap();
+    RefMap<UUID, Delta<UUID>> temp_31_0012 = direction.getMap();
     temp_31_0012.forEach(RefUtil.wrapInterface(
-        (BiConsumer<? super UUID, ? super Delta<UUID>>) (
-            layer2, delta) -> {
+        (layer2, delta) -> {
           RefUtil.freeRef(maskedDelta.get(layer2, delta.target));
           delta.freeRef();
         }, maskedDelta.addRef()));
     temp_31_0012.freeRef();
     RefList<double[]> temp_31_0013 = layer.state();
     assert temp_31_0013 != null;
-    Delta<UUID> temp_31_0014 = maskedDelta.get(layer.getId(),
-        temp_31_0013.get(0));
-    Delta<UUID> temp_31_0015 = direction.get(layer.getId(), (double[]) null);
-    assert temp_31_0015 != null;
-    assert temp_31_0014 != null;
-    temp_31_0014.addInPlace(temp_31_0015.getDelta());
-    temp_31_0015.freeRef();
-    temp_31_0014.freeRef();
+    double[] doubles = temp_31_0013.get(0);
     temp_31_0013.freeRef();
+    UUID id = layer.getId();
+
+    Delta<UUID> temp_31_0015 = direction.get(id, (double[]) null);
+    assert temp_31_0015 != null;
+    double[] delta = temp_31_0015.getDelta();
+    temp_31_0015.freeRef();
+
+    Delta<UUID> temp_31_0014 = maskedDelta.get(id, doubles);
+    assert temp_31_0014 != null;
+    temp_31_0014.addInPlace(delta);
+    temp_31_0014.freeRef();
+
     layer.freeRef();
     direction.freeRef();
     return maskedDelta;

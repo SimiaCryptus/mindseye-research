@@ -65,7 +65,9 @@ public class TrustSphereTest extends MnistTestBase {
             }
 
             public @SuppressWarnings("unused")
-            void _free() { super._free(); }
+            void _free() {
+              super._free();
+            }
           };
           IterativeTrainer temp_39_0002 = new IterativeTrainer(
               trainable);

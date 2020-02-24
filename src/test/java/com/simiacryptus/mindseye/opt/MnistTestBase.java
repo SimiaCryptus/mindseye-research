@@ -35,8 +35,6 @@ import com.simiacryptus.mindseye.test.data.MNIST;
 import com.simiacryptus.notebook.NotebookOutput;
 import com.simiacryptus.notebook.TableOutput;
 import com.simiacryptus.ref.lang.RefUtil;
-import com.simiacryptus.ref.lang.ReferenceCounting;
-import com.simiacryptus.ref.wrappers.RefLinkedHashMap;
 import com.simiacryptus.ref.wrappers.RefString;
 import com.simiacryptus.util.JsonUtil;
 import com.simiacryptus.util.MonitoredObject;
@@ -53,10 +51,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import java.util.function.Function;
 import java.util.function.ToDoubleFunction;
 import java.util.stream.IntStream;
@@ -132,10 +127,9 @@ public abstract class MnistTestBase extends NotebookReportBase {
       @Nonnull final Tensor categoryTensor = new Tensor(10);
       final int category = parse(labeledObject.label);
       categoryTensor.set(category, 1);
-
-      Tensor[] temp_41_0001 = new Tensor[]{labeledObject.data,
-          categoryTensor};
-      return temp_41_0001;
+      Tensor data = labeledObject.data.addRef();
+      labeledObject.freeRef();
+      return new Tensor[]{data, categoryTensor};
     }).toArray(i -> new Tensor[i][]);
   }
 
@@ -145,16 +139,19 @@ public abstract class MnistTestBase extends NotebookReportBase {
 
   public int[] predict(@Nonnull final Layer network, @Nonnull final LabeledObject<Tensor> labeledObject) {
     Result temp_41_0006 = network.eval(labeledObject.data.addRef());
+    network.freeRef();
+    labeledObject.freeRef();
     assert temp_41_0006 != null;
     TensorList temp_41_0007 = temp_41_0006.getData();
-    Tensor temp_41_0008 = temp_41_0007.get(0);
-    @Nullable final double[] predictionSignal = temp_41_0008.getData();
-    temp_41_0008.freeRef();
-    temp_41_0007.freeRef();
     temp_41_0006.freeRef();
-    network.freeRef();
-    return IntStream.range(0, 10).mapToObj(x -> x).sorted(Comparator.comparing(i -> -predictionSignal[i]))
+    Tensor temp_41_0008 = temp_41_0007.get(0);
+    temp_41_0007.freeRef();
+    @Nullable final double[] predictionSignal = temp_41_0008.getData();
+    int[] ints = IntStream.range(0, 10).mapToObj(x -> x)
+        .sorted(Comparator.comparing(i -> -predictionSignal[i]))
         .mapToInt(x -> x).toArray();
+    temp_41_0008.freeRef();
+    return ints;
   }
 
   public void removeMonitoring(@Nonnull final DAGNetwork network) {
@@ -245,7 +242,7 @@ public abstract class MnistTestBase extends NotebookReportBase {
         .wrapInterface((UncheckedSupplier<TableOutput>) () -> {
           @Nonnull final TableOutput table = new TableOutput();
           MNIST.validationDataStream().map(RefUtil.wrapInterface(
-              (Function<? super LabeledObject<Tensor>, ? extends RefLinkedHashMap<CharSequence, Object>>) labeledObject -> {
+              (Function<? super LabeledObject<Tensor>, LinkedHashMap<CharSequence, Object>>) labeledObject -> {
                 final int actualCategory = parse(labeledObject.label);
                 Result temp_41_0010 = network.eval(labeledObject.data.addRef());
                 assert temp_41_0010 != null;
@@ -257,21 +254,22 @@ public abstract class MnistTestBase extends NotebookReportBase {
                 temp_41_0010.freeRef();
                 final int[] predictionList = IntStream.range(0, 10).mapToObj(x -> x)
                     .sorted(Comparator.comparing(i -> -predictionSignal[i])).mapToInt(x -> x).toArray();
-                if (predictionList[0] == actualCategory)
+                if (predictionList[0] == actualCategory) {
+                  labeledObject.freeRef();
                   return null; // We will only examine mispredicted rows
-                @Nonnull final RefLinkedHashMap<CharSequence, Object> row = new RefLinkedHashMap<>();
+                }
+                @Nonnull final LinkedHashMap<CharSequence, Object> row = new LinkedHashMap<>();
                 row.put("Image", log.png(labeledObject.data.toGrayImage(), labeledObject.label));
+                labeledObject.freeRef();
                 row.put("Prediction",
                     RefUtil.get(Arrays.stream(predictionList).limit(3)
                         .mapToObj(i -> RefString.format("%d (%.1f%%)", i, 100.0 * predictionSignal[i]))
                         .reduce((a, b) -> a + ", " + b)));
                 return row;
-              }, network.addRef())).filter(x -> {
-            boolean temp_41_0003 = null != x;
-            if (null != x)
-              x.freeRef();
-            return temp_41_0003;
-          }).limit(10).forEach(properties -> table.putRow(properties));
+              }, network.addRef()))
+              .filter(x -> null != x)
+              .limit(10)
+              .forEach(properties -> table.putRow(properties));
           return table;
         }, network));
   }

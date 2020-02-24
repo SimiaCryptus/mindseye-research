@@ -60,7 +60,6 @@ public class L2NormalizationTest extends MnistTestBase {
           @Nonnull final Trainable trainable = new L12Normalizer(
               new SampledArrayTrainable(RefUtil.addRefs(trainingData),
                   supervisedNetwork, 1000)) {
-            @Nonnull
             @Override
             public Layer getLayer() {
               assert inner != null;
@@ -68,7 +67,9 @@ public class L2NormalizationTest extends MnistTestBase {
             }
 
             public @SuppressWarnings("unused")
-            void _free() { super._free(); }
+            void _free() {
+              super._free();
+            }
 
             @Override
             protected double getL1(@Nullable final Layer layer) {

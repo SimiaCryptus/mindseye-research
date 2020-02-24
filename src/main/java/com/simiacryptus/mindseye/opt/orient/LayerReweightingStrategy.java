@@ -57,14 +57,10 @@ public abstract class LayerReweightingStrategy extends OrientationStrategyBase<S
   public SimpleLineSearchCursor orient(@Nullable final Trainable subject, @Nullable final PointSample measurement,
                                        final TrainingMonitor monitor) {
     assert inner != null;
-    final SimpleLineSearchCursor orient = inner.orient(subject == null ? null : subject.addRef(),
-        measurement == null ? null : measurement.addRef(), monitor);
-    if (null != measurement)
-      measurement.freeRef();
+    final SimpleLineSearchCursor orient = inner.orient(subject == null ? null : subject.addRef(), measurement, monitor);
     assert orient.direction != null;
     final DeltaSet<UUID> direction = orient.direction.addRef();
-    RefMap<UUID, Delta<UUID>> temp_32_0003 = direction
-        .getMap();
+    RefMap<UUID, Delta<UUID>> temp_32_0003 = direction.getMap();
     temp_32_0003.forEach(RefUtil.wrapInterface(
         (BiConsumer<? super UUID, ? super Delta<UUID>>) (
             uuid, buffer) -> {
@@ -74,26 +70,25 @@ public abstract class LayerReweightingStrategy extends OrientationStrategyBase<S
           }
           assert subject != null;
           DAGNetwork dagNetwork = (DAGNetwork) subject.getLayer();
-          RefMap<UUID, Layer> temp_32_0004 = dagNetwork.getLayersById();
-          dagNetwork.freeRef();
-          Layer layer = temp_32_0004.get(uuid);
-          temp_32_0004.freeRef();
-          final Double weight = getRegionPolicy(layer);
-          if (null != weight && 0 < weight) {
-            final DoubleBuffer<UUID> deltaBuffer = direction.get(uuid, buffer.target);
-            assert deltaBuffer != null;
-            @Nonnull final double[] adjusted = ArrayUtil.multiply(deltaBuffer.getDelta(), weight);
-            for (int i = 0; i < adjusted.length; i++) {
-              deltaBuffer.getDelta()[i] = adjusted[i];
+          if(null != dagNetwork) {
+            RefMap<UUID, Layer> temp_32_0004 = dagNetwork.getLayersById();
+            dagNetwork.freeRef();
+            Layer layer = temp_32_0004.get(uuid);
+            temp_32_0004.freeRef();
+            final Double weight = getRegionPolicy(layer);
+            if (null != weight && 0 < weight) {
+              final DoubleBuffer<UUID> deltaBuffer = direction.get(uuid, buffer.target);
+              assert deltaBuffer != null;
+              @Nonnull final double[] adjusted = ArrayUtil.multiply(deltaBuffer.getDelta(), weight);
+              for (int i = 0; i < adjusted.length; i++) {
+                deltaBuffer.getDelta()[i] = adjusted[i];
+              }
+              deltaBuffer.freeRef();
             }
-            deltaBuffer.freeRef();
           }
           buffer.freeRef();
-        }, subject == null ? null : subject.addRef(), direction.addRef()));
+        }, subject, direction));
     temp_32_0003.freeRef();
-    if (null != subject)
-      subject.freeRef();
-    direction.freeRef();
     return orient;
   }
 

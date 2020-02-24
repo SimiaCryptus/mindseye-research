@@ -65,7 +65,9 @@ public class SingleOrthantTrustRegionTest extends MnistTestBase {
             }
 
             public @SuppressWarnings("unused")
-            void _free() { super._free(); }
+            void _free() {
+              super._free();
+            }
           };
           IterativeTrainer temp_44_0002 = new IterativeTrainer(
               trainable);

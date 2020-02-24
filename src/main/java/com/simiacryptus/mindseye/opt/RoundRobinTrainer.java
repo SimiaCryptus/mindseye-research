@@ -27,7 +27,6 @@ import com.simiacryptus.mindseye.opt.line.LineSearchCursor;
 import com.simiacryptus.mindseye.opt.line.LineSearchStrategy;
 import com.simiacryptus.mindseye.opt.orient.LBFGS;
 import com.simiacryptus.mindseye.opt.orient.OrientationStrategy;
-import com.simiacryptus.ref.lang.RefUtil;
 import com.simiacryptus.ref.lang.ReferenceCountingBase;
 import com.simiacryptus.ref.wrappers.*;
 import com.simiacryptus.util.Util;
@@ -39,7 +38,6 @@ import javax.annotation.Nullable;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalUnit;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -172,7 +170,7 @@ public class RoundRobinTrainer extends ReferenceCountingBase {
     PointSample currentPoint = measure();
     assert currentPoint != null;
     try {
-  mainLoop:
+mainLoop:
       while (timeoutMs > RefSystem.currentTimeMillis() && currentPoint.sum > terminateThreshold) {
         if (currentIteration.get() > maxIterations) {
           break;

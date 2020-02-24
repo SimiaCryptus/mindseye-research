@@ -71,7 +71,7 @@ public class LBFGSTest extends MnistTestBase {
           //.setOrientation(new ValidatingOrientationWrapper(new LBFGS()))
           ValidatingTrainer.TrainingPhase temp_35_0006 = temp_35_0005.addRef();
           temp_35_0006.setLineSearchFactory(name -> name.toString().contains("LBFGS") ? new QuadraticSearch().setCurrentRate(1.0)
-                      : new QuadraticSearch());
+              : new QuadraticSearch());
           temp_35_0006.freeRef();
           temp_35_0005.freeRef();
           temp_35_0004.freeRef();

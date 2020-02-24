@@ -145,6 +145,7 @@ public class RecursiveSubspace extends OrientationStrategyBase<SimpleLineSearchC
   public Layer toLayer(@Nonnull UUID id) {
     assert subject != null;
     DAGNetwork dagNetwork = (DAGNetwork) subject.getLayer();
+    if(null == dagNetwork) return null;
     RefMap<UUID, Layer> temp_30_0016 = dagNetwork.getLayersById();
     Layer layer = temp_30_0016.get(id);
     temp_30_0016.freeRef();
@@ -330,84 +331,8 @@ public class RecursiveSubspace extends OrientationStrategyBase<SimpleLineSearchC
       double mean = measure.getMean();
       assert parent != null;
       monitor.log(RefString.format("RecursiveSubspace: %s <- %s", mean, Arrays.toString(parent.weights)));
-      try {
-        return new Result(new TensorArray(new Tensor(mean)), new Result.Accumulator() {
-          {
-            MyLayerBase.this.addRef();
-            directionMap.addRef();
-            parent.addRef();
-            measure.addRef();
-          }
-
-          @Override
-          public void accept(@Nonnull DeltaSet<UUID> buffer, @Nullable TensorList data) {
-            if (null != data)
-              data.freeRef();
-            RefMap<UUID, Delta<UUID>> deltaMap = measure.delta.getMap();
-            try {
-              DoubleStream deltaStream = deltaLayers.stream()
-                  .mapToDouble(layer -> {
-                    Delta<UUID> a = directionMap.get(layer);
-                    Delta<UUID> b = deltaMap.get(layer);
-                    assert a != null;
-                    assert b != null;
-                    double temp_30_0012 = b.dot(a.addRef()) / Math.max(Math.sqrt(a.dot(a.addRef())), 1e-8);
-                    b.freeRef();
-                    a.freeRef();
-                    return temp_30_0012;
-                  });
-              if (hasPlaceholders) {
-                RefSet<UUID> uuids = directionMap.keySet();
-                deltaStream = DoubleStream.concat(DoubleStream.of(uuids.stream().filter(x -> {
-                  Layer layer = parent.toLayer(x);
-                  boolean b = layer instanceof PlaceholderLayer;
-                  assert layer != null;
-                  layer.freeRef();
-                  return b;
-                }).distinct().mapToDouble(id -> {
-                  Delta<UUID> a = directionMap.get(id);
-                  Delta<UUID> b = deltaMap.get(id);
-                  assert a != null;
-                  assert b != null;
-                  double temp_30_0013 = b.dot(a.addRef()) / Math.max(Math.sqrt(a.dot(a.addRef())), 1e-8);
-                  b.freeRef();
-                  a.freeRef();
-                  return temp_30_0013;
-                }).sum()), deltaStream);
-                uuids.freeRef();
-              }
-              Delta<UUID> temp_30_0028 = buffer.get(MyLayerBase.this.getId(), parent.weights);
-              assert temp_30_0028 != null;
-              temp_30_0028.addInPlace(deltaStream.toArray());
-              temp_30_0028.freeRef();
-              buffer.freeRef();
-            } finally {
-              deltaMap.freeRef();
-            }
-          }
-
-          public @SuppressWarnings("unused")
-          void _free() {
-            super._free();
-            directionMap.freeRef();
-            measure.freeRef();
-            parent.freeRef();
-            MyLayerBase.this.freeRef();
-          }
-        }) {
-          @Override
-          public boolean isAlive() {
-            return true;
-          }
-
-          @Override
-          public void _free() {
-            super._free();
-          }
-        };
-      } finally {
-        measure.freeRef();
-      }
+      TensorArray data = new TensorArray(new Tensor(mean));
+      return new Result(data, new Accumulator(measure, this.deltaLayers, this.hasPlaceholders, this.getId(), this.parent.addRef(), this.directionMap.addRef()), true);
     }
 
     @Nonnull
@@ -438,6 +363,80 @@ public class RecursiveSubspace extends OrientationStrategyBase<SimpleLineSearchC
     @SuppressWarnings("unused")
     MyLayerBase addRef() {
       return (MyLayerBase) super.addRef();
+    }
+
+    private static class Accumulator extends Result.Accumulator {
+
+      private final PointSample measure;
+      private RefMap<UUID, Delta<UUID>> directionMap;
+      private RecursiveSubspace parent;
+      private List<UUID> deltaLayers;
+      private boolean hasPlaceholders;
+      private UUID id;
+
+      public Accumulator(PointSample measure, List<UUID> deltaLayers, boolean hasPlaceholders, UUID id, RecursiveSubspace parent, RefMap<UUID, Delta<UUID>> directionMap) {
+        this.measure = measure;
+        this.deltaLayers = deltaLayers;
+        this.hasPlaceholders = hasPlaceholders;
+        this.directionMap = directionMap;
+        this.parent = parent;
+        this.id = id;
+      }
+
+      @Override
+      public void accept(@Nonnull DeltaSet<UUID> buffer, @Nullable TensorList data) {
+        if (null != data)
+          data.freeRef();
+        RefMap<UUID, Delta<UUID>> deltaMap = measure.delta.getMap();
+        try {
+          DoubleStream deltaStream = deltaLayers.stream()
+              .mapToDouble(layer -> {
+                Delta<UUID> a = directionMap.get(layer);
+                Delta<UUID> b = deltaMap.get(layer);
+                assert a != null;
+                assert b != null;
+                double temp_30_0012 = b.dot(a.addRef()) / Math.max(Math.sqrt(a.dot(a.addRef())), 1e-8);
+                b.freeRef();
+                a.freeRef();
+                return temp_30_0012;
+              });
+          if (hasPlaceholders) {
+            RefSet<UUID> uuids = directionMap.keySet();
+            deltaStream = DoubleStream.concat(DoubleStream.of(uuids.stream().filter(x -> {
+              Layer layer = parent.toLayer(x);
+              boolean b = layer instanceof PlaceholderLayer;
+              assert layer != null;
+              layer.freeRef();
+              return b;
+            }).distinct().mapToDouble(id -> {
+              Delta<UUID> a = directionMap.get(id);
+              Delta<UUID> b = deltaMap.get(id);
+              assert a != null;
+              assert b != null;
+              double temp_30_0013 = b.dot(a.addRef()) / Math.max(Math.sqrt(a.dot(a.addRef())), 1e-8);
+              b.freeRef();
+              a.freeRef();
+              return temp_30_0013;
+            }).sum()), deltaStream);
+            uuids.freeRef();
+          }
+          Delta<UUID> temp_30_0028 = buffer.get(id, parent.weights);
+          assert temp_30_0028 != null;
+          temp_30_0028.addInPlace(deltaStream.toArray());
+          temp_30_0028.freeRef();
+          buffer.freeRef();
+        } finally {
+          deltaMap.freeRef();
+        }
+      }
+
+      public @SuppressWarnings("unused")
+      void _free() {
+        super._free();
+        directionMap.freeRef();
+        measure.freeRef();
+        parent.freeRef();
+      }
     }
   }
 }

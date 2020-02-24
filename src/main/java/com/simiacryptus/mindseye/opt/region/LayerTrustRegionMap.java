@@ -39,6 +39,11 @@ public class LayerTrustRegionMap extends TrustRegionStrategy {
   }
 
   @Nonnull
+  public void setDefaultRegionPolicy(final TrustRegion defaultRegionPolicy) {
+    this.defaultRegionPolicy = defaultRegionPolicy;
+  }
+
+  @Nonnull
   public RefMap<Layer, TrustRegion> getRegionPolicies() {
     return regionPolicies.addRef();
   }
@@ -53,11 +58,6 @@ public class LayerTrustRegionMap extends TrustRegionStrategy {
   public void reset() {
     assert inner != null;
     inner.reset();
-  }
-
-  @Nonnull
-  public void setDefaultRegionPolicy(final TrustRegion defaultRegionPolicy) {
-    this.defaultRegionPolicy = defaultRegionPolicy;
   }
 
   public @SuppressWarnings("unused")

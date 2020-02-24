@@ -157,7 +157,7 @@ public abstract class TrustRegionStrategy extends OrientationStrategyBase<LineSe
 
     @Override
     public PointSample afterStep(@Nonnull PointSample step) {
-      super.afterStep(step.addRef());
+      RefUtil.freeRef(super.afterStep(step.addRef()));
       assert cursor != null;
       return cursor.afterStep(step);
     }
@@ -174,8 +174,8 @@ public abstract class TrustRegionStrategy extends OrientationStrategyBase<LineSe
     public Layer toLayer(UUID id) {
       assert subject != null;
       DAGNetwork layer = (DAGNetwork) subject.getLayer();
-      RefMap<UUID, Layer> temp_33_0010 = layer
-          .getLayersById();
+      if(null == layer) return null;
+      RefMap<UUID, Layer> temp_33_0010 = layer.getLayersById();
       Layer temp_33_0006 = temp_33_0010.get(id);
       temp_33_0010.freeRef();
       layer.freeRef();
@@ -288,9 +288,8 @@ public abstract class TrustRegionStrategy extends OrientationStrategyBase<LineSe
       @Nonnull final PointSample sample = afterStep(temp_33_0016);
       double dot = adjustedGradient.dot(sample.delta.addRef());
       adjustedGradient.freeRef();
-      LineSearchPoint temp_33_0008 = new LineSearchPoint(
+      return new LineSearchPoint(
           sample, dot);
-      return temp_33_0008;
     }
 
     @Override
