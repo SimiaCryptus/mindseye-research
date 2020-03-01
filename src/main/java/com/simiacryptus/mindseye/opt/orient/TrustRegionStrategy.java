@@ -29,6 +29,8 @@ import com.simiacryptus.mindseye.opt.line.LineSearchPoint;
 import com.simiacryptus.mindseye.opt.line.SimpleLineSearchCursor;
 import com.simiacryptus.mindseye.opt.region.TrustRegion;
 import com.simiacryptus.ref.lang.RefUtil;
+import com.simiacryptus.ref.wrappers.RefLinkedList;
+import com.simiacryptus.ref.wrappers.RefList;
 import com.simiacryptus.ref.wrappers.RefMap;
 import com.simiacryptus.util.ArrayUtil;
 
@@ -45,7 +47,7 @@ public abstract class TrustRegionStrategy extends OrientationStrategyBase<LineSe
 
   @Nullable
   public final OrientationStrategy<? extends SimpleLineSearchCursor> inner;
-  private final List<PointSample> history = new LinkedList<>();
+  private final RefList<PointSample> history = new RefLinkedList<>();
   private int maxHistory = 10;
 
   public TrustRegionStrategy() {
@@ -53,14 +55,7 @@ public abstract class TrustRegionStrategy extends OrientationStrategyBase<LineSe
   }
 
   protected TrustRegionStrategy(@Nullable final OrientationStrategy<? extends SimpleLineSearchCursor> inner) {
-    OrientationStrategy<? extends SimpleLineSearchCursor> temp_33_0001 = inner == null
-        ? null
-        : inner.addRef();
-    this.inner = temp_33_0001 == null ? null : temp_33_0001.addRef();
-    if (null != temp_33_0001)
-      temp_33_0001.freeRef();
-    if (null != inner)
-      inner.freeRef();
+    this.inner = inner;
   }
 
   public int getMaxHistory() {
@@ -95,7 +90,7 @@ public abstract class TrustRegionStrategy extends OrientationStrategyBase<LineSe
     assert inner != null;
     return new TrustRegionCursor(
         inner.orient(subject.addRef(), origin, monitor),
-        subject, this);
+        subject, addRef());
   }
 
   @Override
@@ -107,6 +102,7 @@ public abstract class TrustRegionStrategy extends OrientationStrategyBase<LineSe
   @Override
   public void _free() {
     super._free();
+    history.freeRef();
     if (null != inner)
       inner.freeRef();
   }
@@ -127,25 +123,9 @@ public abstract class TrustRegionStrategy extends OrientationStrategyBase<LineSe
     private final TrustRegionStrategy parent;
 
     public TrustRegionCursor(@Nullable SimpleLineSearchCursor cursor, @Nullable Trainable subject, @Nullable TrustRegionStrategy parent) {
-      TrustRegionStrategy temp_33_0002 = parent == null ? null : parent.addRef();
-      this.parent = temp_33_0002 == null ? null : temp_33_0002.addRef();
-      if (null != temp_33_0002)
-        temp_33_0002.freeRef();
-      if (null != parent)
-        parent.freeRef();
-      SimpleLineSearchCursor temp_33_0003 = cursor == null ? null
-          : cursor.addRef();
-      this.cursor = temp_33_0003 == null ? null : temp_33_0003.addRef();
-      if (null != temp_33_0003)
-        temp_33_0003.freeRef();
-      if (null != cursor)
-        cursor.freeRef();
-      Trainable temp_33_0004 = subject == null ? null : subject.addRef();
-      this.subject = temp_33_0004 == null ? null : temp_33_0004.addRef();
-      if (null != temp_33_0004)
-        temp_33_0004.freeRef();
-      if (null != subject)
-        subject.freeRef();
+      this.parent = parent;
+      this.cursor = cursor;
+      this.subject = subject;
     }
 
     @Nonnull
@@ -188,11 +168,9 @@ public abstract class TrustRegionStrategy extends OrientationStrategyBase<LineSe
       assert cursor.direction != null;
       final DeltaSet<UUID> originalAlphaDerivative = cursor.direction.addRef();
       @Nonnull final DeltaSet<UUID> newAlphaDerivative = originalAlphaDerivative.copy();
-      RefMap<UUID, Delta<UUID>> temp_33_0011 = deltaIn
-          .getMap();
+      RefMap<UUID, Delta<UUID>> temp_33_0011 = deltaIn.getMap();
       temp_33_0011.forEach(RefUtil.wrapInterface(
-          (BiConsumer<? super UUID, ? super Delta<UUID>>) (
-              id, buffer) -> {
+          (BiConsumer<? super UUID, ? super Delta<UUID>>) (id, buffer) -> {
             @Nullable final double[] delta = buffer.getDelta();
             if (null == delta) {
               buffer.freeRef();
@@ -205,8 +183,7 @@ public abstract class TrustRegionStrategy extends OrientationStrategyBase<LineSe
             assert temp_33_0012 != null;
             @Nullable final double[] originalAlphaD = temp_33_0012.getDelta();
             temp_33_0012.freeRef();
-            Delta<UUID> temp_33_0013 = newAlphaDerivative.get(id,
-                currentPosition);
+            Delta<UUID> temp_33_0013 = newAlphaDerivative.get(id, currentPosition);
             assert temp_33_0013 != null;
             @Nullable final double[] newAlphaD = temp_33_0013.getDelta();
             temp_33_0013.freeRef();
@@ -216,8 +193,7 @@ public abstract class TrustRegionStrategy extends OrientationStrategyBase<LineSe
             final TrustRegion region = parent.getRegionPolicy(temp_33_0014);
             if (null != region) {
               final Stream<double[]> zz = parent.history.stream().map((@Nonnull final PointSample pointSample) -> {
-                RefMap<UUID, State<UUID>> temp_33_0015 = pointSample.weights
-                    .getMap();
+                RefMap<UUID, State<UUID>> temp_33_0015 = pointSample.weights.getMap();
                 final DoubleBuffer<UUID> d = temp_33_0015.get(id);
                 temp_33_0015.freeRef();
                 pointSample.freeRef();
@@ -259,11 +235,10 @@ public abstract class TrustRegionStrategy extends OrientationStrategyBase<LineSe
                 }
               }
             }
-          }, originalAlphaDerivative.addRef(),
+          }, originalAlphaDerivative,
           newAlphaDerivative.addRef()));
       temp_33_0011.freeRef();
       deltaIn.freeRef();
-      originalAlphaDerivative.freeRef();
       return newAlphaDerivative;
     }
 
@@ -288,8 +263,7 @@ public abstract class TrustRegionStrategy extends OrientationStrategyBase<LineSe
       @Nonnull final PointSample sample = afterStep(temp_33_0016);
       double dot = adjustedGradient.dot(sample.delta.addRef());
       adjustedGradient.freeRef();
-      return new LineSearchPoint(
-          sample, dot);
+      return new LineSearchPoint(sample, dot);
     }
 
     @Override
