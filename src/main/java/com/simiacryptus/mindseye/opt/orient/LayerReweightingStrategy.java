@@ -70,7 +70,7 @@ public abstract class LayerReweightingStrategy extends OrientationStrategyBase<S
           }
           assert subject != null;
           DAGNetwork dagNetwork = (DAGNetwork) subject.getLayer();
-          if(null != dagNetwork) {
+          if (null != dagNetwork) {
             RefMap<UUID, Layer> temp_32_0004 = dagNetwork.getLayersById();
             dagNetwork.freeRef();
             Layer layer = temp_32_0004.get(uuid);

@@ -48,7 +48,6 @@ import smile.plot.PlotCanvas;
 import smile.plot.ScatterPlot;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.*;
@@ -138,19 +137,18 @@ public abstract class MnistTestBase extends NotebookReportBase {
   }
 
   public int[] predict(@Nonnull final Layer network, @Nonnull final LabeledObject<Tensor> labeledObject) {
-    Result temp_41_0006 = network.eval(labeledObject.data.addRef());
+    Result result = network.eval(labeledObject.data.addRef());
     network.freeRef();
     labeledObject.freeRef();
-    assert temp_41_0006 != null;
-    TensorList temp_41_0007 = temp_41_0006.getData();
-    temp_41_0006.freeRef();
-    Tensor temp_41_0008 = temp_41_0007.get(0);
-    temp_41_0007.freeRef();
-    @Nullable final double[] predictionSignal = temp_41_0008.getData();
+    assert result != null;
+    TensorList tensorList = result.getData();
+    result.freeRef();
+    Tensor tensor = tensorList.get(0);
+    tensorList.freeRef();
     int[] ints = IntStream.range(0, 10).mapToObj(x -> x)
-        .sorted(Comparator.comparing(i -> -predictionSignal[i]))
+        .sorted(Comparator.comparing(i -> -tensor.get(i)))
         .mapToInt(x -> x).toArray();
-    temp_41_0008.freeRef();
+    tensor.freeRef();
     return ints;
   }
 
@@ -244,18 +242,17 @@ public abstract class MnistTestBase extends NotebookReportBase {
           MNIST.validationDataStream().map(RefUtil.wrapInterface(
               (Function<? super LabeledObject<Tensor>, LinkedHashMap<CharSequence, Object>>) labeledObject -> {
                 final int actualCategory = parse(labeledObject.label);
-                Result temp_41_0010 = network.eval(labeledObject.data.addRef());
-                assert temp_41_0010 != null;
-                TensorList temp_41_0011 = temp_41_0010.getData();
-                Tensor temp_41_0012 = temp_41_0011.get(0);
-                @Nullable final double[] predictionSignal = temp_41_0012.getData();
-                temp_41_0012.freeRef();
-                temp_41_0011.freeRef();
-                temp_41_0010.freeRef();
+                Result result = network.eval(labeledObject.data.addRef());
+                assert result != null;
+                TensorList tensorList = result.getData();
+                Tensor tensor = tensorList.get(0);
+                tensorList.freeRef();
+                result.freeRef();
                 final int[] predictionList = IntStream.range(0, 10).mapToObj(x -> x)
-                    .sorted(Comparator.comparing(i -> -predictionSignal[i])).mapToInt(x -> x).toArray();
+                    .sorted(Comparator.comparing(i -> -tensor.get(i))).mapToInt(x -> x).toArray();
                 if (predictionList[0] == actualCategory) {
                   labeledObject.freeRef();
+                  tensor.freeRef();
                   return null; // We will only examine mispredicted rows
                 }
                 @Nonnull final LinkedHashMap<CharSequence, Object> row = new LinkedHashMap<>();
@@ -263,8 +260,9 @@ public abstract class MnistTestBase extends NotebookReportBase {
                 labeledObject.freeRef();
                 row.put("Prediction",
                     RefUtil.get(Arrays.stream(predictionList).limit(3)
-                        .mapToObj(i -> RefString.format("%d (%.1f%%)", i, 100.0 * predictionSignal[i]))
+                        .mapToObj(i -> RefString.format("%d (%.1f%%)", i, 100.0 * tensor.get(i)))
                         .reduce((a, b) -> a + ", " + b)));
+                tensor.freeRef();
                 return row;
               }, network.addRef()))
               .filter(x -> null != x)

@@ -53,7 +53,7 @@ public class L1NormalizationTest extends MnistTestBase {
           @Nonnull final SimpleLossNetwork supervisedNetwork = new SimpleLossNetwork(network.addRef(),
               new EntropyLossLayer());
           @Nonnull final Trainable trainable = new L12Normalizer(
-              new SampledArrayTrainable(RefUtil.addRefs(trainingData),
+              new SampledArrayTrainable(RefUtil.addRef(trainingData),
                   supervisedNetwork, 1000)) {
             @Override
             public Layer getLayer() {
@@ -94,7 +94,7 @@ public class L1NormalizationTest extends MnistTestBase {
           temp_47_0003.freeRef();
           temp_47_0002.freeRef();
           return temp_47_0001;
-        }, network, RefUtil.addRefs(trainingData)));
+        }, network, RefUtil.addRef(trainingData)));
     RefUtil.freeRef(trainingData);
   }
 

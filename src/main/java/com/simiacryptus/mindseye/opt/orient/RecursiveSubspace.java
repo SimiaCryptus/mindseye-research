@@ -145,7 +145,7 @@ public class RecursiveSubspace extends OrientationStrategyBase<SimpleLineSearchC
   public Layer toLayer(@Nonnull UUID id) {
     assert subject != null;
     DAGNetwork dagNetwork = (DAGNetwork) subject.getLayer();
-    if(null == dagNetwork) return null;
+    if (null == dagNetwork) return null;
     RefMap<UUID, Layer> temp_30_0016 = dagNetwork.getLayersById();
     Layer layer = temp_30_0016.get(id);
     temp_30_0016.freeRef();

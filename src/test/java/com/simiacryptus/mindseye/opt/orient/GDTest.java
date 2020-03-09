@@ -52,7 +52,7 @@ public class GDTest extends MnistTestBase {
           @Nonnull final SimpleLossNetwork supervisedNetwork = new SimpleLossNetwork(network.addRef(),
               new EntropyLossLayer());
           @Nonnull final Trainable trainable = new SampledArrayTrainable(
-              RefUtil.addRefs(trainingData),
+              RefUtil.addRef(trainingData),
               supervisedNetwork, 1000);
           IterativeTrainer temp_42_0002 = new IterativeTrainer(
               trainable);
@@ -71,7 +71,7 @@ public class GDTest extends MnistTestBase {
           temp_42_0003.freeRef();
           temp_42_0002.freeRef();
           return temp_42_0001;
-        }, RefUtil.addRefs(trainingData), network));
+        }, RefUtil.addRef(trainingData), network));
     RefUtil.freeRef(trainingData);
   }
 

@@ -53,10 +53,10 @@ public class LBFGSTest extends MnistTestBase {
           @Nonnull final SimpleLossNetwork supervisedNetwork = new SimpleLossNetwork(network.addRef(),
               new EntropyLossLayer());
           ArrayTrainable temp_35_0002 = new ArrayTrainable(
-              RefUtil.addRefs(trainingData),
+              RefUtil.addRef(trainingData),
               supervisedNetwork.addRef());
           ValidatingTrainer temp_35_0003 = new ValidatingTrainer(
-              new SampledArrayTrainable(RefUtil.addRefs(trainingData),
+              new SampledArrayTrainable(RefUtil.addRef(trainingData),
                   supervisedNetwork, 1000, 10000),
               temp_35_0002.cached());
           temp_35_0003.setMonitor(monitor);
@@ -84,7 +84,7 @@ public class LBFGSTest extends MnistTestBase {
           temp_35_0007.freeRef();
           trainer.freeRef();
           return temp_35_0001;
-        }, RefUtil.addRefs(trainingData), network));
+        }, RefUtil.addRef(trainingData), network));
     RefUtil.freeRef(trainingData);
   }
 

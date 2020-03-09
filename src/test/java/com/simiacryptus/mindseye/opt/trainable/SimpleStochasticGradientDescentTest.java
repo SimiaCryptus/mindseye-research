@@ -57,7 +57,7 @@ public class SimpleStochasticGradientDescentTest extends MnistTestBase {
           @Nonnull final SimpleLossNetwork supervisedNetwork = new SimpleLossNetwork(network.addRef(),
               new EntropyLossLayer());
           @Nonnull final Trainable trainable = new SampledArrayTrainable(
-              RefUtil.addRefs(trainingData),
+              RefUtil.addRef(trainingData),
               supervisedNetwork, 10000);
           IterativeTrainer temp_36_0002 = new IterativeTrainer(
               trainable);
@@ -76,7 +76,7 @@ public class SimpleStochasticGradientDescentTest extends MnistTestBase {
           temp_36_0003.freeRef();
           temp_36_0002.freeRef();
           return temp_36_0001;
-        }, RefUtil.addRefs(trainingData), network));
+        }, RefUtil.addRef(trainingData), network));
     RefUtil.freeRef(trainingData);
   }
 

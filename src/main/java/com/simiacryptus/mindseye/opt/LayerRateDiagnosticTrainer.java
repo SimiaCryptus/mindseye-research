@@ -159,7 +159,7 @@ public class LayerRateDiagnosticTrainer extends ReferenceCountingBase {
   public Layer toLayer(UUID id) {
     assert subject != null;
     DAGNetwork dagNetwork = (DAGNetwork) subject.getLayer();
-    if(null == dagNetwork) return null;
+    if (null == dagNetwork) return null;
     RefMap<UUID, Layer> temp_31_0005 = dagNetwork.getLayersById();
     dagNetwork.freeRef();
     Layer temp_31_0004 = temp_31_0005.get(id);

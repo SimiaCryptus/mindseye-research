@@ -53,7 +53,7 @@ public class LinearSumConstraintTest extends MnistTestBase {
           @Nonnull final SimpleLossNetwork supervisedNetwork = new SimpleLossNetwork(network.addRef(),
               new EntropyLossLayer());
           @Nonnull final Trainable trainable = new SampledArrayTrainable(
-              RefUtil.addRefs(trainingData),
+              RefUtil.addRef(trainingData),
               supervisedNetwork, 10000);
           @Nonnull final TrustRegionStrategy trustRegionStrategy = new TrustRegionStrategy() {
             @Nonnull
@@ -91,7 +91,7 @@ public class LinearSumConstraintTest extends MnistTestBase {
           temp_49_0002.freeRef();
           //.setOrientation(new ValidatingOrientationWrapper(trustRegionStrategy))
           return temp_49_0001;
-        }, RefUtil.addRefs(trainingData), network));
+        }, RefUtil.addRef(trainingData), network));
     RefUtil.freeRef(trainingData);
   }
 

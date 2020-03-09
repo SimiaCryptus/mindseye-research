@@ -51,7 +51,7 @@ public class OWLQNTest extends MnistTestBase {
           @Nonnull final SimpleLossNetwork supervisedNetwork = new SimpleLossNetwork(network.addRef(),
               new EntropyLossLayer());
           @Nonnull final Trainable trainable = new SampledArrayTrainable(
-              RefUtil.addRefs(trainingData),
+              RefUtil.addRef(trainingData),
               supervisedNetwork, 10000);
           IterativeTrainer temp_43_0002 = new IterativeTrainer(
               trainable);
@@ -73,7 +73,7 @@ public class OWLQNTest extends MnistTestBase {
           temp_43_0003.freeRef();
           temp_43_0002.freeRef();
           return temp_43_0001;
-        }, RefUtil.addRefs(trainingData), network));
+        }, RefUtil.addRef(trainingData), network));
     RefUtil.freeRef(trainingData);
   }
 

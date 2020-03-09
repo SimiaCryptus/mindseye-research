@@ -60,10 +60,10 @@ public class SimpleGradientDescentTest extends MnistTestBase {
           @Nonnull final SimpleLossNetwork supervisedNetwork = new SimpleLossNetwork(network.addRef(),
               new EntropyLossLayer());
           @Nonnull final ArrayList<Tensor[]> trainingList = new ArrayList<>(
-              Arrays.stream(RefUtil.addRefs(trainingData)).collect(Collectors.toList()));
+              Arrays.stream(RefUtil.addRef(trainingData)).collect(Collectors.toList()));
           Collections.shuffle(trainingList);
           @Nonnull final Tensor[][] randomSelection = trainingList.subList(0, 10000).toArray(new Tensor[][]{});
-          @Nonnull final Trainable trainable = new ArrayTrainable(RefUtil.addRefs(randomSelection),
+          @Nonnull final Trainable trainable = new ArrayTrainable(RefUtil.addRef(randomSelection),
               supervisedNetwork);
           RefUtil.freeRef(randomSelection);
           IterativeTrainer temp_40_0002 = new IterativeTrainer(
@@ -80,7 +80,7 @@ public class SimpleGradientDescentTest extends MnistTestBase {
           temp_40_0003.freeRef();
           temp_40_0002.freeRef();
           return temp_40_0001;
-        }, RefUtil.addRefs(trainingData), network));
+        }, RefUtil.addRef(trainingData), network));
     RefUtil.freeRef(trainingData);
   }
 

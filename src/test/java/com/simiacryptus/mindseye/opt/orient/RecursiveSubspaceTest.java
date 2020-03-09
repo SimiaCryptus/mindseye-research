@@ -67,9 +67,9 @@ public abstract class RecursiveSubspaceTest extends MnistTestBase {
 
       @Nonnull
       DoubleSupplier init = () -> weight * (Math.random() - 0.5);
-      ConvolutionLayer temp_46_0002 = new ConvolutionLayer(3, 3, 1, 5);
-      RefUtil.freeRef(network.add(temp_46_0002.set(init)));
-      temp_46_0002.freeRef();
+      ConvolutionLayer convolutionLayer = new ConvolutionLayer(3, 3, 1, 5);
+      convolutionLayer.set(init);
+      RefUtil.freeRef(network.add(convolutionLayer));
       RefUtil.freeRef(network.add(new ImgBandBiasLayer(5)));
       PoolingLayer temp_46_0003 = new PoolingLayer();
       temp_46_0003.setMode(PoolingLayer.PoolingMode.Max);
@@ -78,9 +78,9 @@ public abstract class RecursiveSubspaceTest extends MnistTestBase {
       RefUtil.freeRef(network.add(new ActivationLayer(ActivationLayer.Mode.RELU)));
       RefUtil.freeRef(network.add(newNormalizationLayer()));
 
-      ConvolutionLayer temp_46_0004 = new ConvolutionLayer(3, 3, 5, 5);
-      RefUtil.freeRef(network.add(temp_46_0004.set(init)));
-      temp_46_0004.freeRef();
+      ConvolutionLayer convolutionLayer1 = new ConvolutionLayer(3, 3, 5, 5);
+      convolutionLayer1.set(init);
+      RefUtil.freeRef(network.add(convolutionLayer1));
       RefUtil.freeRef(network.add(new ImgBandBiasLayer(5)));
       PoolingLayer temp_46_0005 = new PoolingLayer();
       temp_46_0005.setMode(PoolingLayer.PoolingMode.Max);
@@ -108,10 +108,10 @@ public abstract class RecursiveSubspaceTest extends MnistTestBase {
           @Nonnull final SimpleLossNetwork supervisedNetwork = new SimpleLossNetwork(network.addRef(),
               new EntropyLossLayer());
           ArrayTrainable temp_46_0007 = new ArrayTrainable(
-              RefUtil.addRefs(trainingData),
+              RefUtil.addRef(trainingData),
               supervisedNetwork.addRef(), 1000);
           ValidatingTrainer temp_46_0008 = new ValidatingTrainer(
-              new SampledArrayTrainable(RefUtil.addRefs(trainingData),
+              new SampledArrayTrainable(RefUtil.addRef(trainingData),
                   supervisedNetwork, 1000, 1000),
               temp_46_0007.cached());
           temp_46_0008.setMonitor(monitor);
@@ -137,7 +137,7 @@ public abstract class RecursiveSubspaceTest extends MnistTestBase {
           temp_46_0012.freeRef();
           trainer.freeRef();
           return temp_46_0001;
-        }, network, RefUtil.addRefs(trainingData)));
+        }, network, RefUtil.addRef(trainingData)));
     RefUtil.freeRef(trainingData);
   }
 

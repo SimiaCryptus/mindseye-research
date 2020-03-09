@@ -36,12 +36,10 @@ import com.simiacryptus.util.ArrayUtil;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.BiConsumer;
 import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
 public abstract class TrustRegionStrategy extends OrientationStrategyBase<LineSearchCursor> {
 
@@ -83,9 +81,11 @@ public abstract class TrustRegionStrategy extends OrientationStrategyBase<LineSe
   @Override
   public LineSearchCursor orient(@Nonnull final Trainable subject, @Nonnull final PointSample origin,
                                  final TrainingMonitor monitor) {
-    history.add(0, origin.addRef());
-    while (history.size() > maxHistory) {
-      RefUtil.freeRef(history.remove(history.size() - 1));
+    synchronized (history) {
+      history.add(0, origin.addRef());
+      while (history.size() > maxHistory) {
+        RefUtil.freeRef(history.remove(history.size() - 1));
+      }
     }
     assert inner != null;
     return new TrustRegionCursor(
@@ -154,12 +154,12 @@ public abstract class TrustRegionStrategy extends OrientationStrategyBase<LineSe
     public Layer toLayer(UUID id) {
       assert subject != null;
       DAGNetwork layer = (DAGNetwork) subject.getLayer();
-      if(null == layer) return null;
-      RefMap<UUID, Layer> temp_33_0010 = layer.getLayersById();
-      Layer temp_33_0006 = temp_33_0010.get(id);
-      temp_33_0010.freeRef();
+      if (null == layer) return null;
+      RefMap<UUID, Layer> layersById = layer.getLayersById();
       layer.freeRef();
-      return temp_33_0006;
+      Layer layer1 = layersById.get(id);
+      layersById.freeRef();
+      return layer1;
     }
 
     @Nonnull
@@ -168,8 +168,8 @@ public abstract class TrustRegionStrategy extends OrientationStrategyBase<LineSe
       assert cursor.direction != null;
       final DeltaSet<UUID> originalAlphaDerivative = cursor.direction.addRef();
       @Nonnull final DeltaSet<UUID> newAlphaDerivative = originalAlphaDerivative.copy();
-      RefMap<UUID, Delta<UUID>> temp_33_0011 = deltaIn.getMap();
-      temp_33_0011.forEach(RefUtil.wrapInterface(
+      RefMap<UUID, Delta<UUID>> deltaInMap = deltaIn.getMap();
+      deltaInMap.forEach(RefUtil.wrapInterface(
           (BiConsumer<? super UUID, ? super Delta<UUID>>) (id, buffer) -> {
             @Nullable final double[] delta = buffer.getDelta();
             if (null == delta) {
@@ -178,32 +178,32 @@ public abstract class TrustRegionStrategy extends OrientationStrategyBase<LineSe
             }
             final double[] currentPosition = buffer.target;
             buffer.freeRef();
-            Delta<UUID> temp_33_0012 = originalAlphaDerivative.get(id,
+            Delta<UUID> originalDelta = originalAlphaDerivative.get(id,
                 currentPosition);
-            assert temp_33_0012 != null;
-            @Nullable final double[] originalAlphaD = temp_33_0012.getDelta();
-            temp_33_0012.freeRef();
-            Delta<UUID> temp_33_0013 = newAlphaDerivative.get(id, currentPosition);
-            assert temp_33_0013 != null;
-            @Nullable final double[] newAlphaD = temp_33_0013.getDelta();
-            temp_33_0013.freeRef();
+            assert originalDelta != null;
+            Delta<UUID> newDelta = newAlphaDerivative.get(id, currentPosition);
+            assert newDelta != null;
             @Nonnull final double[] proposedPosition = ArrayUtil.add(currentPosition, delta);
-            Layer temp_33_0014 = toLayer(id);
+            Layer layer = toLayer(id);
             assert parent != null;
-            final TrustRegion region = parent.getRegionPolicy(temp_33_0014);
+            final TrustRegion region = parent.getRegionPolicy(layer);
             if (null != region) {
-              final Stream<double[]> zz = parent.history.stream().map((@Nonnull final PointSample pointSample) -> {
-                RefMap<UUID, State<UUID>> temp_33_0015 = pointSample.weights.getMap();
-                final DoubleBuffer<UUID> d = temp_33_0015.get(id);
-                temp_33_0015.freeRef();
-                pointSample.freeRef();
-                double[] temp_33_0007 = null == d ? null : d.getDelta();
-                if (null != d)
-                  d.freeRef();
-                return temp_33_0007;
-              });
-              final double[] projectedPosition = region.project(zz.filter(x -> null != x).toArray(i -> new double[i][]),
-                  proposedPosition);
+              double[][] historyArray;
+              synchronized (parent.history) {
+                historyArray = parent.history.stream().map((@Nonnull final PointSample pointSample) -> {
+                  RefMap<UUID, State<UUID>> weightsMap = pointSample.weights.getMap();
+                  final DoubleBuffer<UUID> doubleBuffer = weightsMap.get(id);
+                  weightsMap.freeRef();
+                  pointSample.freeRef();
+                  try {
+                    return null == doubleBuffer ? null : doubleBuffer.getDelta();
+                  } finally {
+                    if (null != doubleBuffer)
+                      doubleBuffer.freeRef();
+                  }
+                }).filter(x -> null != x).toArray(i -> new double[i][]);
+              }
+              final double[] projectedPosition = region.project(historyArray, proposedPosition);
               if (projectedPosition != proposedPosition) {
                 for (int i = 0; i < projectedPosition.length; i++) {
                   delta[i] = projectedPosition[i] - currentPosition[i];
@@ -217,11 +217,13 @@ public abstract class TrustRegionStrategy extends OrientationStrategyBase<LineSe
                 //                ArrayUtil.dot(currentPosition,currentPosition),
                 //                normalMagSq));
                 if (0 < normalMagSq) {
+                  @Nullable final double[] originalAlphaD = originalDelta.getDelta();
                   assert originalAlphaD != null;
                   final double a = ArrayUtil.dot(originalAlphaD, normal);
                   if (a != -1) {
                     @Nonnull final double[] tangent = ArrayUtil.add(originalAlphaD,
                         ArrayUtil.multiply(normal, -a / normalMagSq));
+                    @Nullable final double[] newAlphaD = newDelta.getDelta();
                     for (int i = 0; i < tangent.length; i++) {
                       assert newAlphaD != null;
                       newAlphaD[i] = tangent[i];
@@ -235,9 +237,11 @@ public abstract class TrustRegionStrategy extends OrientationStrategyBase<LineSe
                 }
               }
             }
+            originalDelta.freeRef();
+            newDelta.freeRef();
           }, originalAlphaDerivative,
           newAlphaDerivative.addRef()));
-      temp_33_0011.freeRef();
+      deltaInMap.freeRef();
       deltaIn.freeRef();
       return newAlphaDerivative;
     }

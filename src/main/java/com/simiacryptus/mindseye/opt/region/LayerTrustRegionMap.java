@@ -51,6 +51,7 @@ public class LayerTrustRegionMap extends TrustRegionStrategy {
   @javax.annotation.Nullable
   @Override
   public TrustRegion getRegionPolicy(final Layer layer) {
+    if (null == layer) return defaultRegionPolicy;
     return regionPolicies.getOrDefault(layer, defaultRegionPolicy);
   }
 

@@ -52,7 +52,7 @@ public class BisectionLineSearchTest extends MnistTestBase {
           @Nonnull final SimpleLossNetwork supervisedNetwork = new SimpleLossNetwork(network.addRef(),
               new EntropyLossLayer());
           @Nonnull final Trainable trainable = new SampledArrayTrainable(
-              RefUtil.addRefs(trainingData),
+              RefUtil.addRef(trainingData),
               supervisedNetwork, 1000);
           IterativeTrainer temp_48_0002 = new IterativeTrainer(
               trainable);
@@ -74,7 +74,7 @@ public class BisectionLineSearchTest extends MnistTestBase {
           temp_48_0003.freeRef();
           temp_48_0002.freeRef();
           return temp_48_0001;
-        }, network, RefUtil.addRefs(trainingData)));
+        }, network, RefUtil.addRef(trainingData)));
     RefUtil.freeRef(trainingData);
   }
 

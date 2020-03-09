@@ -52,9 +52,9 @@ public class QQNTest extends MnistTestBase {
           @Nonnull final SimpleLossNetwork supervisedNetwork = new SimpleLossNetwork(network.addRef(),
               new EntropyLossLayer());
           ValidatingTrainer temp_45_0002 = new ValidatingTrainer(
-              new SampledArrayTrainable(RefUtil.addRefs(trainingData),
+              new SampledArrayTrainable(RefUtil.addRef(trainingData),
                   supervisedNetwork, 1000, 10000),
-              new ArrayTrainable(RefUtil.addRefs(trainingData),
+              new ArrayTrainable(RefUtil.addRef(trainingData),
                   supervisedNetwork.addRef()));
           //return new IterativeTrainer(new SampledArrayTrainable(trainingData, supervisedNetwork, 10000))
           temp_45_0002.setMonitor(monitor);
@@ -76,7 +76,7 @@ public class QQNTest extends MnistTestBase {
           temp_45_0005.freeRef();
           trainer.freeRef();
           return temp_45_0001;
-        }, RefUtil.addRefs(trainingData), network));
+        }, RefUtil.addRef(trainingData), network));
     RefUtil.freeRef(trainingData);
   }
 
