@@ -71,7 +71,6 @@ public class LayerRateDiagnosticTrainer extends ReferenceCountingBase {
     return currentIteration;
   }
 
-  @Nonnull
   public void setCurrentIteration(final AtomicInteger currentIteration) {
     this.currentIteration = currentIteration;
   }
@@ -115,7 +114,6 @@ public class LayerRateDiagnosticTrainer extends ReferenceCountingBase {
     return orientation == null ? null : orientation.addRef();
   }
 
-  @Nonnull
   public void setOrientation(@Nullable final OrientationStrategy<?> orientation) {
     OrientationStrategy<?> temp_31_0002 = orientation == null ? null
         : orientation.addRef();
@@ -132,7 +130,6 @@ public class LayerRateDiagnosticTrainer extends ReferenceCountingBase {
     return terminateThreshold;
   }
 
-  @Nonnull
   public void setTerminateThreshold(final double terminateThreshold) {
     this.terminateThreshold = terminateThreshold;
   }
@@ -141,7 +138,6 @@ public class LayerRateDiagnosticTrainer extends ReferenceCountingBase {
     return timeout;
   }
 
-  @Nonnull
   public void setTimeout(final Duration timeout) {
     this.timeout = timeout;
   }
@@ -150,7 +146,6 @@ public class LayerRateDiagnosticTrainer extends ReferenceCountingBase {
     return strict;
   }
 
-  @Nonnull
   public void setStrict(final boolean strict) {
     this.strict = strict;
   }

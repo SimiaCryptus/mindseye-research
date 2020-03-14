@@ -76,7 +76,6 @@ public class RoundRobinTrainer extends ReferenceCountingBase {
     return currentIteration;
   }
 
-  @Nonnull
   public void setCurrentIteration(final AtomicInteger currentIteration) {
     this.currentIteration = currentIteration;
   }
@@ -122,7 +121,6 @@ public class RoundRobinTrainer extends ReferenceCountingBase {
     return orientations.addRef();
   }
 
-  @Nonnull
   public void setOrientations(final OrientationStrategy<?>... orientations) {
     this.orientations = new RefArrayList<>(RefArrays.asList(orientations));
   }
@@ -131,7 +129,6 @@ public class RoundRobinTrainer extends ReferenceCountingBase {
     return terminateThreshold;
   }
 
-  @Nonnull
   public void setTerminateThreshold(final double terminateThreshold) {
     this.terminateThreshold = terminateThreshold;
   }

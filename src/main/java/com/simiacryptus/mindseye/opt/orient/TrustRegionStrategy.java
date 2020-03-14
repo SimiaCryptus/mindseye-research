@@ -60,7 +60,6 @@ public abstract class TrustRegionStrategy extends OrientationStrategyBase<LineSe
     return maxHistory;
   }
 
-  @Nonnull
   public void setMaxHistory(final int maxHistory) {
     this.maxHistory = maxHistory;
   }

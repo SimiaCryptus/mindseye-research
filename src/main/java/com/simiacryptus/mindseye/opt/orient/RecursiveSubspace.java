@@ -64,7 +64,6 @@ public class RecursiveSubspace extends OrientationStrategyBase<SimpleLineSearchC
     return iterations;
   }
 
-  @Nonnull
   public void setIterations(int iterations) {
     this.iterations = iterations;
   }
@@ -73,7 +72,6 @@ public class RecursiveSubspace extends OrientationStrategyBase<SimpleLineSearchC
     return lineSearch;
   }
 
-  @Nonnull
   public void setLineSearch(LineSearchStrategy lineSearch) {
     this.lineSearch = lineSearch;
   }
@@ -98,7 +96,6 @@ public class RecursiveSubspace extends OrientationStrategyBase<SimpleLineSearchC
     return terminateThreshold;
   }
 
-  @Nonnull
   public void setTerminateThreshold(double terminateThreshold) {
     this.terminateThreshold = terminateThreshold;
   }

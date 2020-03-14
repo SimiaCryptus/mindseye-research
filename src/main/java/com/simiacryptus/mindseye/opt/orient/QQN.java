@@ -41,7 +41,6 @@ public class QQN extends OrientationStrategyBase<LineSearchCursor> {
     return inner.getMaxHistory();
   }
 
-  @Nonnull
   public void setMaxHistory(final int maxHistory) {
     inner.setMaxHistory(maxHistory);
   }
@@ -50,7 +49,6 @@ public class QQN extends OrientationStrategyBase<LineSearchCursor> {
     return inner.getMinHistory();
   }
 
-  @Nonnull
   public void setMinHistory(final int minHistory) {
     inner.setMinHistory(minHistory);
   }

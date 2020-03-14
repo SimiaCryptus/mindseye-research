@@ -38,7 +38,6 @@ public class LayerTrustRegionMap extends TrustRegionStrategy {
     return defaultRegionPolicy;
   }
 
-  @Nonnull
   public void setDefaultRegionPolicy(final TrustRegion defaultRegionPolicy) {
     this.defaultRegionPolicy = defaultRegionPolicy;
   }
