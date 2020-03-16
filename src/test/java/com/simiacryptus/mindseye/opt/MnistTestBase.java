@@ -42,7 +42,6 @@ import com.simiacryptus.util.Util;
 import com.simiacryptus.util.test.LabeledObject;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import smile.plot.swing.PlotCanvas;
@@ -67,17 +66,26 @@ public abstract class MnistTestBase extends NotebookReportBase {
     return ReportType.Optimizers;
   }
 
-  @Test
-  @Tag("Report")
-  public void test(TestInfo testInfo) {
-    report(testInfo, log1 -> run(log1));
+  @Nonnull
+  public Tensor[][] getTrainingData() {
+    return MNIST.trainingDataStream().map(labeledObject -> {
+      @Nonnull final Tensor categoryTensor = new Tensor(10);
+      final int category = parse(labeledObject.label);
+      categoryTensor.set(category, 1);
+      Tensor data = labeledObject.data.addRef();
+      labeledObject.freeRef();
+      return new Tensor[]{data, categoryTensor};
+    }).toArray(i -> new Tensor[i][]);
   }
 
-  public void run(@Nonnull NotebookOutput log) {
+  @Test
+  @Tag("Report")
+  public void test() {
+    @Nonnull NotebookOutput log = getLog();
     @Nonnull final List<Step> history = new ArrayList<>();
     @Nonnull final MonitoredObject monitoringRoot = new MonitoredObject();
     @Nonnull final TrainingMonitor monitor = getMonitor(history);
-    final Tensor[][] trainingData = getTrainingData(log);
+    final Tensor[][] trainingData = getTrainingData();
     final DAGNetwork network = buildModel(log);
     addMonitoring(network.addRef(), monitoringRoot.addRef());
     log.h1("Training");
@@ -119,18 +127,6 @@ public abstract class MnistTestBase extends NotebookReportBase {
       RefUtil.freeRef(network.add(new SoftmaxLayer()));
       return network;
     });
-  }
-
-  @Nonnull
-  public Tensor[][] getTrainingData(final NotebookOutput log) {
-    return MNIST.trainingDataStream().map(labeledObject -> {
-      @Nonnull final Tensor categoryTensor = new Tensor(10);
-      final int category = parse(labeledObject.label);
-      categoryTensor.set(category, 1);
-      Tensor data = labeledObject.data.addRef();
-      labeledObject.freeRef();
-      return new Tensor[]{data, categoryTensor};
-    }).toArray(i -> new Tensor[i][]);
   }
 
   public int parse(@Nonnull final String label) {
