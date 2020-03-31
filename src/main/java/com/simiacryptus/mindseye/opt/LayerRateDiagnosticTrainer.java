@@ -189,10 +189,7 @@ public class LayerRateDiagnosticTrainer extends ReferenceCountingBase {
     final long timeoutMs = RefSystem.currentTimeMillis() + timeout.toMillis();
     PointSample measure = measure();
     assert measure != null;
-    RefMap<UUID, State<UUID>> temp_31_0006 = measure.weights
-        .getMap();
-    @Nonnull final ArrayList<UUID> layers = new ArrayList<>(temp_31_0006.keySet());
-    temp_31_0006.freeRef();
+    @Nonnull final ArrayList<UUID> layers = new ArrayList<>(measure.weights.keySet());
     assert measure != null;
     while (timeoutMs > RefSystem.currentTimeMillis() && measure.sum > terminateThreshold) {
       if (currentIteration.get() > maxIterations) {

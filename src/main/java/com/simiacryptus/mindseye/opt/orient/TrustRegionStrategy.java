@@ -190,9 +190,7 @@ public abstract class TrustRegionStrategy extends OrientationStrategyBase<LineSe
               double[][] historyArray;
               synchronized (parent.history) {
                 historyArray = parent.history.stream().map((@Nonnull final PointSample pointSample) -> {
-                  RefMap<UUID, State<UUID>> weightsMap = pointSample.weights.getMap();
-                  final DoubleBuffer<UUID> doubleBuffer = weightsMap.get(id);
-                  weightsMap.freeRef();
+                  final DoubleBuffer<UUID> doubleBuffer = pointSample.weights.get(id);
                   pointSample.freeRef();
                   try {
                     return null == doubleBuffer ? null : doubleBuffer.getDelta();
