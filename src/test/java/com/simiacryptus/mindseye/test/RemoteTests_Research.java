@@ -32,7 +32,7 @@ public class RemoteTests_Research {
         " -Xmx8g -DTEST_REPO=./runner/",
         log -> {
           new MacroTestRunner().runAll(log,
-              "com.simiacryptus.mindseye.layers"
+              "com.simiacryptus.mindseye.opt"
           );
         }
     );
