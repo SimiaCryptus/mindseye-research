@@ -111,6 +111,7 @@
     <url>http://code.simiacrypt.us/release/${project.version}/mindseye-research</url>
     <distributionManagement>
         <site>
+            <id>simiacryptus</id>
             <url>s3://code.simiacrypt.us/release/${project.version}/mindseye-research</url>
         </site>
     </distributionManagement>
