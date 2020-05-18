@@ -39,7 +39,7 @@ import com.simiacryptus.util.JsonUtil;
 import com.simiacryptus.util.MonitoredObject;
 import com.simiacryptus.util.Util;
 import com.simiacryptus.util.test.LabeledObject;
-import com.simiacryptus.util.test.NotebookReportBase;
+import com.simiacryptus.util.test.NotebookTestBase;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -55,7 +55,7 @@ import java.util.function.Function;
 import java.util.function.ToDoubleFunction;
 import java.util.stream.IntStream;
 
-public abstract class MnistTestBase extends NotebookReportBase {
+public abstract class MnistTestBase extends NotebookTestBase {
   private static final Logger log = LoggerFactory.getLogger(MnistTestBase.class);
 
   int modelNo = 0;
