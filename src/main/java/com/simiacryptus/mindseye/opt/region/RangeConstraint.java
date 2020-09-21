@@ -30,8 +30,8 @@ public class RangeConstraint implements TrustRegion {
   private double max;
 
   public RangeConstraint() {
-    min = 0;
-    max = 255;
+    min = -Double.MAX_VALUE;
+    max = Double.MAX_VALUE;
   }
 
   public RangeConstraint(final double min, final double max) {
