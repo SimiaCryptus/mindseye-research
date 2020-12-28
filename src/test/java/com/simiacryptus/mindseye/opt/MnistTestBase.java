@@ -44,7 +44,8 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import smile.plot.swing.PlotCanvas;
+import smile.plot.swing.Canvas;
+import smile.plot.swing.PlotPanel;
 import smile.plot.swing.ScatterPlot;
 
 import javax.annotation.Nonnull;
@@ -167,16 +168,19 @@ public abstract class MnistTestBase extends NotebookTestBase {
 
     if (!history.isEmpty()) {
       log.eval(() -> {
-        @Nonnull final PlotCanvas plot = ScatterPlot.plot(history.stream().map(step -> {
+        @Nonnull final ScatterPlot plot = ScatterPlot.of(history.stream().map(step -> {
           assert step.point != null;
           double[] temp_41_0002 = new double[]{step.iteration, Math.log10(step.point.getMean())};
           step.freeRef();
           return temp_41_0002;
         }).toArray(i -> new double[i][]));
-        plot.setTitle("Convergence Plot");
-        plot.setAxisLabels("Iteration", "log10(Fitness)");
-        plot.setSize(600, 400);
-        return plot;
+        Canvas canvas = new Canvas(new double[]{0,0}, new double[]{1,1});
+        canvas.add(plot);
+        PlotPanel plotPanel = new PlotPanel(canvas);
+        canvas.setTitle("Convergence Plot");
+        canvas.setAxisLabels("Iteration", "log10(Fitness)");
+        plotPanel.setSize(600, 400);
+        return plotPanel;
       });
     }
 
