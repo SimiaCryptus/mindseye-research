@@ -69,7 +69,7 @@ public class SimpleStochasticGradientDescentTest extends MnistTestBase {
           IterativeTrainer temp_36_0005 = temp_36_0004.addRef();
           temp_36_0005.setMaxIterations(500);
           IterativeTrainer temp_36_0006 = temp_36_0005.addRef();
-          double temp_36_0001 = temp_36_0006.run();
+          double temp_36_0001 = temp_36_0006.run().finalValue;
           temp_36_0006.freeRef();
           temp_36_0005.freeRef();
           temp_36_0004.freeRef();

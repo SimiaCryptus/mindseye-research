@@ -66,7 +66,7 @@ public class BisectionLineSearchTest extends MnistTestBase {
           IterativeTrainer temp_48_0006 = temp_48_0005.addRef();
           temp_48_0006.setMaxIterations(500);
           IterativeTrainer temp_48_0007 = temp_48_0006.addRef();
-          double temp_48_0001 = temp_48_0007.run();
+          double temp_48_0001 = temp_48_0007.run().finalValue;
           temp_48_0007.freeRef();
           temp_48_0006.freeRef();
           temp_48_0005.freeRef();

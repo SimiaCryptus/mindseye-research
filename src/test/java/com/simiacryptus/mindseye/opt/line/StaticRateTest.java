@@ -66,7 +66,7 @@ public class StaticRateTest extends MnistTestBase {
           IterativeTrainer temp_50_0006 = temp_50_0005.addRef();
           temp_50_0006.setMaxIterations(500);
           IterativeTrainer temp_50_0007 = temp_50_0006.addRef();
-          double temp_50_0001 = temp_50_0007.run();
+          double temp_50_0001 = temp_50_0007.run().finalValue;
           temp_50_0007.freeRef();
           temp_50_0006.freeRef();
           temp_50_0005.freeRef();

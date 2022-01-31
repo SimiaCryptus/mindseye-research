@@ -82,7 +82,7 @@ public class TrustSphereTest extends MnistTestBase {
           IterativeTrainer temp_39_0006 = temp_39_0005.addRef();
           temp_39_0006.setMaxIterations(500);
           IterativeTrainer temp_39_0007 = temp_39_0006.addRef();
-          double temp_39_0001 = temp_39_0007.run();
+          double temp_39_0001 = temp_39_0007.run().finalValue;
           temp_39_0007.freeRef();
           temp_39_0006.freeRef();
           temp_39_0005.freeRef();

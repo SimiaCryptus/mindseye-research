@@ -88,7 +88,7 @@ public class L1NormalizationTest extends MnistTestBase {
           IterativeTrainer temp_47_0004 = temp_47_0003.addRef();
           temp_47_0004.setMaxIterations(500);
           IterativeTrainer temp_47_0005 = temp_47_0004.addRef();
-          double temp_47_0001 = temp_47_0005.run();
+          double temp_47_0001 = temp_47_0005.run().finalValue;
           temp_47_0005.freeRef();
           temp_47_0004.freeRef();
           temp_47_0003.freeRef();

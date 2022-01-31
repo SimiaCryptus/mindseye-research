@@ -82,7 +82,7 @@ public class SingleOrthantTrustRegionTest extends MnistTestBase {
           IterativeTrainer temp_44_0006 = temp_44_0005.addRef();
           temp_44_0006.setMaxIterations(500);
           IterativeTrainer temp_44_0007 = temp_44_0006.addRef();
-          double temp_44_0001 = temp_44_0007.run();
+          double temp_44_0001 = temp_44_0007.run().finalValue;
           temp_44_0007.freeRef();
           temp_44_0006.freeRef();
           temp_44_0005.freeRef();

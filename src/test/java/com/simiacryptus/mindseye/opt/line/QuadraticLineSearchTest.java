@@ -66,7 +66,7 @@ public class QuadraticLineSearchTest extends MnistTestBase {
           IterativeTrainer temp_37_0006 = temp_37_0005.addRef();
           temp_37_0006.setMaxIterations(500);
           IterativeTrainer temp_37_0007 = temp_37_0006.addRef();
-          double temp_37_0001 = temp_37_0007.run();
+          double temp_37_0001 = temp_37_0007.run().finalValue;
           temp_37_0007.freeRef();
           temp_37_0006.freeRef();
           temp_37_0005.freeRef();

@@ -74,7 +74,7 @@ public class SimpleGradientDescentTest extends MnistTestBase {
           IterativeTrainer temp_40_0004 = temp_40_0003.addRef();
           temp_40_0004.setMaxIterations(500);
           IterativeTrainer temp_40_0005 = temp_40_0004.addRef();
-          double temp_40_0001 = temp_40_0005.run();
+          double temp_40_0001 = temp_40_0005.run().finalValue;
           temp_40_0005.freeRef();
           temp_40_0004.freeRef();
           temp_40_0003.freeRef();

@@ -93,7 +93,7 @@ public class L2NormalizationTest extends MnistTestBase {
           IterativeTrainer temp_52_0004 = temp_52_0003.addRef();
           temp_52_0004.setMaxIterations(500);
           IterativeTrainer temp_52_0005 = temp_52_0004.addRef();
-          double temp_52_0001 = temp_52_0005.run();
+          double temp_52_0001 = temp_52_0005.run().finalValue;
           temp_52_0005.freeRef();
           temp_52_0004.freeRef();
           temp_52_0003.freeRef();

@@ -64,7 +64,7 @@ public class GDTest extends MnistTestBase {
           IterativeTrainer temp_42_0005 = temp_42_0004.addRef();
           temp_42_0005.setMaxIterations(500);
           IterativeTrainer temp_42_0006 = temp_42_0005.addRef();
-          double temp_42_0001 = temp_42_0006.run();
+          double temp_42_0001 = temp_42_0006.run().finalValue;
           temp_42_0006.freeRef();
           temp_42_0005.freeRef();
           temp_42_0004.freeRef();

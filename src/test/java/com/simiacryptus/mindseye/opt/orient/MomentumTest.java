@@ -66,7 +66,7 @@ public class MomentumTest extends MnistTestBase {
           IterativeTrainer temp_51_0006 = temp_51_0005.addRef();
           temp_51_0006.setMaxIterations(500);
           IterativeTrainer temp_51_0007 = temp_51_0006.addRef();
-          double temp_51_0001 = temp_51_0007.run();
+          double temp_51_0001 = temp_51_0007.run().finalValue;
           temp_51_0007.freeRef();
           temp_51_0006.freeRef();
           temp_51_0005.freeRef();
